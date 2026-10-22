@@ -172,6 +172,7 @@ class RentPortalApp {
         this.authTab = 'signin';
         this.authAlert = null;
         this.showToast('Signed out successfully.');
+        this.render();
       });
     }
 
@@ -241,8 +242,10 @@ class RentPortalApp {
         if (role === 'visitor') {
           this.unauthMode = 'login';
           this.authTab = 'signin';
+          this.authAlert = null;
         }
         this.showToast(`Switched view to ${btn.textContent.trim()}`);
+        this.render();
       });
     });
   }
