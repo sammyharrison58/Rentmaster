@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rent Portal - Rent Payment & Property Management</title>
+  <meta name="description" content="Rent payment portal. Tenants sign in and request access; the landlord admin approves them and sets their rent. Approved tenants pay rent from their private account via Safaricom M-Pesa and track confirmations." />
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Master Stylesheet -->
+  <link rel="stylesheet" href="./styles/main.css" />
+
+  <!-- External CDN Libraries: Lucide Icons, jsPDF, SheetJS (XLSX) -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="container header-inner">
+      <div class="brand" onclick="window.app.render()">
+        <div class="brand-icon">
+          <i data-lucide="home" style="width: 1.25rem; height: 1.25rem;"></i>
+        </div>
+        <div>
+          <div class="brand-title">Rent Portal</div>
+          <div class="brand-subtitle" id="brand-subtitle">Tenant rent payments</div>
+        </div>
+      </div>
+
+      <div class="header-actions" id="header-user-area">
+        <!-- Injected dynamically by app.js -->
+      </div>
+    </div>
+  </header>
+
+  <!-- Interactive Demo Switcher Bar -->
+  <div class="demo-bar" id="demo-role-bar">
+    <!-- Injected dynamically by app.js -->
+  </div>
+
+  <!-- Main Container -->
+  <main>
+    <div class="container" id="app-main">
+      <!-- Injected dynamically by app.js -->
+    </div>
+  </main>
+
+  <!-- Modal Container Root -->
+  <div id="modal-root"></div>
+
+  <!-- Toast Notifications Root -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Application Logic -->
+  <script type="module" src="./scripts/app.js"></script>
+</body>
+</html>
