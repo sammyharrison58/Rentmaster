@@ -193,6 +193,31 @@ export default defineConfig({
             return;
           }
 
+          // --- 3. GET & POST /api/sync (State Sync Support) ---
+          if (url.pathname === '/api/sync') {
+            res.setHeader('Content-Type', 'application/json');
+            if (req.method === 'GET') {
+              return res.end(JSON.stringify({ success: true, state: global.__rentmaster_state || null, source: 'vite-dev' }));
+            }
+            if (req.method === 'POST') {
+              let syncBody = '';
+              req.on('data', chunk => { syncBody += chunk; });
+              req.on('end', () => {
+                try {
+                  const parsed = JSON.parse(syncBody || '{}');
+                  if (parsed.state) {
+                    global.__rentmaster_state = parsed.state;
+                  }
+                  return res.end(JSON.stringify({ success: true, timestamp: Date.now() }));
+                } catch (e) {
+                  res.statusCode = 400;
+                  return res.end(JSON.stringify({ success: false, error: e.message }));
+                }
+              });
+              return;
+            }
+          }
+
           next();
         });
       }

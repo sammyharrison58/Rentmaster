@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@netlify/blobs": "^11.1.6",
     "vite": "^6.0.0"
   }
 }

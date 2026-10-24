@@ -32,6 +32,13 @@
   status = 200
   force = true
 
+# Proxy /api/sync to cloud sync serverless function
+[[redirects]]
+  from = "/api/sync"
+  to = "/.netlify/functions/sync"
+  status = 200
+  force = true
+
 # SPA fallback redirect for any client-side routes
 [[redirects]]
   from = "/*"

@@ -2,4 +2,5 @@
 /api/mpesa/stkpush  /.netlify/functions/mpesa-stkpush  200!
 /api/mpesa/query    /.netlify/functions/mpesa-query    200!
 /api/webhook/mpesa-callback  /.netlify/functions/mpesa-callback  200!
+/api/sync                   /.netlify/functions/sync            200!
 /*  /index.html  200

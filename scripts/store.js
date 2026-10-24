@@ -363,6 +363,22 @@ class Store {
   constructor() {
     this.listeners = new Set();
     this.state = this.loadState();
+    this.initCloudSync();
+  }
+
+  initCloudSync() {
+    // Initial fetch from cloud
+    this.fetchCloudState();
+
+    // Poll periodically for incoming registrations and payments from all devices
+    if (typeof window !== 'undefined') {
+      setInterval(() => this.fetchCloudState(), 5000);
+      window.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          this.fetchCloudState();
+        }
+      });
+    }
   }
 
   loadState() {
@@ -383,6 +399,113 @@ class Store {
       this.notify();
     } catch (e) {
       console.error('Failed to save state to localStorage:', e);
+    }
+    this.pushCloudState();
+  }
+
+  async fetchCloudState() {
+    if (typeof fetch === 'undefined') return;
+    try {
+      const res = await fetch('/api/sync', { cache: 'no-store' });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data && data.success && data.state) {
+        this.mergeCloudState(data.state);
+      }
+    } catch (e) {
+      // Network unavailable - safely continue locally
+    }
+  }
+
+  mergeCloudState(cloudState) {
+    if (!cloudState) return;
+    let changed = false;
+
+    // 1. Merge landlords (union by id)
+    if (Array.isArray(cloudState.landlords)) {
+      cloudState.landlords.forEach((remoteLl) => {
+        const localIndex = this.state.landlords.findIndex((l) => l.id === remoteLl.id);
+        if (localIndex === -1) {
+          this.state.landlords.push(remoteLl);
+          changed = true;
+        } else {
+          // If remote status or details differ, take the latest
+          if (JSON.stringify(this.state.landlords[localIndex]) !== JSON.stringify(remoteLl)) {
+            this.state.landlords[localIndex] = remoteLl;
+            changed = true;
+          }
+        }
+      });
+    }
+
+    // 2. Merge tenants (union by userId)
+    if (Array.isArray(cloudState.tenants)) {
+      cloudState.tenants.forEach((remoteT) => {
+        const localIndex = this.state.tenants.findIndex((t) => t.userId === remoteT.userId);
+        if (localIndex === -1) {
+          this.state.tenants.push(remoteT);
+          changed = true;
+        } else {
+          if (JSON.stringify(this.state.tenants[localIndex]) !== JSON.stringify(remoteT)) {
+            this.state.tenants[localIndex] = remoteT;
+            changed = true;
+          }
+        }
+      });
+    }
+
+    // 3. Merge payments (union by id)
+    if (Array.isArray(cloudState.payments)) {
+      cloudState.payments.forEach((remoteP) => {
+        const localIndex = this.state.payments.findIndex((p) => p.id === remoteP.id);
+        if (localIndex === -1) {
+          this.state.payments.push(remoteP);
+          changed = true;
+        } else {
+          if (JSON.stringify(this.state.payments[localIndex]) !== JSON.stringify(remoteP)) {
+            this.state.payments[localIndex] = remoteP;
+            changed = true;
+          }
+        }
+      });
+    }
+
+    // 4. Merge audit entries
+    if (Array.isArray(cloudState.audit)) {
+      cloudState.audit.forEach((remoteA) => {
+        if (!this.state.audit.some((a) => a.id === remoteA.id)) {
+          this.state.audit.unshift(remoteA);
+          changed = true;
+        }
+      });
+    }
+
+    if (changed) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
+      } catch (e) {}
+      this.notify();
+    }
+  }
+
+  async pushCloudState() {
+    if (typeof fetch === 'undefined') return;
+    try {
+      const snapshot = {
+        landlords: this.state.landlords,
+        tenants: this.state.tenants,
+        payments: this.state.payments,
+        audit: this.state.audit,
+        syncedAt: Date.now()
+      };
+
+      await fetch('/api/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ state: snapshot })
+      });
+    } catch (e) {
+      // Cloud sync failure will retry on next state change
     }
   }
 
