@@ -1,0 +1,39 @@
+# Netlify Configuration for Rentmaster
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "netlify/functions"
+
+# Proxy /api/mpesa/stkpush to serverless function
+[[redirects]]
+  from = "/api/mpesa/stkpush"
+  to = "/.netlify/functions/mpesa-stkpush"
+  status = 200
+  force = true
+
+# Proxy /api/mpesa/query to serverless function
+[[redirects]]
+  from = "/api/mpesa/query"
+  to = "/.netlify/functions/mpesa-query"
+  status = 200
+  force = true
+
+# Proxy /api/webhook/mpesa-callback to serverless function
+[[redirects]]
+  from = "/api/webhook/mpesa-callback"
+  to = "/.netlify/functions/mpesa-callback"
+  status = 200
+  force = true
+
+# SPA fallback redirect for any client-side routes
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

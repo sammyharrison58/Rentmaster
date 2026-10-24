@@ -15,6 +15,7 @@ class RentPortalApp {
     this.approvalSubTab = 'landlords'; // 'landlords' | 'tenants'
     this.landlordTab = 'payments'; // 'payments' | 'requests' | 'tenants' | 'arrears' | 'reports' | 'settings'
     this.tenantTab = 'pay'; // 'pay' | 'bills' | 'history'
+    this.tenantPaySubTab = 'post_message'; // 'post_message' | 'stk'
 
     this.reportYear = new Date().getFullYear();
     this.reportView = 'year';
@@ -329,6 +330,25 @@ class RentPortalApp {
                     />
                   </div>
                   <div id="auth-role-preview"></div>
+                  <div style="margin-top: 0.625rem;">
+                    <div style="font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--slate-400); margin-bottom: 0.375rem;">
+                      ⚡ One-Click Demo Access:
+                    </div>
+                    <div style="display: flex; gap: 0.375rem; flex-wrap: wrap;">
+                      <button type="button" class="btn-demo-quick" data-email="sammyharrison58@gmail.com" style="font-size: 0.6875rem; padding: 0.25rem 0.5rem; border-radius: 9999px; background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; cursor: pointer; font-weight: 700; transition: all 0.15s ease;">
+                        👑 Super Admin
+                      </button>
+                      <button type="button" class="btn-demo-quick" data-email="linus.omwoyo@gmail.com" style="font-size: 0.6875rem; padding: 0.25rem 0.5rem; border-radius: 9999px; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; cursor: pointer; font-weight: 700; transition: all 0.15s ease;">
+                        🏢 Landlord (Linus)
+                      </button>
+                      <button type="button" class="btn-demo-quick" data-email="jane.wanjiru@gmail.com" style="font-size: 0.6875rem; padding: 0.25rem 0.5rem; border-radius: 9999px; background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; cursor: pointer; font-weight: 700; transition: all 0.15s ease;">
+                        🔑 Tenant (Jane)
+                      </button>
+                      <button type="button" class="btn-demo-quick" data-email="david.mutua@sunrise.co.ke" style="font-size: 0.6875rem; padding: 0.25rem 0.5rem; border-radius: 9999px; background: #fffbeb; color: #b45309; border: 1px solid #fde68a; cursor: pointer; font-weight: 700; transition: all 0.15s ease;">
+                        ⏳ Pending Landlord
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 <div class="form-group">
@@ -610,6 +630,19 @@ class RentPortalApp {
         if (window.lucide) window.lucide.createIcons();
       });
     }
+
+    // Quick Demo Role Pills
+    document.querySelectorAll('.btn-demo-quick').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const email = btn.getAttribute('data-email');
+        if (emailInput && email) {
+          emailInput.value = email;
+          emailInput.dispatchEvent(new Event('input'));
+          const form = document.getElementById('form-auth-signin');
+          if (form) form.dispatchEvent(new Event('submit', { cancelable: true }));
+        }
+      });
+    });
 
     // Sign In Submission
     document.getElementById('form-auth-signin')?.addEventListener('submit', (e) => {
@@ -1541,48 +1574,72 @@ class RentPortalApp {
       <div style="display: flex; flex-direction: column; gap: 1.5rem;">
         <!-- Payments Awaiting Approval -->
         ${pending.length > 0 ? `
-          <div class="card" style="border-color: var(--amber-200); background-color: #ffffff;">
-            <div style="background-color: var(--amber-50); padding: 1rem; border-top-left-radius: var(--radius-xl); border-top-right-radius: var(--radius-xl); border-bottom: 1px solid var(--amber-200); margin: -1.25rem -1.25rem 1rem -1.25rem;">
-              <h2 style="font-weight: 700; color: var(--amber-800); font-size: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                <i data-lucide="clock" style="width: 1.25rem; height: 1.25rem;"></i>
-                Payments Awaiting Your Approval (${pending.length})
-              </h2>
-              <p style="font-size: 0.8125rem; color: var(--slate-600); margin-top: 0.25rem;">
-                Verify against your M-Pesa Till statement. Mark payments as <strong>Paid</strong> to clear tenant bills or <strong>Not Paid</strong> to decline.
+          <div class="card" style="border: 2px solid #f59e0b; background-color: #ffffff; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.1);">
+            <div style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); padding: 1.25rem; border-top-left-radius: var(--radius-xl); border-top-right-radius: var(--radius-xl); border-bottom: 1px solid #fde68a; margin: -1.25rem -1.25rem 1.25rem -1.25rem;">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                <h2 style="font-weight: 800; color: #92400e; font-size: 1.125rem; display: flex; align-items: center; gap: 0.5rem;">
+                  <i data-lucide="message-square-check" style="width: 1.375rem; height: 1.375rem; color: #d97706;"></i>
+                  Tenant Payment Messages Awaiting Confirmation (${pending.length})
+                </h2>
+                <span class="badge badge-pending" style="font-weight: 800; font-size: 0.75rem;">Action Required</span>
+              </div>
+              <p style="font-size: 0.8125rem; color: #78350f; margin-top: 0.375rem; line-height: 1.5;">
+                Tenants have posted these M-Pesa messages for rent confirmation. Verify against your Till <strong>${store.state.settings.daraja?.shortcode || '582190'}</strong> statement. Approving marks the payment as <strong>Paid</strong> in the tenant's portal and generates their official receipt.
               </p>
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div style="display: flex; flex-direction: column; gap: 1.25rem;">
               ${pending.map((p) => `
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--slate-100);">
-                  <div style="min-width: 0; flex: 1;">
-                    <p style="font-weight: 700; font-size: 1rem;">
-                      ${formatKES(p.amount)} from ${p.payerName || 'Unknown sender'}
-                      ${p.payerPhone ? `· ${formatPhone(p.payerPhone)}` : ''}
-                    </p>
-                    <p style="font-size: 0.75rem; color: var(--slate-500); margin-top: 0.25rem;">
-                      Method: <strong>${p.method}</strong> · Code: <span style="font-family: monospace; font-weight: 600;">${p.mpesaReceipt || p.reference}</span> · ${formatDateTime(p.createdAt)}
-                    </p>
-                    <p style="font-size: 0.75rem; margin-top: 0.25rem; font-weight: 600; color: ${p.tenantId ? 'var(--emerald-700)' : 'var(--rose-700)'};">
-                      ${p.tenantId ? `Matched to: ${p.tenantName} (${p.unit})` : 'Unmatched payment. Select tenant:'}
-                    </p>
+                <div style="background: #fafaf9; border: 1px solid #e7e5e4; border-radius: var(--radius-lg); padding: 1.25rem; display: flex; flex-direction: column; gap: 0.875rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                      <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                        <span class="badge badge-pending" style="font-size: 0.75rem; font-weight: 700;">AWAITING CONFIRMATION</span>
+                        <span style="font-family: monospace; font-size: 0.8125rem; font-weight: 700; background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 4px;">
+                          Code: ${p.mpesaReceipt || p.reference || 'PENDING'}
+                        </span>
+                        <span style="font-size: 0.75rem; color: var(--slate-500);">
+                          Submitted ${formatDateTime(p.submittedAt || p.createdAt)}
+                        </span>
+                        ${p.channel === 'tenant_posted_sms' ? `<span class="badge" style="background:#f1f5f9; color:#475569; font-size:0.6875rem;">Tenant Posted SMS</span>` : ''}
+                      </div>
+
+                      <div style="font-size: 1.375rem; font-weight: 800; color: var(--slate-900); margin-top: 0.375rem;">
+                        ${formatKES(p.amount)} <span style="font-size: 0.875rem; font-weight: 600; color: var(--slate-500);">for ${formatMonth(p.month)}</span>
+                      </div>
+
+                      <p style="font-size: 0.8125rem; margin-top: 0.25rem; color: var(--slate-600);">
+                        <strong>Tenant:</strong> ${p.tenantName || p.payerName || 'Unknown tenant'} (${p.unit || 'Unit not specified'}) · <strong>Phone:</strong> ${formatPhone(p.payerPhone || '')} · Method: <strong>${p.method}</strong>
+                      </p>
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                      <select class="form-select" id="select-tenant-${p.id}" style="width: auto; font-size: 0.8125rem; padding: 0.375rem 0.625rem;">
+                        <option value="">Confirm tenant…</option>
+                        ${approvedTenants.map((t) => `
+                          <option value="${t.userId}" ${t.userId === p.tenantId ? 'selected' : ''}>
+                            ${t.name} · ${t.unit}
+                          </option>
+                        `).join('')}
+                      </select>
+                      <button class="btn btn-primary" onclick="window.app.approvePayment('${p.id}')" style="font-weight: 700; display: inline-flex; align-items: center; gap: 0.375rem;">
+                        <i data-lucide="check-check" style="width: 1rem; height: 1rem;"></i>
+                        Confirm & Approve (Paid)
+                      </button>
+                      <button class="btn btn-secondary" onclick="window.app.rejectPayment('${p.id}')" style="display: inline-flex; align-items: center; gap: 0.375rem; color: #be123c;">
+                        <i data-lucide="x" style="width: 1rem; height: 1rem;"></i>
+                        Decline (Not Paid)
+                      </button>
+                    </div>
                   </div>
 
-                  <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-                    <select class="form-select" id="select-tenant-${p.id}" style="width: auto; font-size: 0.8125rem; padding: 0.375rem 0.625rem;">
-                      <option value="">Choose tenant…</option>
-                      ${approvedTenants.map((t) => `
-                        <option value="${t.userId}" ${t.userId === p.tenantId ? 'selected' : ''}>
-                          ${t.name} · ${t.unit}
-                        </option>
-                      `).join('')}
-                    </select>
-                    <button class="btn btn-primary" onclick="window.app.approvePayment('${p.id}')">
-                      Mark as Paid
-                    </button>
-                    <button class="btn btn-secondary" onclick="window.app.rejectPayment('${p.id}')">
-                      Mark as Not Paid
-                    </button>
+                  <!-- Quoted Message from Tenant -->
+                  <div style="background-color: #ffffff; border-left: 4px solid var(--primary); padding: 0.75rem 1rem; border-radius: var(--radius-md); border-top: 1px solid #f1f5f9; border-right: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; font-family: monospace; font-size: 0.8125rem; color: #1e293b; word-break: break-word;">
+                    <div style="display: flex; align-items: center; gap: 0.375rem; font-weight: 700; color: var(--primary); margin-bottom: 0.25rem; font-size: 0.75rem; text-transform: uppercase;">
+                      <i data-lucide="message-square" style="width: 0.875rem; height: 0.875rem;"></i>
+                      Posted Message from Tenant:
+                    </div>
+                    "${p.smsText || p.tenantMessage || 'Payment message submitted by tenant.'}"
                   </div>
                 </div>
               `).join('')}
@@ -2358,8 +2415,13 @@ class RentPortalApp {
       <!-- Tabs Navigation (NO LANDLORD OR SUPER ADMIN TABS) -->
       <div class="tabs-nav" role="tablist">
         <button class="tab-btn ${this.tenantTab === 'pay' ? 'active' : ''}" data-tenant-tab="pay">
-          <i data-lucide="smartphone" style="width: 1.125rem; height: 1.125rem;"></i>
-          Pay rent via Till ${tillNumber}
+          <i data-lucide="message-square-plus" style="width: 1.125rem; height: 1.125rem;"></i>
+          Post Message & Pay Rent
+          ${store.state.payments.filter((p) => p.tenantId === tenant.userId && p.status === 'pending').length > 0 ? `
+            <span class="tab-badge" style="background: #f59e0b; color: #ffffff;">
+              ${store.state.payments.filter((p) => p.tenantId === tenant.userId && p.status === 'pending').length}
+            </span>
+          ` : ''}
         </button>
         <button class="tab-btn ${this.tenantTab === 'bills' ? 'active' : ''}" data-tenant-tab="bills">
           <i data-lucide="receipt" style="width: 1.125rem; height: 1.125rem;"></i>
@@ -2422,56 +2484,225 @@ class RentPortalApp {
   renderTenantPayTab(tenant, owed, tillNumber, landlord) {
     const today = new Date().toISOString().slice(0, 10);
     const suggestedAmount = owed > 0 ? owed : tenant.monthlyRent;
+    const myPending = store.state.payments.filter((p) => p.tenantId === tenant.userId && p.status === 'pending');
+    const myApproved = store.state.payments.filter((p) => p.tenantId === tenant.userId && p.status === 'confirmed').slice(0, 1);
+    const myRejected = store.state.payments.filter((p) => p.tenantId === tenant.userId && p.status === 'rejected').slice(0, 1);
 
     return `
-      <div style="max-width: 36rem; margin: 0 auto; display: flex; flex-direction: column; gap: 1.5rem;">
-        <div class="card">
-          <div class="card-header">
+      <div style="max-width: 42rem; margin: 0 auto; display: flex; flex-direction: column; gap: 1.5rem;">
+        <!-- Card 1: Outstanding Status & Till Reference -->
+        <div class="card" style="background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border: 1px solid #10b981;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
             <div>
-              <h2 class="card-title">
-                <i data-lucide="smartphone" style="color: var(--primary);"></i>
-                Pay Rent via Landlord Till ${tillNumber}
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span class="badge badge-approved" style="font-weight: 800; font-size: 0.75rem;">ONLINE M-PESA ACTIVE</span>
+                <span style="font-size: 0.8125rem; color: #047857; font-weight: 600;">${landlord ? landlord.propertyName : 'Omwoyo Apartments'}</span>
+              </div>
+              <p style="font-size: 0.75rem; text-transform: uppercase; color: #047857; font-weight: 700; margin-top: 0.5rem; letter-spacing: 0.05em;">
+                Landlord Buy Goods Till Number
+              </p>
+              <div style="font-size: 2rem; font-weight: 900; color: #064e3b; font-family: monospace; letter-spacing: 0.05em; line-height: 1.1;">
+                ${tillNumber}
+              </div>
+              <p style="font-size: 0.8125rem; color: #047857; margin-top: 0.25rem;">
+                Account Reference: <strong>${tenant.unit}</strong> · Landlord: <strong>${landlord ? landlord.name : 'Linus Omwoyo'}</strong>
+              </p>
+            </div>
+
+            <div style="text-align: right; background: #ffffff; border: 1px solid #a7f3d0; border-radius: var(--radius-lg); padding: 0.875rem 1.25rem; box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);">
+              <span style="font-size: 0.75rem; color: var(--slate-500); display: block;">Current Rent Due</span>
+              <strong style="font-size: 1.5rem; color: ${owed > 0 ? 'var(--rose-700)' : 'var(--emerald-700)'};">
+                ${owed > 0 ? formatKES(owed) : 'KES 0 (Paid up)'}
+              </strong>
+              <span style="font-size: 0.6875rem; color: var(--slate-500); display: block; margin-top: 0.25rem;">
+                Monthly Rate: ${formatKES(tenant.monthlyRent)}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: Pending Messages Tracker (Awaiting Landlord Confirmation) -->
+        ${myPending.length > 0 ? `
+          <div class="card" style="border: 2px solid #f59e0b; background: #fffdf5; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.15);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
+              <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+                <div style="width: 2.75rem; height: 2.75rem; border-radius: 9999px; background: #fef3c7; color: #d97706; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 2px 8px rgba(217, 119, 6, 0.2);">
+                  <i data-lucide="clock" style="width: 1.5rem; height: 1.5rem;"></i>
+                </div>
+                <div>
+                  <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                    <span class="badge badge-pending" style="font-size: 0.75rem; font-weight: 800;">AWAITING LANDLORD CONFIRMATION</span>
+                    <span style="font-size: 0.75rem; color: #78350f;">(${myPending.length} message${myPending.length > 1 ? 's' : ''} sent)</span>
+                  </div>
+                  <h3 style="font-size: 1.125rem; font-weight: 800; color: #92400e; margin-top: 0.25rem;">
+                    Payment Message Sent to Landlord
+                  </h3>
+                  <p style="font-size: 0.8125rem; color: #78350f; margin-top: 0.25rem; line-height: 1.5;">
+                    Your payment message has been delivered to Landlord <strong>${landlord ? landlord.name : 'Linus Omwoyo'}</strong> for confirmation. As soon as the landlord verifies against Till <strong>${tillNumber}</strong>, your payment will be marked as <strong>PAID</strong> and your official receipt unlocked!
+                  </p>
+                </div>
+              </div>
+
+              <button class="btn btn-secondary" onclick="window.app.render()" style="font-size: 0.75rem; padding: 0.375rem 0.625rem; border-color: #fde68a;">
+                <i data-lucide="refresh-cw" style="width: 0.875rem; height: 0.875rem;"></i> Refresh Status
+              </button>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.875rem; margin-top: 1.25rem;">
+              ${myPending.map((p) => `
+                <div style="background: #ffffff; border: 1px solid #fde68a; border-radius: var(--radius-md); padding: 1rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                      <span style="font-weight: 800; color: #92400e; font-size: 1.125rem;">${formatKES(p.amount)}</span>
+                      <span style="font-family: monospace; font-size: 0.8125rem; background: #fef3c7; color: #78350f; padding: 2px 8px; border-radius: 4px; font-weight: 700;">
+                        Code: ${p.mpesaReceipt || p.id}
+                      </span>
+                    </div>
+                    <span style="font-size: 0.75rem; color: #92400e;">
+                      Submitted ${formatDateTime(p.submittedAt || p.createdAt)}
+                    </span>
+                  </div>
+
+                  <!-- Quoted Message -->
+                  <div style="font-family: monospace; font-size: 0.8125rem; color: #1e293b; background: #fffbeb; padding: 0.75rem; border-radius: 4px; border-left: 3px solid #f59e0b; word-break: break-word;">
+                    <strong style="color: #b45309; display: flex; align-items: center; gap: 0.25rem; font-size: 0.6875rem; text-transform: uppercase; margin-bottom: 0.25rem;">
+                      <i data-lucide="message-square" style="width: 0.875rem; height: 0.875rem;"></i>
+                      Your Posted Message to Landlord:
+                    </strong>
+                    "${p.smsText || p.tenantMessage || 'Payment message submitted for confirmation'}"
+                  </div>
+
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.625rem; font-size: 0.75rem; color: #78350f; flex-wrap: wrap; gap: 0.5rem;">
+                    <span>Target: <strong>Till ${tillNumber}</strong> (${landlord ? landlord.propertyName : 'Omwoyo Apartments'})</span>
+                    <span style="display: inline-flex; align-items: center; gap: 0.375rem; color: #b45309; font-weight: 700;">
+                      <span class="pulse-dot" style="width: 6px; height: 6px; background: #f59e0b;"></span>
+                      Pending Landlord Approval
+                    </span>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- Card 3: Main Action Form (Post M-Pesa Message vs STK Push) -->
+        <div class="card" style="box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);">
+          <div class="card-header" style="border-bottom: 1px solid var(--slate-100); padding-bottom: 1rem;">
+            <div>
+              <h2 class="card-title" style="display: flex; align-items: center; gap: 0.5rem;">
+                <i data-lucide="${this.tenantPaySubTab === 'stk' ? 'smartphone' : 'message-square-plus'}" style="color: var(--primary);"></i>
+                ${this.tenantPaySubTab === 'stk' ? `Pay via M-Pesa STK Push Prompt` : `Post M-Pesa Payment Message to Landlord`}
               </h2>
               <p style="font-size: 0.8125rem; color: var(--slate-500); margin-top: 0.25rem;">
-                Payments go directly to <strong>${landlord ? landlord.propertyName : 'Landlord account'}</strong>.
+                ${this.tenantPaySubTab === 'stk' 
+                  ? `Receive a direct STK PIN popup prompt on your phone for Till ${tillNumber}.` 
+                  : `Paste your Safaricom M-Pesa SMS confirmation message or enter your code. It will be sent to Landlord <strong>${landlord ? landlord.name : 'Linus Omwoyo'}</strong> for confirmation before payment is approved.`}
               </p>
             </div>
           </div>
 
-          <div style="background-color: var(--emerald-50); border: 1px solid var(--primary-border); border-radius: var(--radius-lg); padding: 1rem; margin-bottom: 1rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <p style="font-size: 0.75rem; text-transform: uppercase; color: var(--emerald-700); font-weight: 700;">Landlord Till Number</p>
-                <p style="font-size: 1.5rem; font-weight: 800; color: var(--emerald-900); font-family: monospace;">${tillNumber}</p>
-              </div>
-              <span class="badge badge-approved">Online M-Pesa Active</span>
-            </div>
+          <!-- Switcher Buttons -->
+          <div style="display: flex; gap: 0.5rem; background: var(--slate-100); padding: 0.375rem; border-radius: var(--radius-lg); margin-bottom: 1.25rem;">
+            <button type="button" class="btn ${this.tenantPaySubTab !== 'stk' ? 'btn-primary' : 'btn-secondary'}" style="flex: 1; font-size: 0.8125rem; padding: 0.5rem;" id="btn-subtab-post-msg">
+              <i data-lucide="message-square" style="width: 0.875rem; height: 0.875rem;"></i>
+              Post M-Pesa Message / SMS (Recommended)
+            </button>
+            <button type="button" class="btn ${this.tenantPaySubTab === 'stk' ? 'btn-primary' : 'btn-secondary'}" style="flex: 1; font-size: 0.8125rem; padding: 0.5rem;" id="btn-subtab-stk">
+              <i data-lucide="smartphone" style="width: 0.875rem; height: 0.875rem;"></i>
+              Trigger Phone STK Push
+            </button>
           </div>
 
-          <form id="form-mpesa-payment" style="display: flex; flex-direction: column; gap: 1rem;">
-            <div class="form-group">
-              <label class="form-label">Payment Date</label>
-              <input type="date" class="form-input" id="pay-date" value="${today}" required />
-            </div>
+          ${this.tenantPaySubTab !== 'stk' ? `
+            <!-- Form 1: Post M-Pesa Message Form -->
+            <form id="form-tenant-post-message" style="display: flex; flex-direction: column; gap: 1rem;">
+              <div class="form-group">
+                <label class="form-label" style="font-weight: 700; display: flex; justify-content: space-between; align-items: center;">
+                  <span>Paste M-Pesa SMS Message</span>
+                  <span style="font-size: 0.75rem; font-weight: normal; color: var(--primary);">✨ Auto-extracts Code & Amount</span>
+                </label>
+                <textarea 
+                  class="form-input" 
+                  id="post-sms-text" 
+                  rows="3" 
+                  placeholder="Paste full Safaricom SMS here, e.g.:&#10;QJD73821K9 Confirmed. Ksh15,000.00 paid to Omwoyo Apartments Till 582190 on 24/10/26 at 2:15 PM..."
+                  style="font-family: monospace; font-size: 0.8125rem; line-height: 1.4;"
+                ></textarea>
+              </div>
 
-            <div class="form-group">
-              <label class="form-label">Amount to pay (KES)</label>
-              <input type="number" class="form-input" id="pay-amount" min="1" step="1" value="${suggestedAmount}" required />
-            </div>
+              <!-- Live Parsed Notification -->
+              <div id="sms-parse-indicator" style="display: none; background: #ecfdf5; border: 1px solid #10b981; border-radius: var(--radius-md); padding: 0.625rem 0.875rem; font-size: 0.8125rem; color: #065f46;">
+                <div style="display: flex; align-items: center; gap: 0.375rem; font-weight: 700;">
+                  <i data-lucide="check-circle" style="width: 1rem; height: 1rem;"></i>
+                  Safaricom SMS Recognized!
+                </div>
+                <div style="margin-top: 0.25rem; font-family: monospace;" id="sms-parse-details"></div>
+              </div>
 
-            <div class="form-group">
-              <label class="form-label">M-Pesa Phone number</label>
-              <input type="tel" class="form-input" id="pay-phone" value="${tenant.phone}" required />
-            </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                  <label class="form-label">M-Pesa Transaction Code *</label>
+                  <input type="text" class="form-input" id="post-mpesa-code" placeholder="e.g. QJD73821K9" style="text-transform: uppercase; font-family: monospace; font-weight: 700;" required />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Amount Paid (KES) *</label>
+                  <input type="number" class="form-input" id="post-amount" min="1" step="1" value="${suggestedAmount}" required />
+                </div>
+              </div>
 
-            <button type="submit" class="btn btn-primary btn-full">
-              <i data-lucide="wallet" style="width: 1rem; height: 1rem;"></i>
-              Pay KES to Till ${tillNumber}
-            </button>
-            <p style="text-align: center; font-size: 0.75rem; color: var(--slate-500);">
-              An M-Pesa STK prompt will appear on your phone to enter your PIN.
-            </p>
-          </form>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                  <label class="form-label">Rent Month *</label>
+                  <input type="month" class="form-input" id="post-month" value="${getCurrentMonth()}" required />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Sender Phone Number</label>
+                  <input type="tel" class="form-input" id="post-phone" value="${tenant.phone}" required />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Optional Note for Landlord</label>
+                <input type="text" class="form-input" id="post-note" placeholder="e.g. Paid via husband's phone / M-Pesa agent" />
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-full" style="padding: 0.75rem 1rem; font-weight: 800; font-size: 0.9375rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                <i data-lucide="send" style="width: 1.125rem; height: 1.125rem;"></i>
+                Post Message to Landlord for Confirmation
+              </button>
+
+              <div style="background-color: var(--slate-50); border-radius: var(--radius-md); padding: 0.75rem; font-size: 0.75rem; color: var(--slate-600); display: flex; align-items: center; gap: 0.5rem;">
+                <i data-lucide="shield-check" style="width: 1rem; height: 1rem; color: var(--emerald-600); flex-shrink: 0;"></i>
+                <span>Your message goes straight to Landlord <strong>${landlord ? landlord.name : 'Linus Omwoyo'}</strong> to confirm against Till <strong>${tillNumber}</strong> before approving your payment.</span>
+              </div>
+            </form>
+          ` : `
+            <!-- Form 2: STK Push Phone Prompt Form -->
+            <form id="form-mpesa-payment" style="display: flex; flex-direction: column; gap: 1rem;">
+              <div class="form-group">
+                <label class="form-label">Payment Date</label>
+                <input type="date" class="form-input" id="pay-date" value="${today}" required />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Amount to pay (KES)</label>
+                <input type="number" class="form-input" id="pay-amount" min="1" step="1" value="${suggestedAmount}" required />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">M-Pesa Phone number</label>
+                <input type="tel" class="form-input" id="pay-phone" value="${tenant.phone}" required />
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-full" style="padding: 0.75rem 1rem; font-weight: 800;">
+                <i data-lucide="smartphone" style="width: 1.125rem; height: 1.125rem;"></i>
+                Send STK Push Prompt to Handset
+              </button>
+              <p style="text-align: center; font-size: 0.75rem; color: var(--slate-500);">
+                An M-Pesa STK prompt will appear on your phone screen to enter your PIN.
+              </p>
+            </form>
+          `}
         </div>
       </div>
     `;
@@ -2550,17 +2781,32 @@ class RentPortalApp {
                   <td>
                     <span>${p.method}</span>
                     ${p.mpesaReceipt ? `<span style="font-family: monospace; font-size: 0.75rem; color: var(--slate-500);"> · ${p.mpesaReceipt}</span>` : ''}
+                    ${p.smsText || p.tenantMessage ? `
+                      <div style="font-size: 0.6875rem; color: var(--slate-500); margin-top: 0.125rem; font-family: monospace; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${p.smsText || p.tenantMessage}">
+                        💬 "${p.smsText || p.tenantMessage}"
+                      </div>
+                    ` : ''}
                   </td>
                   <td style="text-align: right; font-weight: 700;">${formatKES(p.amount)}</td>
                   <td style="text-align: right;">
-                    <span class="badge badge-${p.status}">${p.status === 'confirmed' ? 'Paid' : p.status}</span>
+                    <span class="badge badge-${p.status}">
+                      ${p.status === 'confirmed' ? 'Paid' : p.status === 'pending' ? 'Awaiting Landlord' : p.status === 'rejected' ? 'Declined' : p.status}
+                    </span>
                   </td>
                   <td style="text-align: right;">
                     ${p.status === 'confirmed' ? `
                       <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="window.app.showReceiptModal('${p.id}')">
                         Receipt
                       </button>
-                    ` : '-'}
+                    ` : p.status === 'pending' ? `
+                      <span style="font-size: 0.75rem; color: #b45309; font-weight: 700;">
+                        Pending Approval
+                      </span>
+                    ` : `
+                      <span style="font-size: 0.75rem; color: #be123c; font-weight: 700;">
+                        Not Paid
+                      </span>
+                    `}
                   </td>
                 </tr>
               `).join('')}
@@ -2581,6 +2827,89 @@ class RentPortalApp {
       });
     });
 
+    // Subtab switcher between Post Message and STK Push
+    document.getElementById('btn-subtab-post-msg')?.addEventListener('click', () => {
+      this.tenantPaySubTab = 'post_message';
+      this.render();
+    });
+
+    document.getElementById('btn-subtab-stk')?.addEventListener('click', () => {
+      this.tenantPaySubTab = 'stk';
+      this.render();
+    });
+
+    // Real-time Safaricom M-Pesa SMS auto-parser
+    const postSmsText = document.getElementById('post-sms-text');
+    if (postSmsText) {
+      const autoParse = () => {
+        const text = postSmsText.value;
+        if (!text) return;
+
+        // Auto-extract M-Pesa receipt code
+        const codeMatch = text.match(/\b([A-Z0-9]{8,12})\b/);
+        // Auto-extract amount
+        const amtMatch = text.match(/(?:Ksh|KES)\.?\s*([\d,]+(?:\.\d{2})?)/i) || text.match(/received\s+([\d,]+)/i);
+        // Auto-extract phone
+        const phoneMatch = text.match(/(?:from|sent by|phone)\s+.*?(254[71]\d{8}|0[71]\d{8})/i) || text.match(/\b(254[71]\d{8}|0[71]\d{8})\b/);
+
+        const codeInput = document.getElementById('post-mpesa-code');
+        const amtInput = document.getElementById('post-amount');
+        const phoneInput = document.getElementById('post-phone');
+        const indicator = document.getElementById('sms-parse-indicator');
+        const details = document.getElementById('sms-parse-details');
+
+        let code = codeMatch ? codeMatch[1].toUpperCase() : '';
+        let amt = amtMatch ? amtMatch[1].replace(/,/g, '') : '';
+        let phone = phoneMatch ? phoneMatch[1] : '';
+
+        if (code && codeInput && (!codeInput.value || codeInput.value.length < 5)) codeInput.value = code;
+        if (amt && amtInput) amtInput.value = Math.round(Number(amt));
+        if (phone && phoneInput) phoneInput.value = phone;
+
+        if (indicator && details && (code || amt)) {
+          indicator.style.display = 'block';
+          details.innerHTML = `Code: <strong>${code || 'Auto-detected'}</strong> · Amount: <strong>KES ${Number(amt || 0).toLocaleString()}</strong> ${phone ? `· Phone: <strong>${phone}</strong>` : ''}`;
+        }
+      };
+
+      postSmsText.addEventListener('input', autoParse);
+      postSmsText.addEventListener('paste', () => setTimeout(autoParse, 50));
+    }
+
+    // Handle Tenant Posting M-Pesa Payment Message to Landlord
+    const postMsgForm = document.getElementById('form-tenant-post-message');
+    if (postMsgForm && tenant) {
+      postMsgForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const smsText = document.getElementById('post-sms-text')?.value || '';
+        const mpesaCode = document.getElementById('post-mpesa-code')?.value.trim() || '';
+        const amount = Number(document.getElementById('post-amount')?.value || tenant.monthlyRent);
+        const month = document.getElementById('post-month')?.value || getCurrentMonth();
+        const phone = document.getElementById('post-phone')?.value || tenant.phone;
+        const note = document.getElementById('post-note')?.value.trim() || '';
+
+        if (!mpesaCode) {
+          alert('Please enter or paste your M-Pesa transaction code.');
+          return;
+        }
+
+        const fullMessage = smsText.trim() || (note ? `${note} (Code: ${mpesaCode}, Amount: KES ${amount})` : `Payment confirmation code ${mpesaCode} submitted for KES ${amount}`);
+
+        store.postTenantPaymentMessage({
+          tenantId: tenant.userId,
+          amount,
+          mpesaCode,
+          smsText: fullMessage,
+          phone,
+          month
+        });
+
+        this.showToast('Payment message posted! Sent to your Landlord for confirmation before approval.', 'success');
+        this.render();
+      });
+    }
+
+    // Handle STK Push Payment
     const mpesaForm = document.getElementById('form-mpesa-payment');
     if (mpesaForm && tenant) {
       mpesaForm.addEventListener('submit', (e) => {
@@ -2745,14 +3074,16 @@ class RentPortalApp {
   approvePayment(paymentId) {
     const sel = document.getElementById(`select-tenant-${paymentId}`);
     const override = sel ? sel.value : null;
-    store.decidePaymentStatus(paymentId, 'confirmed', override);
-    this.showToast('Payment marked as PAID.');
+    const payment = store.decidePaymentStatus(paymentId, 'confirmed', override);
+    this.showToast(`Payment of ${formatKES(payment.amount)} from ${payment.tenantName} confirmed & approved! Official receipt unlocked in tenant portal.`, 'success');
+    this.render();
   }
 
   rejectPayment(paymentId) {
-    if (confirm('Mark this payment as NOT PAID?')) {
-      store.decidePaymentStatus(paymentId, 'rejected');
-      this.showToast('Payment marked as NOT PAID.');
+    if (confirm('Mark this payment as NOT PAID? The tenant will be notified in their portal that the payment was not approved.')) {
+      const payment = store.decidePaymentStatus(paymentId, 'rejected');
+      this.showToast(`Payment of ${formatKES(payment.amount)} marked as NOT PAID / Declined.`, 'danger');
+      this.render();
     }
   }
 
@@ -3441,7 +3772,15 @@ class RentPortalApp {
           tillType: daraja.tillType || 'till',
           env: daraja.env || 'production'
         })
-      }).then((r) => r.json());
+      }).then(async (r) => {
+        const data = await r.json().catch(() => ({}));
+        return data;
+      }).catch((err) => ({
+        success: true,
+        isRealDaraja: false,
+        needsCredentials: true,
+        message: 'Endpoint offline. Using interactive simulator.'
+      }));
 
       // If Real Daraja was triggered
       if (res && res.isRealDaraja && res.success) {

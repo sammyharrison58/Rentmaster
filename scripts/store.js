@@ -306,9 +306,30 @@ const DEFAULT_STATE = {
       payerPhone: '0722998877',
       payerName: 'Brian Kiprop',
       smsText: 'QJK98320A4 Confirmed. Ksh18,000.00 paid to Omwoyo Apartments Till 582190 from Brian Kiprop 254722998877 on 22/10/26 at 11:15 AM.',
+      tenantMessage: 'QJK98320A4 Confirmed. Ksh18,000.00 paid to Omwoyo Apartments Till 582190 from Brian Kiprop 254722998877 on 22/10/26 at 11:15 AM.',
       matchedBy: 'phone',
       status: 'pending', // Awaiting landlord approval
+      submittedAt: Date.now() - 3600000 * 2,
       createdAt: Date.now() - 3600000 * 2
+    },
+    {
+      id: 'pay-post-001',
+      landlordId: 'll-1',
+      tenantId: 'user-t-1',
+      tenantName: 'Jane Wanjiru',
+      unit: 'Unit B4',
+      amount: 15000,
+      month: '2026-10',
+      method: 'M-Pesa Till 582190',
+      channel: 'tenant_posted_sms',
+      mpesaReceipt: 'QJD73821K9',
+      payerPhone: '0712345678',
+      payerName: 'Jane Wanjiru',
+      smsText: 'QJD73821K9 Confirmed. Ksh15,000.00 paid to Omwoyo Apartments Till 582190 on 24/10/26 at 2:15 PM.',
+      tenantMessage: 'QJD73821K9 Confirmed. Ksh15,000.00 paid to Omwoyo Apartments Till 582190 on 24/10/26 at 2:15 PM.',
+      status: 'pending', // Awaiting Landlord confirmation!
+      submittedAt: Date.now() - 3600000 * 1,
+      createdAt: Date.now() - 3600000 * 1
     },
     {
       id: 'pay-006',
@@ -835,20 +856,87 @@ class Store {
     return newPayment;
   }
 
-  finalizePayment(paymentId, status, mpesaReceipt = '', failureReason = '') {
+  finalizePayment(paymentId, status, mpesaReceipt = '', failureReason = '', tenantMessage = '') {
     const payment = this.state.payments.find((p) => p.id === paymentId);
     if (!payment) return null;
 
     payment.status = status;
+    if (mpesaReceipt) payment.mpesaReceipt = mpesaReceipt;
+    if (tenantMessage) payment.tenantMessage = tenantMessage;
+
     if (status === 'confirmed') {
       payment.mpesaReceipt = mpesaReceipt || 'QK' + Math.random().toString(36).substring(2, 9).toUpperCase();
       payment.paidAt = Date.now();
       this.addAudit('Payment Confirmed', `Received ${formatKES(payment.amount)} from ${payment.tenantName} (${payment.unit}) via ${payment.method}`);
+    } else if (status === 'pending') {
+      payment.submittedAt = Date.now();
+      this.addAudit('Payment Dispatched to Landlord', `Payment ${payment.mpesaReceipt} (${formatKES(payment.amount)}) sent to Landlord for confirmation`);
     } else if (status === 'failed') {
       payment.failureReason = failureReason || 'M-Pesa PIN cancelled by user';
     }
     this.saveState();
     return payment;
+  }
+
+  // Tenant: Post payment message (SMS or code) to Landlord for confirmation
+  postTenantPaymentMessage({ tenantId, amount, mpesaCode, smsText = '', phone, month }) {
+    const tenant = this.state.tenants.find((t) => t.userId === tenantId);
+    if (!tenant) throw new Error('Tenant not found');
+
+    const landlord = this.state.landlords.find((l) => l.id === tenant.landlordId);
+    const till = landlord ? landlord.tillNumber : tenant.tillNumber || '582190';
+
+    let cleanCode = (mpesaCode || '').trim().toUpperCase();
+    let finalAmount = Number(amount) || tenant.monthlyRent;
+
+    // Auto-parse from SMS text if code or amount not explicitly given
+    if (smsText) {
+      if (!cleanCode) {
+        const codeMatch = smsText.match(/\b([A-Z0-9]{8,12})\b/);
+        if (codeMatch) cleanCode = codeMatch[1].toUpperCase();
+      }
+      if (!amount) {
+        const amtMatch = smsText.match(/Ksh\.?\s*([\d,]+(?:\.\d{2})?)/i) || smsText.match(/KES\.?\s*([\d,]+(?:\.\d{2})?)/i);
+        if (amtMatch) finalAmount = Number(amtMatch[1].replace(/,/g, ''));
+      }
+    }
+
+    if (!cleanCode) {
+      cleanCode = 'QK' + Math.random().toString(36).substring(2, 10).toUpperCase();
+    }
+
+    const currentMonth = month || getCurrentMonth();
+    const id = 'pay-post-' + Date.now();
+    const receiptNo = `RCT-${currentMonth.replace('-', '')}-${id.slice(-5).toUpperCase()}`;
+
+    const newPayment = {
+      id,
+      landlordId: tenant.landlordId || 'll-1',
+      tenantId: tenant.userId,
+      tenantName: tenant.name,
+      unit: tenant.unit,
+      amount: finalAmount,
+      month: currentMonth,
+      method: `M-Pesa Till ${till}`,
+      channel: 'tenant_posted_sms',
+      mpesaReceipt: cleanCode,
+      payerPhone: phone || tenant.phone,
+      payerName: tenant.name,
+      tenantMessage: smsText.trim() || `Payment confirmation code ${cleanCode} submitted for ${formatKES(finalAmount)}`,
+      smsText: smsText.trim(),
+      receiptNo,
+      status: 'pending', // Awaiting Landlord confirmation!
+      submittedAt: Date.now(),
+      createdAt: Date.now()
+    };
+
+    this.state.payments.unshift(newPayment);
+    this.addAudit(
+      'Tenant Message Posted',
+      `${tenant.name} (${tenant.unit}) submitted payment message for ${formatKES(finalAmount)} (Code: ${cleanCode}) - awaiting Landlord confirmation`
+    );
+    this.saveState();
+    return { success: true, payment: newPayment };
   }
 
   // Landlord or Super Admin: Mark Payment as Paid or Not Paid
@@ -871,12 +959,16 @@ class Store {
 
     if (status === 'confirmed') {
       payment.paidAt = payment.paidAt || Date.now();
+      payment.approvedAt = Date.now();
+      payment.approvedBy = actor;
       if (!payment.receiptNo) {
         payment.receiptNo = `RCT-${payment.month.replace('-', '')}-${payment.id.slice(-5).toUpperCase()}`;
       }
-      this.addAudit('Payment Marked as Paid', `${actor} confirmed ${formatKES(payment.amount)} from ${payment.tenantName}`);
+      this.addAudit('Payment Confirmed & Approved', `${actor} confirmed & approved payment ${payment.mpesaReceipt || payment.id} of ${formatKES(payment.amount)} from ${payment.tenantName} (${payment.unit})`);
     } else if (status === 'rejected') {
-      this.addAudit('Payment Marked as Not Paid', `${actor} rejected payment of ${formatKES(payment.amount)} from ${payment.tenantName}`);
+      payment.rejectedAt = Date.now();
+      payment.rejectedBy = actor;
+      this.addAudit('Payment Declined (Not Paid)', `${actor} declined payment of ${formatKES(payment.amount)} from ${payment.tenantName} (${payment.unit})`);
     }
     this.saveState();
     return payment;
