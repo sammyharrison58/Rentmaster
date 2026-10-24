@@ -1,5 +1,5 @@
 // store.js - Rent Portal Reactive LocalStorage Data Engine
-// Master Authentication: sammyharrison58@gmail.com (Super Admin)
+// Master Authentication: System Administrator (Super Admin)
 // 3-Tier Multi-Tenant Hierarchy: Super Admin (Monitors All & Approves All) -> Landlords -> Tenants
 
 const STORAGE_KEY = 'rentportal_state_v3';
@@ -73,7 +73,7 @@ const DEFAULT_STATE = {
       paybillNumber: '',
       inviteCode: 'OMWOYO-B4',
       paymentInstructions: 'Pay online or via M-Pesa Till Number 582190 (Omwoyo Apartments). Use your Unit as account reference.',
-      status: 'approved', // Approved by Super Admin (sammyharrison58@gmail.com)
+      status: 'approved', // Approved by Super Admin
       approvedAt: Date.now() - 86400000 * 200,
       createdAt: Date.now() - 86400000 * 205
     },
@@ -352,7 +352,7 @@ const DEFAULT_STATE = {
   ],
   audit: [
     { id: 'aud-0', action: 'Landlord Registered', detail: 'David Mutua requested onboarding for Sunrise Heights (16 units)', by: 'David Mutua', at: Date.now() - 86400000 * 1 },
-    { id: 'aud-1', action: 'Landlord Approved', detail: 'Super Admin (sammyharrison58@gmail.com) approved Linus Omwoyo for Omwoyo Apartments', by: 'Super Admin', at: Date.now() - 86400000 * 200 },
+    { id: 'aud-1', action: 'Landlord Approved', detail: 'Super Admin approved Linus Omwoyo for Omwoyo Apartments', by: 'Super Admin', at: Date.now() - 86400000 * 200 },
     { id: 'aud-2', action: 'Tenant Approved', detail: 'Linus Omwoyo approved Jane Wanjiru (Unit B4) at KES 15,000/mo', by: 'Linus Omwoyo', at: Date.now() - 86400000 * 180 },
     { id: 'aud-3', action: 'Payment Confirmed', detail: 'Confirmed KES 15,000 from Jane Wanjiru (Unit B4)', by: 'Linus Omwoyo', at: Date.now() - 86400000 * 3 },
     { id: 'aud-4', action: 'Tenant Requested', detail: 'Kevin Otieno requested access for Unit D3 under Omwoyo Apartments', by: 'Kevin Otieno', at: Date.now() - 86400000 * 2 }
@@ -430,14 +430,14 @@ class Store {
           success: false,
           isPending: true,
           role: 'owner',
-          message: `Your Landlord registration for "${landlord.propertyName}" is pending approval by the Super Admin (${SUPER_ADMIN_EMAIL}). The Landlord Portal will open once approved.`
+          message: `Your Landlord registration for "${landlord.propertyName}" is pending verification and approval. The Landlord Portal will open once approved.`
         };
       }
       if (landlord.status === 'rejected' || landlord.status === 'suspended') {
         return {
           success: false,
           isBlocked: true,
-          message: `Your Landlord account has been ${landlord.status} by the Super Admin. Please contact support at ${SUPER_ADMIN_EMAIL}.`
+          message: `Your Landlord account has been ${landlord.status}. Please contact system support for assistance.`
         };
       }
 
@@ -463,7 +463,7 @@ class Store {
           success: false,
           isPending: true,
           role: 'tenant',
-          message: `Your Tenant account for ${tenant.propertyName} (${tenant.unit}) is pending approval by the Super Admin (${SUPER_ADMIN_EMAIL}). The Tenant Portal will open once approved.`
+          message: `Your Tenant account for ${tenant.propertyName} (${tenant.unit}) is pending approval. The Tenant Portal will open once approved.`
         };
       }
       if (tenant.status === 'rejected' || tenant.status === 'declined') {
@@ -506,7 +506,7 @@ class Store {
     const isSuperAdminAuthorized = current && (current.role === 'superadmin' || current.impersonatedBy === SUPER_ADMIN_EMAIL);
 
     if (!isSuperAdminAuthorized && roleKey !== 'visitor') {
-      console.warn('Unauthorized switch attempt: Quick role switcher is strictly restricted to Super Admin (sammyharrison58@gmail.com).');
+      console.warn('Unauthorized switch attempt: Quick role switcher is strictly restricted to Super Admin.');
       return;
     }
 
@@ -609,7 +609,7 @@ class Store {
       paybillNumber: '',
       inviteCode: propertyName.trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8),
       paymentInstructions: paymentInstructions || `Pay online or via M-Pesa Till Number ${cleanTill} (${propertyName.trim()}).\nPlease use your Unit as account reference.`,
-      status: 'pending', // Requires Super Admin (sammyharrison58@gmail.com) approval!
+      status: 'pending', // Requires Super Admin approval!
       createdAt: Date.now()
     };
     this.state.landlords.push(newLandlord);
@@ -635,7 +635,7 @@ class Store {
     if (!ll) throw new Error('Landlord not found');
     ll.status = 'approved';
     ll.approvedAt = Date.now();
-    this.addAudit('Landlord Approved', `Super Admin (sammyharrison58@gmail.com) approved ${ll.name} for ${ll.propertyName}`);
+    this.addAudit('Landlord Approved', `Super Admin approved ${ll.name} for ${ll.propertyName}`);
     this.saveState();
     return ll;
   }
@@ -721,7 +721,7 @@ class Store {
       tenant.monthlyRent = Number(monthlyRent);
     }
     const current = this.state.currentUser;
-    const actorName = current ? (current.role === 'superadmin' ? 'Super Admin (sammyharrison58@gmail.com)' : current.name) : 'Admin';
+    const actorName = current ? (current.role === 'superadmin' ? 'Super Admin' : current.name) : 'Admin';
 
     if (status === 'approved') {
       tenant.approvedAt = tenant.approvedAt || Date.now();

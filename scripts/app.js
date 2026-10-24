@@ -1,5 +1,5 @@
 // app.js - Master Controller for Rent Portal
-// Super Admin: sammyharrison58@gmail.com (Approves all Landlords & Tenants, Monitors Everything)
+// Master Administration: Approves all Landlords & Tenants, Monitors Platform Operations
 // Strict Portal Separation: Tenants only see Tenant Portal, Landlords only see Landlord Portal, Super Admin views all
 
 import { store, SUPER_ADMIN_EMAIL, formatKES, formatDate, formatDateTime, formatMonth, formatPhone, getCurrentMonth } from './store.js';
@@ -214,7 +214,7 @@ class RentPortalApp {
       </div>
       <div class="demo-pills">
         <button class="demo-pill ${!isImpersonating && user.role === 'superadmin' ? 'active' : ''}" data-role="superadmin">
-          👑 Super Admin (${SUPER_ADMIN_EMAIL})
+          👑 Super Admin (Master Account)
         </button>
         <button class="demo-pill ${isImpersonating && user.role === 'owner' ? 'active' : ''}" data-role="owner">
           🏢 Test Landlord (Linus Omwoyo)
@@ -289,7 +289,7 @@ class RentPortalApp {
             </h1>
             <p class="auth-subtitle">
               ${isSignIn
-                ? 'Sign in to access your tenant, landlord, or super admin portal'
+                ? 'Sign in to access your tenant or property management account'
                 : isLandlordReg
                 ? 'Register your property to accept online M-Pesa till payments'
                 : 'Request tenancy under an approved landlord to pay rent online'}
@@ -324,31 +324,12 @@ class RentPortalApp {
                       class="form-input" 
                       id="auth-email" 
                       required 
-                      placeholder="e.g. sammyharrison58@gmail.com" 
+                      placeholder="name@example.com" 
                       autocomplete="email" 
                       autofocus
                     />
                   </div>
                   <div id="auth-role-preview"></div>
-                  <div style="margin-top: 0.625rem;">
-                    <div style="font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--slate-400); margin-bottom: 0.375rem;">
-                      ⚡ One-Click Demo Access:
-                    </div>
-                    <div style="display: flex; gap: 0.375rem; flex-wrap: wrap;">
-                      <button type="button" class="btn-demo-quick" data-email="sammyharrison58@gmail.com" style="font-size: 0.6875rem; padding: 0.25rem 0.5rem; border-radius: 9999px; background: #eef2ff; color: #4338ca; border: 1px solid #c7d2fe; cursor: pointer; font-weight: 700; transition: all 0.15s ease;">
-                        👑 Super Admin
-                      </button>
-                      <button type="button" class="btn-demo-quick" data-email="linus.omwoyo@gmail.com" style="font-size: 0.6875rem; padding: 0.25rem 0.5rem; border-radius: 9999px; background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; cursor: pointer; font-weight: 700; transition: all 0.15s ease;">
-                        🏢 Landlord (Linus)
-                      </button>
-                      <button type="button" class="btn-demo-quick" data-email="jane.wanjiru@gmail.com" style="font-size: 0.6875rem; padding: 0.25rem 0.5rem; border-radius: 9999px; background: #f0f9ff; color: #0369a1; border: 1px solid #bae6fd; cursor: pointer; font-weight: 700; transition: all 0.15s ease;">
-                        🔑 Tenant (Jane)
-                      </button>
-                      <button type="button" class="btn-demo-quick" data-email="david.mutua@sunrise.co.ke" style="font-size: 0.6875rem; padding: 0.25rem 0.5rem; border-radius: 9999px; background: #fffbeb; color: #b45309; border: 1px solid #fde68a; cursor: pointer; font-weight: 700; transition: all 0.15s ease;">
-                        ⏳ Pending Landlord
-                      </button>
-                    </div>
-                  </div>
                 </div>
 
                 <div class="form-group">
@@ -362,8 +343,7 @@ class RentPortalApp {
                       class="form-input" 
                       id="auth-password" 
                       required 
-                      value="password123"
-                      placeholder="Enter your password" 
+                      placeholder="••••••••" 
                     />
                     <button type="button" id="btn-toggle-pw" class="btn-icon" style="position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); width: 2rem; height: 2rem;" title="Toggle password">
                       <i data-lucide="eye" id="icon-toggle-pw" style="width: 1rem; height: 1rem; color: var(--slate-400);"></i>
@@ -376,7 +356,9 @@ class RentPortalApp {
                     <input type="checkbox" id="auth-remember" checked style="accent-color: var(--primary);" />
                     <span>Stay signed in</span>
                   </label>
-                  <span style="font-size: 0.75rem; color: var(--slate-400);">Secure 256-bit SSL</span>
+                  <span style="font-size: 0.75rem; color: var(--slate-400); display: inline-flex; align-items: center; gap: 0.25rem;">
+                    <i data-lucide="lock" style="width: 0.75rem; height: 0.75rem;"></i> Secure 256-bit SSL
+                  </span>
                 </div>
 
                 <button type="submit" class="btn btn-primary btn-full" style="padding: 0.75rem 1rem; font-weight: 700; font-size: 0.9375rem; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.25);">
@@ -392,7 +374,7 @@ class RentPortalApp {
                 <div class="auth-alert auth-alert-pending" style="margin-bottom: 0.5rem; padding: 0.75rem;">
                   <i data-lucide="shield-alert" style="width: 1.125rem; height: 1.125rem; flex-shrink: 0;"></i>
                   <div style="font-size: 0.75rem;">
-                    <strong>Super Admin Approval Required:</strong> All newly registering landlords must be verified and approved by the Super Admin (${SUPER_ADMIN_EMAIL}) before the portal opens.
+                    <strong>Administrative Verification:</strong> All newly registered property landlords are reviewed by system administration prior to account activation.
                   </div>
                 </div>
 
@@ -447,7 +429,7 @@ class RentPortalApp {
                 <div class="auth-alert auth-alert-pending" style="margin-bottom: 0.5rem; padding: 0.75rem;">
                   <i data-lucide="shield-check" style="width: 1.125rem; height: 1.125rem; flex-shrink: 0;"></i>
                   <div style="font-size: 0.75rem;">
-                    <strong>Super Admin & Landlord Approval:</strong> Your tenancy request must be approved before you can sign in to view balances and pay rent.
+                    <strong>Landlord Approval Required:</strong> Your tenancy request will be submitted to the property landlord for verification before account activation.
                   </div>
                 </div>
 
@@ -583,7 +565,7 @@ class RentPortalApp {
 
     // Forgot password alert helper
     document.getElementById('link-forgot-pw')?.addEventListener('click', () => {
-      alert(`For password resets or access assistance, please contact the Super Admin at ${SUPER_ADMIN_EMAIL}.`);
+      alert('For password resets or account assistance, please contact your property manager or system administrator.');
     });
 
     // Real-time email role detection preview
@@ -600,8 +582,8 @@ class RentPortalApp {
         if (val === SUPER_ADMIN_EMAIL.toLowerCase()) {
           previewContainer.innerHTML = `
             <div class="auth-detected-badge auth-detected-superadmin">
-              <i data-lucide="shield-alert" style="width: 1rem; height: 1rem;"></i>
-              👑 Master Super Admin Account (${SUPER_ADMIN_EMAIL})
+              <i data-lucide="shield-check" style="width: 1rem; height: 1rem;"></i>
+              👑 System Administrator Account
             </div>
           `;
         } else {
@@ -630,19 +612,6 @@ class RentPortalApp {
         if (window.lucide) window.lucide.createIcons();
       });
     }
-
-    // Quick Demo Role Pills
-    document.querySelectorAll('.btn-demo-quick').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const email = btn.getAttribute('data-email');
-        if (emailInput && email) {
-          emailInput.value = email;
-          emailInput.dispatchEvent(new Event('input'));
-          const form = document.getElementById('form-auth-signin');
-          if (form) form.dispatchEvent(new Event('submit', { cancelable: true }));
-        }
-      });
-    });
 
     // Sign In Submission
     document.getElementById('form-auth-signin')?.addEventListener('submit', (e) => {
@@ -710,9 +679,9 @@ class RentPortalApp {
       this.authAlert = {
         type: 'pending',
         title: 'Landlord Registration Submitted',
-        message: `Your registration for "${propertyName}" has been sent for Super Admin (${SUPER_ADMIN_EMAIL}) approval. The portal will open once approved.`
+        message: `Your registration for "${propertyName}" has been submitted for administrative review and activation. You will be notified once activated.`
       };
-      this.showToast('Landlord registration submitted for Super Admin approval!');
+      this.showToast('Landlord registration submitted for verification!');
       this.render();
     });
 
@@ -741,9 +710,9 @@ class RentPortalApp {
       this.authAlert = {
         type: 'pending',
         title: 'Tenant Access Request Submitted',
-        message: `Your request for ${newTenant.propertyName} (${unit}) has been sent for Super Admin (${SUPER_ADMIN_EMAIL}) approval. The portal will open once approved.`
+        message: `Your request for ${newTenant.propertyName} (${unit}) has been submitted for landlord verification. You will be able to sign in once approved.`
       };
-      this.showToast('Tenant request submitted for Super Admin approval!');
+      this.showToast('Tenant request submitted for landlord approval!');
       this.render();
     });
   }
@@ -757,7 +726,7 @@ class RentPortalApp {
         </div>
         <h1 class="hero-title">Welcome to Rent Portal</h1>
         <p class="hero-subtitle">
-          Tenants pay rent online using the landlord's M-Pesa Till. All registering landlords and tenants require approval by the Super Admin (<code style="background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 4px;">${SUPER_ADMIN_EMAIL}</code>).
+          Tenants pay rent online directly to their landlord's verified M-Pesa Till, post transaction messages, and instantly download official receipts.
         </p>
 
         <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 2rem;">
@@ -782,7 +751,7 @@ class RentPortalApp {
             </p>
             <div style="background-color: var(--amber-50); border: 1px solid var(--amber-200); border-radius: var(--radius-lg); padding: 0.75rem; margin-top: 1rem; font-size: 0.75rem; color: var(--amber-800);">
               <i data-lucide="shield-check" style="width: 1rem; height: 1rem; display: inline-block; vertical-align: middle;"></i>
-              <strong>Approval Required:</strong> New landlords must be approved by the Super Admin before the portal opens.
+              <strong>Approval Required:</strong> New landlord accounts are verified before portal access is activated.
             </div>
           </div>
 
@@ -867,15 +836,12 @@ class RentPortalApp {
         <form id="form-login-menu" style="display: flex; flex-direction: column; gap: 1rem;">
           <div class="form-group">
             <label class="form-label">Email Address</label>
-            <input type="email" class="form-input" id="login-email" required value="${prefilledEmail}" placeholder="e.g. sammyharrison58@gmail.com or your email" />
-            <span class="form-help">
-              Log in with <strong>${SUPER_ADMIN_EMAIL}</strong> for master Super Admin access.
-            </span>
+            <input type="email" class="form-input" id="login-email" required value="${prefilledEmail}" placeholder="name@example.com" />
           </div>
 
           <div class="form-group">
             <label class="form-label">Password</label>
-            <input type="password" class="form-input" id="login-password" value="password123" placeholder="••••••••" />
+            <input type="password" class="form-input" id="login-password" placeholder="••••••••" required />
           </div>
 
           <button type="submit" class="btn btn-primary btn-full">
@@ -919,7 +885,7 @@ class RentPortalApp {
     this.showToast(`Logged in with ${email}!`);
   }
 
-  // --- Tier 1: SUPER ADMIN PORTAL (sammyharrison58@gmail.com) ---
+  // --- Tier 1: SUPER ADMIN CONTROL CENTER ---
   renderSuperAdminView(user) {
     const landlords = store.state.landlords;
     const tenants = store.state.tenants;
@@ -938,7 +904,7 @@ class RentPortalApp {
         <div>
           <div style="display: flex; align-items: center; gap: 0.5rem;">
             <span class="badge badge-superadmin">Super Admin Master</span>
-            <span style="font-size: 0.8125rem; color: var(--slate-500);">${SUPER_ADMIN_EMAIL}</span>
+            <span style="font-size: 0.8125rem; color: var(--slate-500);">${user.email || 'Master System Account'}</span>
           </div>
           <h1 style="font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em; margin-top: 0.25rem;">
             Super Admin Control Center
@@ -1034,7 +1000,7 @@ class RentPortalApp {
                   Registering Landlords Awaiting Your Approval (${pendingLandlords.length})
                 </h2>
                 <p style="font-size: 0.8125rem; color: var(--slate-500); margin-top: 0.25rem;">
-                  Each landlord must be approved by you (${SUPER_ADMIN_EMAIL}) before their portal opens.
+                  Each landlord must be approved by the system administrator before their portal opens.
                 </p>
               </div>
             </div>
@@ -1410,7 +1376,7 @@ class RentPortalApp {
             Landlord Account Awaiting Approval
           </h1>
           <p style="font-size: 0.875rem; color: var(--slate-600); margin-top: 0.5rem; line-height: 1.6;">
-            Your registration for <strong>${landlord.propertyName}</strong> (Till: ${landlord.tillNumber}) has been submitted and is awaiting approval by the <strong>Platform Super Admin (${SUPER_ADMIN_EMAIL})</strong>.
+            Your registration for <strong>${landlord.propertyName}</strong> (Till: ${landlord.tillNumber}) has been submitted and is awaiting approval by the <strong>Platform Administrator</strong>.
           </p>
           <div style="background-color: var(--slate-50); border-radius: var(--radius-lg); padding: 1rem; margin-top: 1.5rem; text-align: left; font-size: 0.875rem;">
             <div style="display: flex; justify-content: space-between; padding: 0.375rem 0;">
@@ -1427,7 +1393,7 @@ class RentPortalApp {
             </div>
             <div style="display: flex; justify-content: space-between; padding: 0.375rem 0;">
               <span style="color: var(--slate-500);">Status</span>
-              <span class="badge badge-pending">Pending Super Admin Review</span>
+              <span class="badge badge-pending">Pending Review</span>
             </div>
           </div>
           <button class="btn btn-secondary" onclick="window.app.render()" style="margin-top: 1.5rem;">
@@ -1443,7 +1409,7 @@ class RentPortalApp {
         <div class="card" style="max-width: 32rem; margin: 2rem auto; padding: 2rem; text-align: center;">
           <h1 style="font-size: 1.25rem; font-weight: 700; color: var(--rose-700);">Account Not Active</h1>
           <p style="font-size: 0.875rem; color: var(--slate-600); margin-top: 0.5rem;">
-            Your account status is ${landlord.status}. Contact the Super Admin (${SUPER_ADMIN_EMAIL}) for assistance.
+            Your account status is ${landlord.status}. Please contact system administration for assistance.
           </p>
         </div>
       `;
@@ -2947,7 +2913,7 @@ class RentPortalApp {
       <div class="modal-body">
         <div style="background-color: var(--amber-50); border: 1px solid var(--amber-200); padding: 0.75rem; border-radius: var(--radius-lg); font-size: 0.8125rem; color: var(--amber-800); margin-bottom: 1rem;">
           <i data-lucide="shield-alert" style="width: 1rem; height: 1rem; display: inline-block; vertical-align: middle;"></i>
-          <strong>Super Admin Approval:</strong> All new landlords must be approved by the Super Admin (${SUPER_ADMIN_EMAIL}) before their portal opens.
+          <strong>Administrative Verification:</strong> All newly registered property landlords are reviewed by system administration prior to account activation.
         </div>
 
         <form id="form-landlord-register" style="display: flex; flex-direction: column; gap: 0.875rem;">

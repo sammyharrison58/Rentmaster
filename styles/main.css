@@ -154,7 +154,7 @@ header {
   gap: 0.75rem;
 }
 
-/* Demo Role Switcher Bar - HIDDEN by default; only displayed for Super Admin sammyharrison58@gmail.com */
+/* Role Switcher Bar - HIDDEN by default; only displayed for authorized Super Admin accounts */
 .demo-bar {
   display: none;
   background: linear-gradient(90deg, #1e1b4b 0%, #0f172a 100%);
