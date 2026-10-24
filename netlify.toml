@@ -4,6 +4,13 @@
   publish = "dist"
   functions = "netlify/functions"
 
+[build.environment]
+  NODE_VERSION = "20"
+  NPM_FLAGS = "--include=dev"
+
+[functions]
+  node_bundler = "esbuild"
+
 # Proxy /api/mpesa/stkpush to serverless function
 [[redirects]]
   from = "/api/mpesa/stkpush"
