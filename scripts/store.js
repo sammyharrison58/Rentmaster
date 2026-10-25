@@ -614,6 +614,40 @@ class Store {
     return { success: false, message: 'No registered user found with that email. Please check spelling or register below.' };
   }
 
+  loginWithGoogle({ email, name, picture }) {
+    const cleanEmail = (email || '').trim().toLowerCase();
+    if (!cleanEmail) {
+      return { success: false, message: 'Invalid Google account email.' };
+    }
+
+    const res = this.loginWithEmail(cleanEmail);
+    if (res.success) {
+      if (res.user) {
+        res.user.authProvider = 'google';
+        if (picture) res.user.avatar = picture;
+        this.saveState();
+      }
+      this.addAudit('Google Sign-In', `${name || cleanEmail} signed in via Google`);
+      return res;
+    }
+
+    if (res.isPending || res.isBlocked) {
+      return res;
+    }
+
+    // New Google user trying to sign in
+    return {
+      success: false,
+      isNewGoogleUser: true,
+      googleProfile: {
+        email: cleanEmail,
+        name: name || cleanEmail.split('@')[0],
+        picture: picture || ''
+      },
+      message: `No active account for ${cleanEmail}. Please complete registration below to activate access.`
+    };
+  }
+
   setCurrentUser(user) {
     this.state.currentUser = user;
     this.saveState();

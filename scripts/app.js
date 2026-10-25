@@ -6,6 +6,15 @@ import { store, SUPER_ADMIN_EMAIL, formatKES, formatDate, formatDateTime, format
 import { generateReceiptPDF, generateStatementPDF } from './pdf.js';
 import { exportYearlyReportXLSX } from './excel.js';
 
+const GOOGLE_ICON_SVG = `
+  <svg class="google-icon-svg" viewBox="0 0 24 24" width="18" height="18">
+    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+  </svg>
+`;
+
 class RentPortalApp {
   constructor() {
     this.unauthMode = 'login'; // 'login' | 'overview'
@@ -314,6 +323,16 @@ class RentPortalApp {
             ${alertHtml}
 
             ${isSignIn ? `
+              <!-- Continue with Google Button -->
+              <button type="button" class="btn-google-signin" id="btn-google-signin">
+                ${GOOGLE_ICON_SVG}
+                <span>Continue with Google</span>
+              </button>
+
+              <div class="auth-divider">
+                <span>or continue with email</span>
+              </div>
+
               <!-- Sign In Form -->
               <form id="form-auth-signin" style="display: flex; flex-direction: column; gap: 1.125rem;">
                 <div class="form-group">
@@ -371,6 +390,15 @@ class RentPortalApp {
             ${isLandlordReg ? `
               <!-- Landlord Registration Form -->
               <form id="form-auth-landlord" style="display: flex; flex-direction: column; gap: 1rem;">
+                <button type="button" class="btn-google-signin" id="btn-google-prefill-landlord" style="margin-bottom: 0.25rem;">
+                  ${GOOGLE_ICON_SVG}
+                  <span>Fast fill with Google Account</span>
+                </button>
+
+                <div class="auth-divider" style="margin: 0.5rem 0 0.25rem 0;">
+                  <span>or enter details manually</span>
+                </div>
+
                 <div class="auth-alert auth-alert-pending" style="margin-bottom: 0.5rem; padding: 0.75rem;">
                   <i data-lucide="shield-alert" style="width: 1.125rem; height: 1.125rem; flex-shrink: 0;"></i>
                   <div style="font-size: 0.75rem;">
@@ -426,6 +454,15 @@ class RentPortalApp {
             ${isTenantReg ? `
               <!-- Tenant Request Form -->
               <form id="form-auth-tenant" style="display: flex; flex-direction: column; gap: 1rem;">
+                <button type="button" class="btn-google-signin" id="btn-google-prefill-tenant" style="margin-bottom: 0.25rem;">
+                  ${GOOGLE_ICON_SVG}
+                  <span>Fast fill with Google Account</span>
+                </button>
+
+                <div class="auth-divider" style="margin: 0.5rem 0 0.25rem 0;">
+                  <span>or enter details manually</span>
+                </div>
+
                 <div class="auth-alert auth-alert-pending" style="margin-bottom: 0.5rem; padding: 0.75rem;">
                   <i data-lucide="shield-check" style="width: 1.125rem; height: 1.125rem; flex-shrink: 0;"></i>
                   <div style="font-size: 0.75rem;">
@@ -715,6 +752,208 @@ class RentPortalApp {
       this.showToast('Tenant request submitted for landlord approval!');
       this.render();
     });
+
+    // Google Sign-In handlers
+    document.getElementById('btn-google-signin')?.addEventListener('click', () => {
+      this.showGoogleAuthModal('signin');
+    });
+    document.getElementById('btn-google-prefill-landlord')?.addEventListener('click', () => {
+      this.showGoogleAuthModal('landlord_reg');
+    });
+    document.getElementById('btn-google-prefill-tenant')?.addEventListener('click', () => {
+      this.showGoogleAuthModal('tenant_reg');
+    });
+  }
+
+  showGoogleAuthModal(targetTab = 'signin') {
+    const modalRoot = document.getElementById('modal-root');
+    if (!modalRoot) return;
+
+    const googleAccounts = [
+      {
+        name: 'Sammy Harrison',
+        email: 'sammyharrison58@gmail.com',
+        roleBadge: 'Super Admin Master',
+        avatarBg: '#4f46e5'
+      },
+      {
+        name: 'Linus Omwoyo',
+        email: 'linusomwoyo2@gmail.com',
+        roleBadge: 'Landlord · Omwoyo Apts',
+        avatarBg: '#059669'
+      },
+      {
+        name: 'Jane Wanjiru',
+        email: 'jane.wanjiru@gmail.com',
+        roleBadge: 'Tenant · Unit B4',
+        avatarBg: '#0284c7'
+      },
+      {
+        name: 'Kevin Otieno',
+        email: 'kevin.otieno@gmail.com',
+        roleBadge: 'Pending Tenant · Unit D3',
+        avatarBg: '#d97706'
+      }
+    ];
+
+    modalRoot.innerHTML = `
+      <div class="modal-backdrop" id="google-modal-backdrop" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 1rem; animation: fadeIn 0.2s ease;">
+        <div class="google-modal-card">
+          <div class="google-modal-header">
+            <svg style="width: 2.25rem; height: 2.25rem; margin: 0 auto 0.75rem auto; display: block;" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            <h3 style="font-size: 1.125rem; font-weight: 700; color: #202124; margin-bottom: 0.25rem;">
+              Sign in with Google
+            </h3>
+            <p style="font-size: 0.8125rem; color: #5f6368;">
+              Choose an account to continue to Rentmaster
+            </p>
+          </div>
+
+          <div class="google-account-list">
+            ${googleAccounts.map(acc => `
+              <button type="button" class="google-account-item" data-google-email="${acc.email}" data-google-name="${acc.name}">
+                <div class="google-account-avatar" style="background-color: ${acc.avatarBg};">
+                  ${acc.name.charAt(0)}
+                </div>
+                <div class="google-account-meta">
+                  <div class="google-account-name">${acc.name}</div>
+                  <div class="google-account-email">${acc.email}</div>
+                </div>
+                <span style="font-size: 0.6875rem; background: #f1f5f9; padding: 0.2rem 0.5rem; border-radius: 9999px; color: #475569; font-weight: 600;">
+                  ${acc.roleBadge}
+                </span>
+              </button>
+            `).join('')}
+
+            <div style="padding: 1rem 1.5rem; border-top: 1px solid var(--slate-100); background-color: #fafafa;">
+              <p style="font-size: 0.75rem; font-weight: 700; color: var(--slate-600); margin-bottom: 0.5rem;">
+                Or use another Google account:
+              </p>
+              <form id="form-google-custom" style="display: flex; gap: 0.5rem;">
+                <input 
+                  type="email" 
+                  class="form-input" 
+                  id="google-custom-email" 
+                  required 
+                  placeholder="yourname@gmail.com" 
+                  style="font-size: 0.8125rem; padding: 0.5rem 0.75rem;" 
+                />
+                <button type="submit" class="btn btn-primary" style="padding: 0.5rem 0.875rem; font-size: 0.8125rem; white-space: nowrap;">
+                  Continue
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <div style="padding: 0.875rem 1.5rem; background-color: #f8fafc; border-top: 1px solid var(--slate-200); display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.6875rem; color: #94a3b8;">
+              Google OAuth 2.0 Secure
+            </span>
+            <button type="button" class="btn btn-secondary" id="btn-close-google-modal" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    const closeModal = () => {
+      modalRoot.innerHTML = '';
+    };
+
+    document.getElementById('btn-close-google-modal')?.addEventListener('click', closeModal);
+    document.getElementById('google-modal-backdrop')?.addEventListener('click', (e) => {
+      if (e.target.id === 'google-modal-backdrop') closeModal();
+    });
+
+    const handleGoogleAuth = (email, name) => {
+      closeModal();
+      this.executeGoogleLogin(email, name, targetTab);
+    };
+
+    modalRoot.querySelectorAll('[data-google-email]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const email = btn.getAttribute('data-google-email');
+        const name = btn.getAttribute('data-google-name');
+        handleGoogleAuth(email, name);
+      });
+    });
+
+    document.getElementById('form-google-custom')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('google-custom-email').value.trim();
+      const name = email.split('@')[0];
+      handleGoogleAuth(email, name);
+    });
+  }
+
+  executeGoogleLogin(email, name, targetTab = 'signin') {
+    const res = store.loginWithGoogle({ email, name });
+
+    if (res.success) {
+      this.authAlert = null;
+      if (res.role === 'superadmin') {
+        this.showToast(`Signed in with Google as Super Admin (${res.user.name})!`);
+      } else if (res.role === 'owner') {
+        this.showToast(`Signed in with Google as Landlord (${res.user.name})!`);
+      } else if (res.role === 'tenant') {
+        this.showToast(`Signed in with Google as Tenant (${res.user.name})!`);
+      } else {
+        this.showToast(`Signed in with Google as ${res.user.name || email}!`);
+      }
+      this.render();
+      return;
+    }
+
+    if (res.isPending) {
+      this.authAlert = {
+        type: 'pending',
+        title: 'Account Verification Pending',
+        message: res.message
+      };
+      this.render();
+      return;
+    }
+
+    if (res.isBlocked) {
+      this.authAlert = {
+        type: 'error',
+        title: 'Account Restricted',
+        message: res.message
+      };
+      this.render();
+      return;
+    }
+
+    if (res.isNewGoogleUser) {
+      const chooseTab = targetTab === 'landlord_reg' ? 'landlord_reg' : 'tenant_reg';
+      this.authTab = chooseTab;
+      this.authAlert = {
+        type: 'success',
+        title: 'Google Account Verified',
+        message: `Authenticated with Google as <strong>${email}</strong>. Complete the remaining property details to activate your account.`
+      };
+      this.render();
+
+      setTimeout(() => {
+        if (chooseTab === 'landlord_reg') {
+          const nameEl = document.getElementById('reg-ll-name');
+          const emailEl = document.getElementById('reg-ll-email');
+          if (nameEl) nameEl.value = name || '';
+          if (emailEl) emailEl.value = email;
+        } else {
+          const nameEl = document.getElementById('reg-t-name');
+          const emailEl = document.getElementById('reg-t-email');
+          if (nameEl) nameEl.value = name || '';
+          if (emailEl) emailEl.value = email;
+        }
+      }, 50);
+    }
   }
 
   // --- Landing View (Platform Overview) ---
