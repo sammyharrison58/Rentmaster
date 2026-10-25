@@ -75,6 +75,20 @@ class RentPortalApp {
         } catch (e) {}
       }
     });
+
+    // Check if there is an unprocessed Google auth event stored in localStorage
+    try {
+      const storedEvent = localStorage.getItem('google_auth_event');
+      if (storedEvent) {
+        const data = JSON.parse(storedEvent);
+        if (data && data.type === 'GOOGLE_AUTH_SUCCESS') {
+          localStorage.removeItem('google_auth_event');
+          setTimeout(() => {
+            this.executeGoogleLogin(data.email, data.name, 'signin');
+          }, 150);
+        }
+      }
+    } catch (e) {}
   }
 
   showToast(message, type = 'success') {
@@ -816,33 +830,6 @@ class RentPortalApp {
     const modalRoot = document.getElementById('modal-root');
     if (!modalRoot) return;
 
-    const googleAccounts = [
-      {
-        name: 'Sammy Harrison',
-        email: 'sammyharrison58@gmail.com',
-        roleBadge: 'Super Admin Master',
-        avatarBg: '#4f46e5'
-      },
-      {
-        name: 'Linus Omwoyo',
-        email: 'linusomwoyo2@gmail.com',
-        roleBadge: 'Landlord · Omwoyo Apts',
-        avatarBg: '#059669'
-      },
-      {
-        name: 'Jane Wanjiru',
-        email: 'jane.wanjiru@gmail.com',
-        roleBadge: 'Tenant · Unit B4',
-        avatarBg: '#0284c7'
-      },
-      {
-        name: 'Kevin Otieno',
-        email: 'kevin.otieno@gmail.com',
-        roleBadge: 'Pending Tenant · Unit D3',
-        avatarBg: '#d97706'
-      }
-    ];
-
     modalRoot.innerHTML = `
       <div class="modal-backdrop" id="google-modal-backdrop" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 1rem; animation: fadeIn 0.2s ease;">
         <div class="google-modal-card">
@@ -857,44 +844,40 @@ class RentPortalApp {
               Sign in with Google
             </h3>
             <p style="font-size: 0.8125rem; color: #5f6368;">
-              Choose an account to continue to Rentmaster
+              to continue to Rentmaster
             </p>
           </div>
 
-          <div class="google-account-list">
-            ${googleAccounts.map(acc => `
-              <button type="button" class="google-account-item" data-google-email="${acc.email}" data-google-name="${acc.name}">
-                <div class="google-account-avatar" style="background-color: ${acc.avatarBg};">
-                  ${acc.name.charAt(0)}
-                </div>
-                <div class="google-account-meta">
-                  <div class="google-account-name">${acc.name}</div>
-                  <div class="google-account-email">${acc.email}</div>
-                </div>
-                <span style="font-size: 0.6875rem; background: #f1f5f9; padding: 0.2rem 0.5rem; border-radius: 9999px; color: #475569; font-weight: 600;">
-                  ${acc.roleBadge}
-                </span>
-              </button>
-            `).join('')}
-
-            <div style="padding: 1rem 1.5rem; border-top: 1px solid var(--slate-100); background-color: #fafafa;">
-              <p style="font-size: 0.75rem; font-weight: 700; color: var(--slate-600); margin-bottom: 0.5rem;">
-                Or use another Google account:
-              </p>
-              <form id="form-google-custom" style="display: flex; gap: 0.5rem;">
+          <div style="padding: 1.5rem;">
+            <form id="form-google-direct">
+              <div class="form-group" style="margin-bottom: 1rem;">
+                <label class="form-label" for="google-direct-email" style="font-size: 0.8125rem; color: #5f6368; display: block; margin-bottom: 0.375rem;">Google Email</label>
                 <input 
                   type="email" 
                   class="form-input" 
-                  id="google-custom-email" 
+                  id="google-direct-email" 
                   required 
-                  placeholder="yourname@gmail.com" 
-                  style="font-size: 0.8125rem; padding: 0.5rem 0.75rem;" 
+                  placeholder="name@gmail.com" 
+                  style="font-size: 0.875rem;" 
+                  autofocus
                 />
-                <button type="submit" class="btn btn-primary" style="padding: 0.5rem 0.875rem; font-size: 0.8125rem; white-space: nowrap;">
-                  Continue
-                </button>
-              </form>
-            </div>
+              </div>
+
+              <div class="form-group" style="margin-bottom: 1.25rem;">
+                <label class="form-label" for="google-direct-name" style="font-size: 0.8125rem; color: #5f6368; display: block; margin-bottom: 0.375rem;">Full Name</label>
+                <input 
+                  type="text" 
+                  class="form-input" 
+                  id="google-direct-name" 
+                  placeholder="Your Name" 
+                  style="font-size: 0.875rem;" 
+                />
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-full" style="padding: 0.625rem 1rem; font-weight: 600; font-size: 0.875rem; background-color: #1a73e8; border-color: #1a73e8;">
+                Continue with this Google Account
+              </button>
+            </form>
           </div>
 
           <div style="padding: 0.875rem 1.5rem; background-color: #f8fafc; border-top: 1px solid var(--slate-200); display: flex; justify-content: space-between; align-items: center;">
@@ -918,30 +901,22 @@ class RentPortalApp {
       if (e.target.id === 'google-modal-backdrop') closeModal();
     });
 
-    const handleGoogleAuth = (email, name) => {
+    document.getElementById('form-google-direct')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('google-direct-email').value.trim();
+      let name = document.getElementById('google-direct-name').value.trim();
+      if (!name) {
+        name = email.split('@')[0];
+      }
       closeModal();
       this.executeGoogleLogin(email, name, targetTab);
-    };
-
-    modalRoot.querySelectorAll('[data-google-email]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const email = btn.getAttribute('data-google-email');
-        const name = btn.getAttribute('data-google-name');
-        handleGoogleAuth(email, name);
-      });
-    });
-
-    document.getElementById('form-google-custom')?.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const email = document.getElementById('google-custom-email').value.trim();
-      const name = email.split('@')[0];
-      handleGoogleAuth(email, name);
     });
   }
 
   executeGoogleLogin(email, name, targetTab = 'signin') {
     const res = store.loginWithGoogle({ email, name });
 
+    // Existing account: Log them in directly!
     if (res.success) {
       this.authAlert = null;
       if (res.role === 'superadmin') {
@@ -977,30 +952,154 @@ class RentPortalApp {
       return;
     }
 
+    // New Google User: Give them the option of Landlord or Tenant!
     if (res.isNewGoogleUser) {
-      const chooseTab = targetTab === 'landlord_reg' ? 'landlord_reg' : 'tenant_reg';
-      this.authTab = chooseTab;
-      this.authAlert = {
-        type: 'success',
-        title: 'Google Account Verified',
-        message: `Authenticated with Google as <strong>${email}</strong>. Complete the remaining property details to activate your account.`
-      };
-      this.render();
-
-      setTimeout(() => {
-        if (chooseTab === 'landlord_reg') {
+      if (targetTab === 'landlord_reg') {
+        this.authTab = 'landlord_reg';
+        this.authAlert = {
+          type: 'success',
+          title: 'Google Account Verified',
+          message: `Signed in as <strong>${name} (${email})</strong>. Complete your property details below to submit your landlord registration.`
+        };
+        this.render();
+        setTimeout(() => {
           const nameEl = document.getElementById('reg-ll-name');
           const emailEl = document.getElementById('reg-ll-email');
           if (nameEl) nameEl.value = name || '';
           if (emailEl) emailEl.value = email;
-        } else {
+        }, 50);
+        return;
+      }
+
+      if (targetTab === 'tenant_reg') {
+        this.authTab = 'tenant_reg';
+        this.authAlert = {
+          type: 'success',
+          title: 'Google Account Verified',
+          message: `Signed in as <strong>${name} (${email})</strong>. Select your property and unit below to submit your tenancy request.`
+        };
+        this.render();
+        setTimeout(() => {
           const nameEl = document.getElementById('reg-t-name');
           const emailEl = document.getElementById('reg-t-email');
           if (nameEl) nameEl.value = name || '';
           if (emailEl) emailEl.value = email;
-        }
-      }, 50);
+        }, 50);
+        return;
+      }
+
+      // If clicked from main Sign In: present the choice of Landlord or Tenant
+      this.showGoogleRoleSelectionModal(email, name);
     }
+  }
+
+  showGoogleRoleSelectionModal(email, name) {
+    const modalRoot = document.getElementById('modal-root');
+    if (!modalRoot) return;
+
+    modalRoot.innerHTML = `
+      <div class="modal-backdrop" id="role-select-backdrop" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 1rem; animation: fadeIn 0.2s ease;">
+        <div class="google-modal-card" style="max-width: 32rem; padding: 2rem;">
+          <div style="text-align: center; margin-bottom: 1.5rem;">
+            <div style="display: inline-flex; align-items: center; gap: 0.5rem; background-color: #f1f5f9; padding: 0.375rem 0.875rem; border-radius: 9999px; font-size: 0.75rem; color: #475569; font-weight: 600; margin-bottom: 1rem;">
+              ${GOOGLE_ICON_SVG}
+              <span>Google Account Connected: <strong>${email}</strong></span>
+            </div>
+            <h2 style="font-size: 1.375rem; font-weight: 800; color: var(--slate-900); margin-bottom: 0.375rem;">
+              Choose Your Account Type
+            </h2>
+            <p style="font-size: 0.875rem; color: var(--slate-500);">
+              Welcome, <strong>${name}</strong>! Select how you will be using Rentmaster to finish setting up your portal access:
+            </p>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem;">
+            <!-- Landlord Option -->
+            <div class="google-role-card" id="btn-choose-landlord">
+              <div class="google-role-icon" style="background-color: var(--emerald-50); color: var(--emerald-600);">
+                <i data-lucide="building" style="width: 1.5rem; height: 1.5rem;"></i>
+              </div>
+              <div style="flex: 1;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem;">
+                  <h3 style="font-weight: 700; font-size: 1rem; color: var(--slate-900);">Property Landlord / Manager</h3>
+                  <span style="font-size: 0.6875rem; font-weight: 700; color: var(--emerald-700); background: var(--emerald-50); padding: 0.2rem 0.5rem; border-radius: 9999px;">Property Owner</span>
+                </div>
+                <p style="font-size: 0.8125rem; color: var(--slate-600); line-height: 1.4;">
+                  Register your property, manage units & tenants, and collect rent payments directly through your M-Pesa till.
+                </p>
+              </div>
+            </div>
+
+            <!-- Tenant Option -->
+            <div class="google-role-card tenant-role" id="btn-choose-tenant">
+              <div class="google-role-icon" style="background-color: var(--sky-50); color: #0284c7;">
+                <i data-lucide="key" style="width: 1.5rem; height: 1.5rem;"></i>
+              </div>
+              <div style="flex: 1;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem;">
+                  <h3 style="font-weight: 700; font-size: 1rem; color: var(--slate-900);">Tenant</h3>
+                  <span style="font-size: 0.6875rem; font-weight: 700; color: #0284c7; background: var(--sky-50); padding: 0.2rem 0.5rem; border-radius: 9999px;">Renting a Unit</span>
+                </div>
+                <p style="font-size: 0.8125rem; color: var(--slate-600); line-height: 1.4;">
+                  Connect to your rental apartment, submit payment messages, pay rent online via M-Pesa, and access verified digital receipts.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div style="text-align: center;">
+            <button type="button" class="btn btn-secondary" id="btn-cancel-role-modal" style="font-size: 0.8125rem;">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    if (window.lucide) window.lucide.createIcons();
+
+    const closeModal = () => {
+      modalRoot.innerHTML = '';
+    };
+
+    document.getElementById('btn-cancel-role-modal')?.addEventListener('click', closeModal);
+    document.getElementById('role-select-backdrop')?.addEventListener('click', (e) => {
+      if (e.target.id === 'role-select-backdrop') closeModal();
+    });
+
+    document.getElementById('btn-choose-landlord')?.addEventListener('click', () => {
+      closeModal();
+      this.authTab = 'landlord_reg';
+      this.authAlert = {
+        type: 'success',
+        title: 'Google Account Verified',
+        message: `Signed in as <strong>${name} (${email})</strong>. Complete your property details below to submit your landlord registration.`
+      };
+      this.render();
+      setTimeout(() => {
+        const nameEl = document.getElementById('reg-ll-name');
+        const emailEl = document.getElementById('reg-ll-email');
+        if (nameEl) nameEl.value = name;
+        if (emailEl) emailEl.value = email;
+      }, 50);
+    });
+
+    document.getElementById('btn-choose-tenant')?.addEventListener('click', () => {
+      closeModal();
+      this.authTab = 'tenant_reg';
+      this.authAlert = {
+        type: 'success',
+        title: 'Google Account Verified',
+        message: `Signed in as <strong>${name} (${email})</strong>. Select your property and unit below to submit your tenancy request.`
+      };
+      this.render();
+      setTimeout(() => {
+        const nameEl = document.getElementById('reg-t-name');
+        const emailEl = document.getElementById('reg-t-email');
+        if (nameEl) nameEl.value = name;
+        if (emailEl) emailEl.value = email;
+      }, 50);
+    });
   }
 
   // --- Landing View (Platform Overview) ---

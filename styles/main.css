@@ -524,6 +524,42 @@ header {
   text-overflow: ellipsis;
 }
 
+/* Google Role Selection Modal */
+.google-role-card {
+  border: 2px solid var(--slate-200);
+  border-radius: var(--radius-xl);
+  padding: 1.25rem;
+  background-color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.google-role-card:hover {
+  border-color: var(--primary);
+  background-color: #f0fdf4;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+}
+
+.google-role-card.tenant-role:hover {
+  border-color: #0284c7;
+  background-color: #f0f9ff;
+}
+
+.google-role-icon {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 .auth-security-strip {
   display: flex;
   align-items: center;
