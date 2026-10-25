@@ -51,8 +51,30 @@ class RentPortalApp {
     });
 
     this.setupGlobalEvents();
+    this.setupGoogleAuthListeners();
     this.render();
     if (window.lucide) window.lucide.createIcons();
+  }
+
+  setupGoogleAuthListeners() {
+    window.addEventListener('message', (event) => {
+      if (event.data && event.data.type === 'GOOGLE_AUTH_SUCCESS') {
+        const { email, name } = event.data;
+        this.executeGoogleLogin(email, name, this.pendingGoogleTargetTab || 'signin');
+      }
+    });
+
+    window.addEventListener('storage', (event) => {
+      if (event.key === 'google_auth_event' && event.newValue) {
+        try {
+          const data = JSON.parse(event.newValue);
+          if (data && data.type === 'GOOGLE_AUTH_SUCCESS') {
+            localStorage.removeItem('google_auth_event');
+            this.executeGoogleLogin(data.email, data.name, this.pendingGoogleTargetTab || 'signin');
+          }
+        } catch (e) {}
+      }
+    });
   }
 
   showToast(message, type = 'success') {
@@ -753,16 +775,41 @@ class RentPortalApp {
       this.render();
     });
 
-    // Google Sign-In handlers
+    // Google Sign-In handlers (Opens authentic Google popup window, matching Antigravity flow)
     document.getElementById('btn-google-signin')?.addEventListener('click', () => {
-      this.showGoogleAuthModal('signin');
+      this.openGoogleAuthPopup('signin');
     });
     document.getElementById('btn-google-prefill-landlord')?.addEventListener('click', () => {
-      this.showGoogleAuthModal('landlord_reg');
+      this.openGoogleAuthPopup('landlord_reg');
     });
     document.getElementById('btn-google-prefill-tenant')?.addEventListener('click', () => {
-      this.showGoogleAuthModal('tenant_reg');
+      this.openGoogleAuthPopup('tenant_reg');
     });
+  }
+
+  openGoogleAuthPopup(targetTab = 'signin') {
+    this.pendingGoogleTargetTab = targetTab;
+    const width = 500;
+    const height = 620;
+    const left = Math.max(0, Math.round((window.screen.width - width) / 2 + (window.screenLeft || window.screenX || 0)));
+    const top = Math.max(0, Math.round((window.screen.height - height) / 2 + (window.screenTop || window.screenY || 0)));
+
+    try {
+      const popup = window.open(
+        '/auth-google.html',
+        'GoogleSignIn',
+        `width=${width},height=${height},left=${left},top=${top},status=no,toolbar=no,menubar=no,location=yes,resizable=yes`
+      );
+
+      if (!popup || popup.closed || typeof popup.closed === 'undefined') {
+        // In case browser popup blocker blocks window.open, fallback to in-page Google modal
+        this.showGoogleAuthModal(targetTab);
+        return;
+      }
+      popup.focus?.();
+    } catch (e) {
+      this.showGoogleAuthModal(targetTab);
+    }
   }
 
   showGoogleAuthModal(targetTab = 'signin') {
