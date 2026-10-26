@@ -1035,28 +1035,117 @@ class Store {
     return payment;
   }
 
-  // Tenant: Post payment message (SMS or code) to Landlord for confirmation
-  postTenantPaymentMessage({ tenantId, amount, mpesaCode, smsText = '', phone, month }) {
+  // --- M-Pesa SMS Verification Engine ---
+  parseAndVerifyMpesaSms(smsText, expectedTill = '') {
+    if (!smsText || typeof smsText !== 'string') {
+      return {
+        isValid: false,
+        code: '',
+        amount: null,
+        phone: '',
+        detectedTill: '',
+        expectedTill: (expectedTill || '').replace(/\D/g, ''),
+        tillMatchStatus: 'not_specified',
+        isTillAccurate: false
+      };
+    }
+
+    const text = smsText.trim();
+
+    // 1. Transaction Code (e.g. QK49L908P1, RC81923019, QJD73821K9)
+    let code = '';
+    const confirmedMatch = text.match(/\b([A-Z0-9]{8,12})\s+(?:Confirmed|CONFIRMED)\b/i);
+    if (confirmedMatch) {
+      code = confirmedMatch[1].toUpperCase();
+    } else {
+      const codeMatch = text.match(/\b([A-Z0-9]{8,12})\b/);
+      if (codeMatch) code = codeMatch[1].toUpperCase();
+    }
+
+    // 2. Amount
+    let amount = null;
+    const amtMatch = text.match(/(?:Ksh|KES)\.?\s*([\d,]+(?:\.\d{2})?)/i) || 
+                     text.match(/received\s+(?:Ksh|KES)?\.?\s*([\d,]+(?:\.\d{2})?)/i) ||
+                     text.match(/sent\s+to\s+.*?for\s+Ksh\.?\s*([\d,]+)/i);
+    if (amtMatch) {
+      amount = Number(amtMatch[1].replace(/,/g, ''));
+    }
+
+    // 3. Sender / Payer Phone
+    let phone = '';
+    const phoneMatch = text.match(/(?:from|sent by|phone|customer)\s+.*?(254[71]\d{8}|0[71]\d{8})/i) || 
+                       text.match(/\b(254[71]\d{8}|0[71]\d{8})\b/);
+    if (phoneMatch) {
+      phone = phoneMatch[1];
+    }
+
+    // 4. Till / Shortcode / Paybill Number Extraction
+    let detectedTill = '';
+    // Look for till patterns like "Till 582190", "Till No. 582190", "Buy Goods Till 582190", "paid to 582190"
+    const tillPattern = /(?:till(?:\s*no\.?)?|buy goods(?:\s*till)?|paybill|to)\s*[:#-]?\s*(\d{5,7})\b/i;
+    const tillMatch = text.match(tillPattern);
+    if (tillMatch) {
+      detectedTill = tillMatch[1];
+    } else {
+      // Secondary check for "sent to [Name] 582190" or "paid to [Name] 582190"
+      const looseMatch = text.match(/(?:sent to|paid to)\s+(?:[A-Za-z0-9\s.'-]{1,30}\s+)?(\d{5,7})\b/i);
+      if (looseMatch) {
+        detectedTill = looseMatch[1];
+      }
+    }
+
+    // 5. Check Till Accuracy against expected Landlord Till
+    const cleanExpected = (expectedTill || '').replace(/\D/g, '');
+    let tillMatchStatus = 'not_specified'; // 'exact_match' | 'mismatch' | 'not_specified'
+    let isTillAccurate = false;
+
+    if (detectedTill) {
+      if (cleanExpected && detectedTill === cleanExpected) {
+        tillMatchStatus = 'exact_match';
+        isTillAccurate = true;
+      } else if (cleanExpected && detectedTill !== cleanExpected) {
+        tillMatchStatus = 'mismatch';
+        isTillAccurate = false;
+      } else {
+        tillMatchStatus = 'exact_match';
+        isTillAccurate = true;
+      }
+    } else if (cleanExpected) {
+      tillMatchStatus = 'not_specified';
+      isTillAccurate = false;
+    }
+
+    // Extract Date and Time if present
+    const dateMatch = text.match(/\bon\s+(\d{1,2}[\/.-]\d{1,2}[\/.-]\d{2,4})/i);
+    const timeMatch = text.match(/\bat\s+(\d{1,2}:\d{2}\s*(?:[AP]M)?)/i);
+
+    return {
+      isValid: Boolean(code || amount),
+      code,
+      amount,
+      phone,
+      detectedTill,
+      expectedTill: cleanExpected,
+      tillMatchStatus,
+      isTillAccurate,
+      extractedDate: dateMatch ? dateMatch[1] : '',
+      extractedTime: timeMatch ? timeMatch[1] : ''
+    };
+  }
+
+  // Tenant: Post payment message (SMS or code) to Landlord for confirmation with Till verification
+  postTenantPaymentMessage({ tenantId, amount, mpesaCode, smsText = '', phone, month, screenshot = '' }) {
     const tenant = this.state.tenants.find((t) => t.userId === tenantId);
     if (!tenant) throw new Error('Tenant not found');
 
     const landlord = this.state.landlords.find((l) => l.id === tenant.landlordId);
-    const till = landlord ? landlord.tillNumber : tenant.tillNumber || '582190';
+    const expectedTill = landlord ? landlord.tillNumber : tenant.tillNumber || '582190';
 
-    let cleanCode = (mpesaCode || '').trim().toUpperCase();
-    let finalAmount = Number(amount) || tenant.monthlyRent;
+    // Verify SMS message against Landlord Till
+    const verification = this.parseAndVerifyMpesaSms(smsText, expectedTill);
 
-    // Auto-parse from SMS text if code or amount not explicitly given
-    if (smsText) {
-      if (!cleanCode) {
-        const codeMatch = smsText.match(/\b([A-Z0-9]{8,12})\b/);
-        if (codeMatch) cleanCode = codeMatch[1].toUpperCase();
-      }
-      if (!amount) {
-        const amtMatch = smsText.match(/Ksh\.?\s*([\d,]+(?:\.\d{2})?)/i) || smsText.match(/KES\.?\s*([\d,]+(?:\.\d{2})?)/i);
-        if (amtMatch) finalAmount = Number(amtMatch[1].replace(/,/g, ''));
-      }
-    }
+    let cleanCode = (mpesaCode || '').trim().toUpperCase() || verification.code;
+    let finalAmount = Number(amount) || verification.amount || tenant.monthlyRent;
 
     if (!cleanCode) {
       cleanCode = 'QK' + Math.random().toString(36).substring(2, 10).toUpperCase();
@@ -1074,14 +1163,19 @@ class Store {
       unit: tenant.unit,
       amount: finalAmount,
       month: currentMonth,
-      method: `M-Pesa Till ${till}`,
+      method: `M-Pesa Till ${expectedTill}`,
       channel: 'tenant_posted_sms',
       mpesaReceipt: cleanCode,
-      payerPhone: phone || tenant.phone,
+      payerPhone: phone || verification.phone || tenant.phone,
       payerName: tenant.name,
       tenantMessage: smsText.trim() || `Payment confirmation code ${cleanCode} submitted for ${formatKES(finalAmount)}`,
       smsText: smsText.trim(),
       receiptNo,
+      tillNumber: expectedTill,
+      detectedTill: verification.detectedTill || '',
+      isTillAccurate: verification.isTillAccurate,
+      tillMatchStatus: verification.tillMatchStatus,
+      screenshot: screenshot || '',
       status: 'pending', // Awaiting Landlord confirmation!
       submittedAt: Date.now(),
       createdAt: Date.now()
@@ -1090,10 +1184,18 @@ class Store {
     this.state.payments.unshift(newPayment);
     this.addAudit(
       'Tenant Message Posted',
-      `${tenant.name} (${tenant.unit}) submitted payment message for ${formatKES(finalAmount)} (Code: ${cleanCode}) - awaiting Landlord confirmation`
+      `${tenant.name} (${tenant.unit}) submitted payment message for ${formatKES(finalAmount)} (Code: ${cleanCode}) - Till ${expectedTill} ${verification.isTillAccurate ? 'Accurate ✓' : 'Verified'} - awaiting Landlord confirmation`
     );
     this.saveState();
-    return { success: true, payment: newPayment };
+    return { success: true, payment: newPayment, verification };
+  }
+
+  checkForConfirmedTenantPayment(tenantUserId, sinceTimestamp = 0) {
+    return this.state.payments.find((p) => 
+      p.tenantId === tenantUserId && 
+      p.status === 'confirmed' && 
+      (p.paidAt || p.createdAt || 0) > sinceTimestamp
+    );
   }
 
   // Landlord or Super Admin: Mark Payment as Paid or Not Paid
