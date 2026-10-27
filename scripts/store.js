@@ -71,6 +71,7 @@ const DEFAULT_STATE = {
       unitsCount: 12,
       location: 'Nairobi, Kilimani',
       tillNumber: '582190', // Online M-Pesa Till provided by Landlord
+      image: '/images/property_omwoyo.jpg',
       paybillNumber: '',
       inviteCode: 'OMWOYO-B4',
       paymentInstructions: 'Pay online or via M-Pesa Till Number 582190 (Omwoyo Apartments). Use your Unit as account reference.',
@@ -89,6 +90,7 @@ const DEFAULT_STATE = {
       unitsCount: 16,
       location: 'Mombasa, Nyali',
       tillNumber: '992140',
+      image: '/images/property_sunrise.jpg',
       paybillNumber: '',
       inviteCode: 'SUNRISE-NYALI',
       paymentInstructions: 'Pay by M-Pesa Till 992140 (Sunrise Heights).',
@@ -106,6 +108,7 @@ const DEFAULT_STATE = {
       unitsCount: 20,
       location: 'Nakuru, Milimani',
       tillNumber: '310450',
+      image: '/images/property_greenwood.jpg',
       paybillNumber: '',
       inviteCode: 'GREENWOOD-MILIMANI',
       paymentInstructions: 'Pay via Buy Goods Till 310450 (Greenwood Courts).',
