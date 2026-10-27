@@ -1483,3 +1483,74 @@ main {
   color: #475569;
 }
 
+/* Super Admin Navigation Inspector Bar & Switcher */
+.super-admin-inspector-bar {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(165, 180, 252, 0.4) !important;
+  box-shadow: 0 12px 30px -5px rgba(15, 23, 42, 0.4), 0 0 15px rgba(99, 102, 241, 0.15) !important;
+}
+
+.super-admin-inspector-bar select:focus {
+  outline: none;
+  border-color: #818cf8 !important;
+  box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.3) !important;
+}
+
+.super-admin-quick-jump-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.super-admin-quick-jump-card:hover {
+  box-shadow: 0 15px 35px -5px rgba(15, 23, 42, 0.35), 0 0 20px rgba(56, 189, 248, 0.1) !important;
+}
+
+.super-admin-landlord-chip {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.super-admin-landlord-chip:hover {
+  transform: translateY(-2px);
+  border-color: rgba(56, 189, 248, 0.4) !important;
+  box-shadow: 0 6px 15px -3px rgba(0, 0, 0, 0.3);
+}
+
+/* Cryptographic Security Seal Badge */
+.security-seal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--radius-md);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  font-family: monospace;
+  background: rgba(16, 185, 129, 0.1);
+  color: #047857;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  letter-spacing: 0.02em;
+}
+
+.security-seal-badge.verified {
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.15);
+}
+
+.receipt-security-seal {
+  position: relative;
+  overflow: hidden;
+}
+
+.receipt-security-seal::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.05) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+

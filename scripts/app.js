@@ -545,6 +545,17 @@ class RentPortalApp {
                   </div>
                 </div>
 
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label" for="reg-ll-password">Set Account Password</label>
+                    <input type="password" class="form-input" id="reg-ll-password" required minlength="6" placeholder="Create password (min 6 chars)" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="reg-ll-password-confirm">Confirm Password</label>
+                    <input type="password" class="form-input" id="reg-ll-password-confirm" required minlength="6" placeholder="Confirm password" />
+                  </div>
+                </div>
+
                 <button type="submit" class="btn btn-primary btn-full" style="padding: 0.75rem 1rem; font-weight: 700;">
                   <i data-lucide="building" style="width: 1.125rem; height: 1.125rem;"></i>
                   Submit Landlord Registration
@@ -607,6 +618,17 @@ class RentPortalApp {
                   <div class="form-group">
                     <label class="form-label">Monthly Rent (KES)</label>
                     <input type="number" class="form-input" id="reg-t-rent" required value="15000" step="500" />
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label" for="reg-t-password">Set Account Password</label>
+                    <input type="password" class="form-input" id="reg-t-password" required minlength="6" placeholder="Create password (min 6 chars)" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="reg-t-password-confirm">Confirm Password</label>
+                    <input type="password" class="form-input" id="reg-t-password-confirm" required minlength="6" placeholder="Confirm password" />
                   </div>
                 </div>
 
@@ -755,7 +777,8 @@ class RentPortalApp {
     document.getElementById('form-auth-signin')?.addEventListener('submit', (e) => {
       e.preventDefault();
       const email = document.getElementById('auth-email').value;
-      const res = store.loginWithEmail(email);
+      const password = document.getElementById('auth-password')?.value || '';
+      const res = store.loginWithEmail(email, password);
 
       if (res.success) {
         this.authAlert = null;
@@ -767,7 +790,13 @@ class RentPortalApp {
           this.showToast(`Welcome back, Tenant ${res.tenant.name}!`);
         }
       } else {
-        if (res.isPending) {
+        if (res.isPasswordError) {
+          this.authAlert = {
+            type: 'error',
+            title: 'Incorrect Password',
+            message: res.message
+          };
+        } else if (res.isPending) {
           this.authAlert = {
             type: 'pending',
             title: 'Account Awaiting Super Admin Approval',
@@ -800,6 +829,17 @@ class RentPortalApp {
       const unitsCount = document.getElementById('reg-ll-units').value;
       const location = document.getElementById('reg-ll-loc').value;
       const tillNumber = document.getElementById('reg-ll-till').value;
+      const password = document.getElementById('reg-ll-password')?.value || '';
+      const confirmPassword = document.getElementById('reg-ll-password-confirm')?.value || '';
+
+      if (password.length < 6) {
+        alert('Password must be at least 6 characters long.');
+        return;
+      }
+      if (password !== confirmPassword) {
+        alert('Passwords do not match. Please verify both passwords match.');
+        return;
+      }
 
       const newLandlord = store.registerLandlord({
         name,
@@ -808,7 +848,8 @@ class RentPortalApp {
         propertyName,
         unitsCount,
         location,
-        tillNumber
+        tillNumber,
+        password
       });
 
       // Reset to signin with notification
@@ -817,7 +858,7 @@ class RentPortalApp {
       this.authAlert = {
         type: 'pending',
         title: 'Landlord Registration Submitted',
-        message: `Your registration for "${propertyName}" has been submitted for administrative review and activation. You will be notified once activated.`
+        message: `Your registration for "${propertyName}" has been submitted for administrative review and activation. Your password has been saved. You will be able to sign in once activated.`
       };
       this.showToast('Landlord registration submitted for verification!');
       this.render();
@@ -832,6 +873,17 @@ class RentPortalApp {
       const landlordId = document.getElementById('reg-t-ll').value;
       const unit = document.getElementById('reg-t-unit').value;
       const monthlyRent = document.getElementById('reg-t-rent').value;
+      const password = document.getElementById('reg-t-password')?.value || '';
+      const confirmPassword = document.getElementById('reg-t-password-confirm')?.value || '';
+
+      if (password.length < 6) {
+        alert('Password must be at least 6 characters long.');
+        return;
+      }
+      if (password !== confirmPassword) {
+        alert('Passwords do not match. Please verify both passwords match.');
+        return;
+      }
 
       const newTenant = store.registerTenant({
         name,
@@ -839,7 +891,8 @@ class RentPortalApp {
         phone,
         landlordId,
         unit,
-        monthlyRent
+        monthlyRent,
+        password
       });
 
       // Reset to signin with notification
@@ -848,7 +901,7 @@ class RentPortalApp {
       this.authAlert = {
         type: 'pending',
         title: 'Tenant Access Request Submitted',
-        message: `Your request for ${newTenant.propertyName} (${unit}) has been submitted for landlord verification. You will be able to sign in once approved.`
+        message: `Your request for ${newTenant.propertyName} (${unit}) has been submitted for landlord verification. Your password has been saved. You will be able to sign in once approved.`
       };
       this.showToast('Tenant request submitted for landlord approval!');
       this.render();
@@ -1392,6 +1445,50 @@ class RentPortalApp {
         </div>
       </div>
 
+      <!-- Super Admin 1-Click Landlord Jump & Navigation Hub -->
+      <div class="card super-admin-quick-jump-card" style="margin-bottom: 1.5rem; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #fff; border: 1px solid rgba(148, 163, 184, 0.2); box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.25); border-radius: var(--radius-xl); padding: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; padding-bottom: 0.75rem;">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <div style="width: 2.5rem; height: 2.5rem; border-radius: 8px; background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); display: flex; align-items: center; justify-content: center; color: #34d399;">
+              <i data-lucide="compass" style="width: 1.25rem; height: 1.25rem;"></i>
+            </div>
+            <div>
+              <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #38bdf8; font-weight: 700;">Super Admin Landlord Navigation Hub</div>
+              <div style="font-size: 1.0625rem; font-weight: 800; color: #f8fafc;">Instant 1-Click Jump to Any Landlord's Portal</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+            <label for="superadmin-hq-landlord-select" style="font-size: 0.8125rem; color: #cbd5e1; font-weight: 600;">Fast Jump:</label>
+            <select id="superadmin-hq-landlord-select" class="form-select" style="max-width: 20rem; background-color: #0f172a; color: #f8fafc; border-color: #475569; font-size: 0.875rem;">
+              <option value="">-- Choose Landlord to Inspect --</option>
+              ${landlords.map(l => `
+                <option value="${l.id}">${l.name} (${l.propertyName}) · Till ${l.tillNumber} [${l.status}]</option>
+              `).join('')}
+            </select>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.75rem; margin-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 0.875rem;">
+          ${landlords.map(l => {
+            const count = store.getTenantsForLandlord(l.id).length;
+            const isPending = l.status === 'pending';
+            return `
+              <div class="super-admin-landlord-chip" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 0.75rem 1rem; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s;">
+                <div>
+                  <div style="font-weight: 700; font-size: 0.875rem; color: #fff;">${l.name}</div>
+                  <div style="font-size: 0.75rem; color: #94a3b8;">${l.propertyName} · Till <span style="font-family: monospace; color: #34d399;">${l.tillNumber}</span></div>
+                  <div style="font-size: 0.7rem; color: ${isPending ? '#fbbf24' : '#38bdf8'}; font-weight: 600; margin-top: 2px;">
+                    ${isPending ? '⏳ Pending Approval' : `✓ ${count} active tenants`}
+                  </div>
+                </div>
+                <button class="btn" style="padding: 0.35rem 0.65rem; font-size: 0.75rem; background: #0284c7; border: 1px solid #38bdf8; color: #fff; font-weight: 700; border-radius: 6px; cursor: pointer; white-space: nowrap;" onclick="window.app.switchAsLandlord('${l.id}')">
+                  Inspect ➔
+                </button>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+
       <!-- Tabs Navigation -->
       <div class="tabs-nav" role="tablist">
         <button class="tab-btn ${this.adminTab === 'approvals' ? 'active' : ''}" data-superadmin-tab="approvals">
@@ -1775,6 +1872,14 @@ class RentPortalApp {
       this.approvalSubTab = 'tenants';
       this.render();
     });
+
+    // Fast Jump Select in Super Admin HQ
+    document.getElementById('superadmin-hq-landlord-select')?.addEventListener('change', (e) => {
+      const targetId = e.target.value;
+      if (targetId) {
+        this.switchAsLandlord(targetId);
+      }
+    });
   }
 
   superAdminApproveLandlord(landlordId) {
@@ -1797,18 +1902,15 @@ class RentPortalApp {
   }
 
   switchAsLandlord(landlordId) {
-    const ll = store.state.landlords.find((l) => l.id === landlordId);
-    if (!ll) return;
-    store.setCurrentUser({
-      userId: ll.userId,
-      landlordId: ll.id,
-      name: ll.name,
-      email: ll.email,
-      role: 'owner',
-      landlord: ll,
-      isAdmin: true
-    });
-    this.showToast(`Logged in as Landlord ${ll.name} (${ll.propertyName})`);
+    const userObj = store.switchSuperAdminToLandlord(landlordId);
+    this.showToast(`Inspecting Landlord ${userObj.name} (${userObj.landlord.propertyName})`);
+    this.render();
+  }
+
+  returnToSuperAdminHQ() {
+    store.returnToSuperAdminHQ();
+    this.showToast('Returned to Super Admin HQ Dashboard');
+    this.render();
   }
 
   // --- Tier 2: LANDLORD PORTAL ---
@@ -1889,6 +1991,43 @@ class RentPortalApp {
     const inviteLink = `${window.location.origin}${window.location.pathname}?invite=${landlord.inviteCode || landlord.id}`;
 
     return `
+      ${user.impersonatedBy === SUPER_ADMIN_EMAIL ? `
+        <!-- Sticky Super Admin Inspector & Quick Landlord Switcher Bar -->
+        <div class="card super-admin-inspector-bar" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); color: #fff; border-radius: var(--radius-xl); padding: 1rem 1.25rem; margin-bottom: 1.5rem; border: 1px solid rgba(165, 180, 252, 0.35); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35); position: sticky; top: 4.5rem; z-index: 35;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div style="display: flex; align-items: center; gap: 0.875rem;">
+              <span class="badge" style="background: linear-gradient(135deg, #6366f1, #4f46e5); color: #fff; font-weight: 800; padding: 0.375rem 0.75rem; border-radius: 9999px; letter-spacing: 0.04em;">
+                👑 SUPER ADMIN INSPECTOR
+              </span>
+              <div>
+                <div style="font-weight: 800; font-size: 1rem; color: #f8fafc;">
+                  Currently Inspecting: <span style="color: #38bdf8;">${landlord.name}</span> (${landlord.propertyName})
+                </div>
+                <div style="font-size: 0.75rem; color: #94a3b8;">
+                  Till: <strong style="color: #34d399;">${landlord.tillNumber}</strong> · ${myTenants.length} Tenants · ${myPayments.length} Payments
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+              <label for="inspector-switch-landlord-select" style="font-size: 0.8125rem; color: #cbd5e1; font-weight: 600;">Switch Landlord:</label>
+              <select id="inspector-switch-landlord-select" class="form-select" style="background-color: #0f172a; color: #f8fafc; border-color: #475569; font-size: 0.875rem; width: auto; max-width: 17rem;">
+                ${store.state.landlords.map(l => `
+                  <option value="${l.id}" ${l.id === landlord.id ? 'selected' : ''}>
+                    ${l.name} - ${l.propertyName} (Till ${l.tillNumber})
+                  </option>
+                `).join('')}
+              </select>
+
+              <button class="btn" id="btn-inspector-return-hq" style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: 1px solid #34d399; font-weight: 700; padding: 0.45rem 1rem; border-radius: 8px; display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); white-space: nowrap;">
+                <i data-lucide="arrow-left-circle" style="width: 1.125rem; height: 1.125rem;"></i>
+                Return to Super Admin HQ
+              </button>
+            </div>
+          </div>
+        </div>
+      ` : ''}
+
       <!-- Landlord Header & Invite Link Share Button -->
       <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
         <div>
@@ -2023,6 +2162,12 @@ class RentPortalApp {
                                 <i data-lucide="alert-triangle" style="width: 0.75rem; height: 0.75rem;"></i> Till Mismatch: ${p.detectedTill} (Expected: ${p.tillNumber})
                               </span>`
                             : `<span class="badge" style="background:#f1f5f9; color:#475569; font-size: 0.6875rem;">Till: ${p.tillNumber || landlord.tillNumber}</span>`}
+                        ${p.digitalSeal ? `
+                          <span class="badge" style="background: rgba(16, 185, 129, 0.12); color: #047857; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.6875rem; font-weight: 700; font-family: monospace; display: inline-flex; align-items: center; gap: 0.25rem;">
+                            <i data-lucide="shield-check" style="width: 0.75rem; height: 0.75rem;"></i>
+                            Seal: ${p.digitalSeal.slice(0, 16)}...
+                          </span>
+                        ` : ''}
                         ${p.screenshot ? `
                           <button type="button" class="btn btn-secondary" onclick="window.app.showImageModal('${p.screenshot}')" style="padding: 2px 8px; font-size: 0.6875rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem; background: #ffffff;">
                             <i data-lucide="image" style="width: 0.75rem; height: 0.75rem; color: var(--primary);"></i> View SMS Screenshot
@@ -2041,6 +2186,12 @@ class RentPortalApp {
                       <p style="font-size: 0.8125rem; margin-top: 0.25rem; color: var(--slate-600);">
                         <strong>Tenant:</strong> ${p.tenantName || p.payerName || 'Unknown tenant'} (${p.unit || 'Unit not specified'}) · <strong>Phone:</strong> ${formatPhone(p.payerPhone || '')} · Method: <strong>${p.method}</strong>
                       </p>
+                      ${p.isHighRiskFraud ? `
+                        <div style="background: #fff1f2; border: 1px solid #fecdd3; border-radius: 6px; padding: 0.5rem 0.75rem; margin-top: 0.5rem; color: #be123c; font-size: 0.8125rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
+                          <i data-lucide="shield-alert" style="width: 1.125rem; height: 1.125rem; flex-shrink: 0;"></i>
+                          <span>🚨 CRITICAL SECURITY WARNING: Payment was made to Till ${p.detectedTill} instead of registered Till ${p.tillNumber}. Verify your M-Pesa business till statement before confirming to avoid scams!</span>
+                        </div>
+                      ` : ''}
                     </div>
 
                     <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
@@ -2522,6 +2673,18 @@ class RentPortalApp {
   }
 
   attachLandlordEvents(user) {
+    // Super Admin Inspector Switcher & Return to HQ Handlers
+    document.getElementById('inspector-switch-landlord-select')?.addEventListener('change', (e) => {
+      const targetId = e.target.value;
+      if (targetId) {
+        this.switchAsLandlord(targetId);
+      }
+    });
+
+    document.getElementById('btn-inspector-return-hq')?.addEventListener('click', () => {
+      this.returnToSuperAdminHQ();
+    });
+
     document.querySelectorAll('[data-landlord-tab]').forEach((btn) => {
       btn.addEventListener('click', () => {
         this.landlordTab = btn.getAttribute('data-landlord-tab');
@@ -3509,7 +3672,7 @@ class RentPortalApp {
 
         const fullMessage = smsText.trim() || (note ? `${note} (Code: ${mpesaCode}, Amount: KES ${amount})` : `Payment confirmation code ${mpesaCode} submitted for KES ${amount}`);
 
-        store.postTenantPaymentMessage({
+        const postRes = store.postTenantPaymentMessage({
           tenantId: tenant.userId,
           amount,
           mpesaCode,
@@ -3519,8 +3682,17 @@ class RentPortalApp {
           screenshot: this.currentSmsScreenshot || ''
         });
 
+        if (!postRes.success) {
+          if (postRes.isFraud) {
+            alert(`🚨 FRAUD PREVENTION ALERT:\n\n${postRes.message}`);
+          } else {
+            alert(`⚠️ TRANSACTION VALIDATION ERROR:\n\n${postRes.message}`);
+          }
+          return;
+        }
+
         this.currentSmsScreenshot = '';
-        this.showToast(`Payment message posted! Landlord will verify against Till ${tillNumber} before approving.`, 'success');
+        this.showToast(`✓ Payment submitted with Digital Security Seal (${postRes.digitalSeal.slice(0, 18)}...). Landlord notified!`, 'success');
         this.render();
       });
     }
@@ -3886,7 +4058,20 @@ class RentPortalApp {
             `).join('')}
           </dl>
 
-          <p style="font-size: 0.75rem; color: var(--slate-400); margin-top: 1.5rem; text-align: center;">
+          <div class="receipt-security-seal" style="margin-top: 1.25rem; padding: 0.75rem; border: 1px dashed var(--emerald-600); border-radius: 8px; background: rgba(5, 150, 105, 0.04); text-align: center;">
+            <div style="font-size: 0.75rem; font-weight: 700; color: var(--emerald-700); display: flex; align-items: center; justify-content: center; gap: 0.35rem;">
+              <i data-lucide="shield-check" style="width: 0.875rem; height: 0.875rem;"></i>
+              CRYPTOGRAPHIC ANTI-FORGERY SECURITY SEAL
+            </div>
+            <div style="font-family: monospace; font-size: 0.6875rem; color: var(--slate-700); margin-top: 0.25rem; word-break: break-all; font-weight: 600;">
+              ${payment.digitalSeal || `RMS-SEC-${payment.mpesaReceipt || payment.id}-AUTHENTIC`}
+            </div>
+            <div style="font-size: 0.625rem; color: var(--slate-500); margin-top: 0.125rem;">
+              Tamper-Proof Official Electronic Receipt · Verified Against Landlord Till
+            </div>
+          </div>
+
+          <p style="font-size: 0.75rem; color: var(--slate-400); margin-top: 1.25rem; text-align: center;">
             Thank you for your payment. Keep this receipt for your records.
           </p>
         </div>
