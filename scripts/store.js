@@ -832,6 +832,7 @@ class Store {
       unitsCount: Number(unitsCount) || 10,
       location: location ? location.trim() : 'Nairobi',
       tillNumber: cleanTill,
+      image: '/images/hero_apartments.jpg',
       paybillNumber: '',
       inviteCode: propertyName.trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8),
       paymentInstructions: paymentInstructions || `Pay online or via M-Pesa Till Number ${cleanTill} (${propertyName.trim()}).\nPlease use your Unit as account reference.`,
