@@ -1431,57 +1431,86 @@ class RentPortalApp {
         </div>
       </section>
 
-      <!-- Dual Entrance Cards -->
+      <!-- Modern Living Spaces Feature Banner -->
+      <div style="position: relative; border-radius: 1.5rem; overflow: hidden; margin-bottom: 3rem; box-shadow: 0 16px 36px -10px rgba(15, 23, 42, 0.2); border: 1px solid var(--slate-200);">
+        <img src="/images/luxury_interior.jpg" alt="Luxury Kenyan Modern Apartment Interior" style="width: 100%; height: 380px; object-fit: cover; display: block;" />
+        <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15, 23, 42, 0.1) 0%, rgba(15, 23, 42, 0.88) 100%); display: flex; flex-direction: column; justify-content: flex-end; padding: 2.25rem 2rem; color: #ffffff;">
+          <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(16, 185, 129, 0.3); backdrop-filter: blur(8px); border: 1px solid rgba(52, 211, 153, 0.5); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 800; color: #a7f3d0; margin-bottom: 0.75rem; width: fit-content;">
+            <i data-lucide="sparkles" style="width: 0.875rem; height: 0.875rem;"></i>
+            PREMIER RESIDENTIAL LIVING
+          </div>
+          <h2 style="font-size: clamp(1.5rem, 3vw, 2.25rem); font-weight: 800; line-height: 1.2; text-shadow: 0 2px 8px rgba(0,0,0,0.4);">
+            Modern Living Spaces Designed for Peace of Mind
+          </h2>
+          <p style="color: #e2e8f0; font-size: 0.9375rem; max-width: 40rem; margin-top: 0.5rem; line-height: 1.5; text-shadow: 0 1px 4px rgba(0,0,0,0.4);">
+            Tenants enjoy sunlit contemporary finishes and 100% verified digital rent records. No disputes, no missing receipts, and complete clarity every month.
+          </p>
+        </div>
+      </div>
+
+      <!-- Dual Entrance Cards with Real Photography -->
       <div class="entrance-grid">
         <!-- Landlord Portal Entrance -->
-        <div class="entrance-card landlord-card">
-          <div>
-            <span class="entrance-card-badge">Landlords Only</span>
-            <h2 style="font-size: 1.375rem; font-weight: 800; color: var(--slate-900);">
-              Landlord Portal
-            </h2>
-            <p style="font-size: 0.875rem; color: var(--slate-600); margin-top: 0.5rem; line-height: 1.6;">
-              Manage your building, provide your M-Pesa Till number, send invite links to your tenants, and mark payments as <strong>Paid</strong> or <strong>Not Paid</strong>.
-            </p>
-            <div style="background-color: var(--amber-50); border: 1px solid var(--amber-200); border-radius: var(--radius-lg); padding: 0.75rem; margin-top: 1rem; font-size: 0.75rem; color: var(--amber-800);">
-              <i data-lucide="shield-check" style="width: 1rem; height: 1rem; display: inline-block; vertical-align: middle;"></i>
-              <strong>Approval Required:</strong> New landlord accounts are verified before portal access is activated.
-            </div>
+        <div class="entrance-card landlord-card" style="display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; padding: 0;">
+          <div style="position: relative; height: 190px; overflow: hidden;">
+            <img src="/images/landlord_profile.jpg" alt="Professional Landlord" style="width: 100%; height: 100%; object-fit: cover; object-position: center 25%;" />
+            <span class="entrance-card-badge" style="position: absolute; top: 1rem; left: 1rem; margin: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">Landlords Only</span>
+            <div style="position: absolute; bottom: 0; inset-inline: 0; height: 35px; background: linear-gradient(transparent, #ffffff);"></div>
           </div>
+          <div style="padding: 1.5rem; display: flex; flex-direction: column; flex: 1; justify-content: space-between;">
+            <div>
+              <h2 style="font-size: 1.375rem; font-weight: 800; color: var(--slate-900);">
+                Landlord Portal
+              </h2>
+              <p style="font-size: 0.875rem; color: var(--slate-600); margin-top: 0.5rem; line-height: 1.6;">
+                Manage your building, provide your M-Pesa Till number, send invite links to your tenants, and mark payments as <strong>Paid</strong> or <strong>Not Paid</strong>.
+              </p>
+              <div style="background-color: var(--amber-50); border: 1px solid var(--amber-200); border-radius: var(--radius-lg); padding: 0.75rem; margin-top: 1rem; font-size: 0.75rem; color: var(--amber-800);">
+                <i data-lucide="shield-check" style="width: 1rem; height: 1rem; display: inline-block; vertical-align: middle;"></i>
+                <strong>Approval Required:</strong> New landlord accounts are verified before portal access is activated.
+              </div>
+            </div>
 
-          <div style="margin-top: 1.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <button class="btn btn-primary" id="btn-landlord-go-login" style="flex: 1;">
-              Sign in as Landlord
-            </button>
-            <button class="btn btn-secondary" id="btn-landlord-go-reg" style="flex: 1;">
-              Register Property
-            </button>
+            <div style="margin-top: 1.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <button class="btn btn-primary" id="btn-landlord-go-login" style="flex: 1;">
+                Sign in as Landlord
+              </button>
+              <button class="btn btn-secondary" id="btn-landlord-go-reg" style="flex: 1;">
+                Register Property
+              </button>
+            </div>
           </div>
         </div>
 
         <!-- Tenant Portal Entrance -->
-        <div class="entrance-card tenant-card">
-          <div>
-            <span class="entrance-card-badge">Tenants Only</span>
-            <h2 style="font-size: 1.375rem; font-weight: 800; color: var(--slate-900);">
-              Tenant Portal
-            </h2>
-            <p style="font-size: 0.875rem; color: var(--slate-600); margin-top: 0.5rem; line-height: 1.6;">
-              Pay rent online via M-Pesa using the Till number provided by your landlord. View monthly bills and download official receipts.
-            </p>
-            <div style="background-color: var(--sky-50); border: 1px solid var(--sky-200); border-radius: var(--radius-lg); padding: 0.75rem; margin-top: 1rem; font-size: 0.75rem; color: var(--sky-800);">
-              <i data-lucide="lock" style="width: 1rem; height: 1rem; display: inline-block; vertical-align: middle;"></i>
-              <strong>Private Access:</strong> Tenants cannot view the Landlord or Super Admin portals.
-            </div>
+        <div class="entrance-card tenant-card" style="display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; padding: 0;">
+          <div style="position: relative; height: 190px; overflow: hidden;">
+            <img src="/images/tenant_lifestyle.jpg" alt="Happy Tenant" style="width: 100%; height: 100%; object-fit: cover; object-position: center 20%;" />
+            <span class="entrance-card-badge" style="position: absolute; top: 1rem; left: 1rem; margin: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">Tenants Only</span>
+            <div style="position: absolute; bottom: 0; inset-inline: 0; height: 35px; background: linear-gradient(transparent, #ffffff);"></div>
           </div>
+          <div style="padding: 1.5rem; display: flex; flex-direction: column; flex: 1; justify-content: space-between;">
+            <div>
+              <h2 style="font-size: 1.375rem; font-weight: 800; color: var(--slate-900);">
+                Tenant Portal
+              </h2>
+              <p style="font-size: 0.875rem; color: var(--slate-600); margin-top: 0.5rem; line-height: 1.6;">
+                Pay rent online via M-Pesa using the Till number provided by your landlord. View monthly bills and download official receipts.
+              </p>
+              <div style="background-color: var(--sky-50); border: 1px solid var(--sky-200); border-radius: var(--radius-lg); padding: 0.75rem; margin-top: 1rem; font-size: 0.75rem; color: var(--sky-800);">
+                <i data-lucide="lock" style="width: 1rem; height: 1rem; display: inline-block; vertical-align: middle;"></i>
+                <strong>Private Access:</strong> Tenants cannot view the Landlord or Super Admin portals.
+              </div>
+            </div>
 
-          <div style="margin-top: 1.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <button class="btn btn-primary" id="btn-tenant-go-login" style="flex: 1; background-color: #0284c7; border-color: #0284c7;">
-              Sign in as Tenant
-            </button>
-            <button class="btn btn-secondary" id="btn-tenant-go-reg" style="flex: 1;">
-              Request Access
-            </button>
+            <div style="margin-top: 1.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <button class="btn btn-primary" id="btn-tenant-go-login" style="flex: 1; background-color: #0284c7; border-color: #0284c7;">
+                Sign in as Tenant
+              </button>
+              <button class="btn btn-secondary" id="btn-tenant-go-reg" style="flex: 1;">
+                Request Access
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1823,18 +1852,21 @@ class RentPortalApp {
             ` : `
               <div style="display: flex; flex-direction: column; gap: 1rem;">
                 ${pendingLandlords.map((ll) => `
-                  <div style="border: 1px solid var(--amber-200); background-color: var(--amber-50); border-radius: var(--radius-lg); padding: 1.25rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem;">
-                    <div>
-                      <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <h3 style="font-weight: 800; font-size: 1.125rem;">${ll.name}</h3>
-                        <span class="badge badge-pending">Awaiting Super Admin</span>
+                  <div style="border: 1px solid var(--amber-200); background-color: var(--amber-50); border-radius: var(--radius-xl); padding: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.25rem;">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                      <img src="${ll.image || '/images/hero_apartments.jpg'}" alt="${ll.propertyName}" style="width: 64px; height: 64px; border-radius: 12px; object-fit: cover; flex-shrink: 0; border: 2px solid #ffffff; box-shadow: 0 4px 10px rgba(0,0,0,0.1);" />
+                      <div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                          <h3 style="font-weight: 800; font-size: 1.125rem;">${ll.name}</h3>
+                          <span class="badge badge-pending">Awaiting Super Admin</span>
+                        </div>
+                        <p style="font-size: 0.875rem; color: var(--slate-700); margin-top: 0.25rem;">
+                          Property: <strong>${ll.propertyName}</strong> · Location: <strong>${ll.location}</strong> · Units: <strong>${ll.unitsCount}</strong> · M-Pesa Till: <strong>${ll.tillNumber}</strong>
+                        </p>
+                        <p style="font-size: 0.75rem; color: var(--slate-500); margin-top: 0.25rem;">
+                          Email: ${ll.email} · Phone: ${ll.phone} · Registered ${formatDateTime(ll.createdAt)}
+                        </p>
                       </div>
-                      <p style="font-size: 0.875rem; color: var(--slate-700); margin-top: 0.25rem;">
-                        Property: <strong>${ll.propertyName}</strong> · Location: <strong>${ll.location}</strong> · Units: <strong>${ll.unitsCount}</strong> · M-Pesa Till: <strong>${ll.tillNumber}</strong>
-                      </p>
-                      <p style="font-size: 0.75rem; color: var(--slate-500); margin-top: 0.25rem;">
-                        Email: ${ll.email} · Phone: ${ll.phone} · Registered ${formatDateTime(ll.createdAt)}
-                      </p>
                     </div>
 
                     <div style="display: flex; gap: 0.5rem;">
@@ -1943,9 +1975,18 @@ class RentPortalApp {
                 const tenantCount = store.getTenantsForLandlord(ll.id).length;
                 return `
                   <tr>
-                    <td style="font-weight: 700;">${ll.name}</td>
+                    <td style="font-weight: 700;">
+                      <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <img src="${ll.image || '/images/hero_apartments.jpg'}" alt="${ll.propertyName}" style="width: 46px; height: 46px; border-radius: 10px; object-fit: cover; flex-shrink: 0; border: 1px solid var(--slate-200); box-shadow: 0 2px 6px rgba(0,0,0,0.06);" />
+                        <div>
+                          <div style="font-weight: 800; color: var(--slate-900); font-size: 0.9375rem;">${ll.name}</div>
+                          <div style="font-size: 0.6875rem; color: var(--slate-500); font-weight: normal;">ID: ${ll.id}</div>
+                        </div>
+                      </div>
+                    </td>
                     <td>
-                      <span style="font-weight: 600; color: var(--primary-dark);">${ll.propertyName}</span>
+                      <div style="font-weight: 700; color: var(--primary-dark); font-size: 0.9375rem;">${ll.propertyName}</div>
+                      <div style="font-size: 0.75rem; color: var(--slate-500);">${ll.location}</div>
                     </td>
                     <td>
                       <span style="font-family: monospace; font-weight: 700; background: var(--emerald-50); color: var(--emerald-700); padding: 2px 6px; border-radius: 4px;">
@@ -3389,6 +3430,33 @@ class RentPortalApp {
               <span style="font-size: 0.6875rem; color: var(--slate-500); display: block; margin-top: 0.25rem;">
                 Monthly Rate: ${formatKES(tenant.monthlyRent)}
               </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Visual 3-Step Guide Banner with Safaricom M-Pesa Till Badge -->
+        <div class="card" style="background: #ffffff; border: 1px solid var(--slate-200); padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; border-radius: var(--radius-xl);">
+          <div style="display: flex; align-items: center; gap: 0.875rem;">
+            <div style="width: 2.75rem; height: 2.75rem; border-radius: 10px; background: linear-gradient(135deg, #16a34a, #15803d); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 1.125rem; font-weight: 900; box-shadow: 0 4px 10px rgba(22, 163, 74, 0.25);">
+              M
+            </div>
+            <div>
+              <div style="font-size: 0.6875rem; font-weight: 800; color: #16a34a; text-transform: uppercase; letter-spacing: 0.05em;">Lipa na M-Pesa · Buy Goods</div>
+              <div style="font-weight: 800; font-size: 1.0625rem; color: var(--slate-900);">Till: ${tillNumber}</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 1.25rem; flex-wrap: wrap; font-size: 0.8125rem; color: var(--slate-600);">
+            <div style="display: flex; align-items: center; gap: 0.35rem;">
+              <span style="width: 22px; height: 22px; border-radius: 50%; background: #ecfdf5; color: #059669; font-weight: 800; font-size: 0.6875rem; display: flex; align-items: center; justify-content: center;">1</span>
+              <span>Pay on Phone</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.35rem;">
+              <span style="width: 22px; height: 22px; border-radius: 50%; background: #ecfdf5; color: #059669; font-weight: 800; font-size: 0.6875rem; display: flex; align-items: center; justify-content: center;">2</span>
+              <span>Copy SMS</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.35rem;">
+              <span style="width: 22px; height: 22px; border-radius: 50%; background: #ecfdf5; color: #059669; font-weight: 800; font-size: 0.6875rem; display: flex; align-items: center; justify-content: center;">3</span>
+              <span>Instant Receipt</span>
             </div>
           </div>
         </div>
