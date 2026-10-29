@@ -1000,61 +1000,107 @@ class RentPortalApp {
     const modalRoot = document.getElementById('modal-root');
     if (!modalRoot) return;
 
+    let activeEmail = 'sammyharrison58@gmail.com';
+    let activeName = 'Sammy Harrison';
+
+    try {
+      const stored = localStorage.getItem('google_web_profile');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.email) {
+          activeEmail = parsed.email;
+          activeName = parsed.name || this.deriveGoogleName(parsed.email);
+        }
+      }
+    } catch (e) {}
+
     modalRoot.innerHTML = `
       <div class="modal-backdrop" id="google-modal-backdrop" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 1rem; animation: fadeIn 0.2s ease;">
-        <div class="google-modal-card">
-          <div class="google-modal-header">
-            <svg style="width: 2.25rem; height: 2.25rem; margin: 0 auto 0.75rem auto; display: block;" viewBox="0 0 24 24">
+        <div class="google-modal-card" style="max-width: 27rem; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.25);">
+          <!-- Top loader bar -->
+          <div id="modalGoogleLoader" style="display: none; height: 3px; width: 100%; background-color: #e0e0e0; overflow: hidden;">
+            <div style="width: 100%; height: 100%; background: linear-gradient(90deg, #4285F4, #34A853, #FBBC05, #EA4335); animation: googleLoading 1s infinite linear;"></div>
+          </div>
+
+          <div class="google-modal-header" style="text-align: center; padding: 2rem 2rem 1.25rem 2rem;">
+            <svg style="width: 2.5rem; height: 2.5rem; margin: 0 auto 0.75rem auto; display: block;" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
               <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
             </svg>
-            <h3 style="font-size: 1.125rem; font-weight: 700; color: #202124; margin-bottom: 0.25rem;">
+            <h3 style="font-size: 1.25rem; font-weight: 500; color: #202124; margin-bottom: 0.25rem;">
               Sign in with Google
             </h3>
-            <p style="font-size: 0.8125rem; color: #5f6368;">
-              to continue to Rentmaster
+            <p style="font-size: 0.875rem; color: #5f6368;">
+              Choose an account to continue to <span style="font-weight: 600; color: #1a73e8;">Rentmaster</span>
             </p>
           </div>
 
-          <div style="padding: 1.5rem;">
-            <form id="form-google-direct">
-              <div class="form-group" style="margin-bottom: 1rem;">
-                <label class="form-label" for="google-direct-email" style="font-size: 0.8125rem; color: #5f6368; display: block; margin-bottom: 0.375rem;">Google Email</label>
+          <div style="padding: 0 1.75rem 1.75rem 1.75rem;">
+            <!-- Authentic Google Account Selector View -->
+            <div id="modalAccountChooserView">
+              <div style="border: 1px solid #dadce0; border-radius: 8px; overflow: hidden; margin-bottom: 1.25rem;">
+                <!-- Detected Account -->
+                <button type="button" id="btnModalSelectActive" style="display: flex; align-items: center; gap: 0.875rem; padding: 0.875rem 1rem; width: 100%; border: none; background: #ffffff; text-align: left; cursor: pointer; transition: background 0.15s ease; border-bottom: 1px solid #f1f3f4;">
+                  <div style="width: 38px; height: 38px; border-radius: 50%; background: #1a73e8; color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 1.125rem; flex-shrink: 0;">
+                    ${activeName.charAt(0).toUpperCase()}
+                  </div>
+                  <div style="flex: 1; min-width: 0;">
+                    <div style="font-weight: 600; font-size: 0.9375rem; color: #202124; line-height: 1.3;">${activeName}</div>
+                    <div style="font-size: 0.8125rem; color: #5f6368; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${activeEmail}</div>
+                  </div>
+                  <span style="font-size: 0.6875rem; color: #137333; background: #e6f4ea; padding: 0.125rem 0.5rem; border-radius: 9999px; font-weight: 600;">Signed in</span>
+                </button>
+
+                <!-- Use another account -->
+                <button type="button" id="btnModalShowCustom" style="display: flex; align-items: center; gap: 0.875rem; padding: 0.875rem 1rem; width: 100%; border: none; background: #ffffff; text-align: left; cursor: pointer; transition: background 0.15s ease; color: #202124; font-size: 0.875rem; font-weight: 500;">
+                  <div style="width: 38px; height: 38px; border-radius: 50%; background: #f1f3f4; color: #5f6368; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                  </div>
+                  <span>Use another account</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Custom Email View -->
+            <div id="modalCustomEmailView" style="display: none; margin-bottom: 1.25rem;">
+              <form id="form-modal-google-custom">
+                <label for="modalCustomEmailInput" style="display: block; font-size: 0.8125rem; color: #5f6368; margin-bottom: 0.375rem; font-weight: 500;">
+                  Email or phone
+                </label>
                 <input 
                   type="email" 
+                  id="modalCustomEmailInput" 
                   class="form-input" 
-                  id="google-direct-email" 
+                  placeholder="Enter your Google Account email" 
                   required 
-                  placeholder="name@gmail.com" 
-                  style="font-size: 0.875rem;" 
-                  autofocus
+                  style="margin-bottom: 1rem;"
                 />
+                <button type="submit" class="btn btn-primary btn-full" style="background-color: #1a73e8; border-color: #1a73e8; padding: 0.75rem;">
+                  Next
+                </button>
+              </form>
+              <div style="text-align: center; margin-top: 0.75rem;">
+                <a href="javascript:void(0)" id="btnModalBackChooser" style="color: #1a73e8; font-size: 0.8125rem; text-decoration: none;">
+                  Back to account chooser
+                </a>
               </div>
+            </div>
 
-              <div class="form-group" style="margin-bottom: 1.25rem;">
-                <label class="form-label" for="google-direct-name" style="font-size: 0.8125rem; color: #5f6368; display: block; margin-bottom: 0.375rem;">Full Name</label>
-                <input 
-                  type="text" 
-                  class="form-input" 
-                  id="google-direct-name" 
-                  placeholder="Your Name" 
-                  style="font-size: 0.875rem;" 
-                />
-              </div>
-
-              <button type="submit" class="btn btn-primary btn-full" style="padding: 0.625rem 1rem; font-weight: 600; font-size: 0.875rem; background-color: #1a73e8; border-color: #1a73e8;">
-                Continue with this Google Account
-              </button>
-            </form>
+            <p style="font-size: 0.75rem; color: #5f6368; line-height: 1.5; margin: 0;">
+              To continue, Google will share your name, email address, language preference, and profile picture with Rentmaster.
+            </p>
           </div>
 
-          <div style="padding: 0.875rem 1.5rem; background-color: #f8fafc; border-top: 1px solid var(--slate-200); display: flex; justify-content: space-between; align-items: center;">
+          <div style="padding: 0.875rem 1.75rem; background-color: #f8fafc; border-top: 1px solid var(--slate-200); display: flex; justify-content: space-between; align-items: center;">
             <span style="font-size: 0.6875rem; color: #94a3b8;">
-              Google OAuth 2.0 Secure
+              Google Identity Services
             </span>
-            <button type="button" class="btn btn-secondary" id="btn-close-google-modal" style="padding: 0.375rem 0.75rem; font-size: 0.75rem;">
+            <button type="button" class="btn btn-secondary" id="btn-close-google-modal" style="padding: 0.35rem 0.75rem; font-size: 0.75rem;">
               Cancel
             </button>
           </div>
@@ -1071,16 +1117,53 @@ class RentPortalApp {
       if (e.target.id === 'google-modal-backdrop') closeModal();
     });
 
-    document.getElementById('form-google-direct')?.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const email = document.getElementById('google-direct-email').value.trim();
-      let name = document.getElementById('google-direct-name').value.trim();
-      if (!name) {
-        name = email.split('@')[0];
-      }
-      closeModal();
-      this.executeGoogleLogin(email, name, targetTab);
+    const triggerLogin = (email, name) => {
+      const loader = document.getElementById('modalGoogleLoader');
+      if (loader) loader.style.display = 'block';
+
+      try {
+        localStorage.setItem('google_web_profile', JSON.stringify({ email, name }));
+      } catch (e) {}
+
+      setTimeout(() => {
+        closeModal();
+        this.executeGoogleLogin(email, name, targetTab);
+      }, 350);
+    };
+
+    // 1-Click select active account
+    document.getElementById('btnModalSelectActive')?.addEventListener('click', () => {
+      triggerLogin(activeEmail, activeName);
     });
+
+    // Show custom input
+    document.getElementById('btnModalShowCustom')?.addEventListener('click', () => {
+      document.getElementById('modalAccountChooserView').style.display = 'none';
+      document.getElementById('modalCustomEmailView').style.display = 'block';
+      document.getElementById('modalCustomEmailInput')?.focus();
+    });
+
+    // Back to chooser
+    document.getElementById('btnModalBackChooser')?.addEventListener('click', () => {
+      document.getElementById('modalAccountChooserView').style.display = 'block';
+      document.getElementById('modalCustomEmailView').style.display = 'none';
+    });
+
+    // Submit custom email
+    document.getElementById('form-modal-google-custom')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = document.getElementById('modalCustomEmailInput').value.trim();
+      if (!email) return;
+      const name = this.deriveGoogleName(email);
+      triggerLogin(email, name);
+    });
+  }
+
+  deriveGoogleName(email) {
+    if (!email) return 'Google User';
+    const username = email.split('@')[0];
+    const parts = username.split(/[._-]/);
+    return parts.map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join(' ');
   }
 
   executeGoogleLogin(email, name, targetTab = 'signin') {
