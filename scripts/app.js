@@ -24,7 +24,7 @@ class RentPortalApp {
     this.approvalSubTab = 'landlords'; // 'landlords' | 'tenants'
     this.landlordTab = 'payments'; // 'payments' | 'requests' | 'tenants' | 'arrears' | 'reports' | 'settings'
     this.tenantTab = 'pay'; // 'pay' | 'bills' | 'history'
-    this.tenantPaySubTab = 'post_message'; // 'post_message' | 'stk'
+    this.tenantPaySubTab = 'post_message';
 
     this.reportYear = new Date().getFullYear();
     this.reportView = 'year';
@@ -386,38 +386,88 @@ class RentPortalApp {
 
     return `
       <div class="auth-page-wrapper">
-        <div class="auth-card">
-          <div class="auth-card-topbar"></div>
+        <div class="auth-split-layout">
+          <!-- Left Visual Panel with Real Estate Imagery -->
+          <div class="auth-visual-panel">
+            <div>
+              <div class="auth-visual-badge">
+                <i data-lucide="shield-check" style="width: 0.875rem; height: 0.875rem; color: #34d399;"></i>
+                <span>Rentmaster Enterprise</span>
+              </div>
+              <h2 class="auth-visual-headline">
+                Kenya's Most Trusted Real Estate & Rent Settlement Platform
+              </h2>
+              <p style="color: #cbd5e1; font-size: 0.875rem; margin-top: 0.75rem; line-height: 1.6;">
+                Direct Safaricom Buy Goods Till integration guarantees immediate fund settlement, automated receipting, and zero intermediary disputes.
+              </p>
 
-          <!-- Header -->
-          <div class="auth-header">
-            <div class="auth-logo-badge">
-              <i data-lucide="building-2" style="width: 1.75rem; height: 1.75rem;"></i>
+              <div class="auth-property-mini-list">
+                <div class="auth-property-mini-item">
+                  <img src="/images/property_omwoyo.jpg" alt="Omwoyo Apartments" class="auth-property-mini-img" />
+                  <div>
+                    <div style="font-weight: 700; font-size: 0.8125rem; color: #ffffff;">Omwoyo Apartments</div>
+                    <div style="font-size: 0.6875rem; color: #94a3b8;">Kilimani, Nairobi · Till 582190</div>
+                  </div>
+                </div>
+                <div class="auth-property-mini-item">
+                  <img src="/images/property_sunrise.jpg" alt="Sunrise Heights" class="auth-property-mini-img" />
+                  <div>
+                    <div style="font-weight: 700; font-size: 0.8125rem; color: #ffffff;">Sunrise Heights</div>
+                    <div style="font-size: 0.6875rem; color: #94a3b8;">Nyali, Mombasa · Till 893421</div>
+                  </div>
+                </div>
+                <div class="auth-property-mini-item">
+                  <img src="/images/property_greenwood.jpg" alt="Greenwood Courts" class="auth-property-mini-img" />
+                  <div>
+                    <div style="font-weight: 700; font-size: 0.8125rem; color: #ffffff;">Greenwood Courts</div>
+                    <div style="font-size: 0.6875rem; color: #94a3b8;">Karen, Nairobi · Till 304918</div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <h1 class="auth-title">
-              ${isSignIn ? 'Sign In to Rent Portal' : isLandlordReg ? 'Landlord Onboarding' : 'Tenant Access Request'}
-            </h1>
-            <p class="auth-subtitle">
-              ${isSignIn
-                ? 'Sign in to access your tenant or property management account'
-                : isLandlordReg
-                ? 'Register your property to accept online M-Pesa till payments'
-                : 'Request tenancy under an approved landlord to pay rent online'}
-            </p>
+
+            <div style="border-top: 1px solid rgba(255, 255, 255, 0.12); padding-top: 1.25rem; margin-top: 1.5rem;">
+              <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: #a7f3d0;">
+                <i data-lucide="lock" style="width: 0.875rem; height: 0.875rem;"></i>
+                <span>Cryptographic Anti-Forgery Protected</span>
+              </div>
+            </div>
           </div>
 
-          <!-- Tabs -->
-          <div class="auth-tabs">
-            <button class="auth-tab-btn ${isSignIn ? 'active' : ''}" id="tab-btn-signin">
-              Sign In
-            </button>
-            <button class="auth-tab-btn ${isLandlordReg ? 'active' : ''}" id="tab-btn-landlord">
-              Landlord Register
-            </button>
-            <button class="auth-tab-btn ${isTenantReg ? 'active' : ''}" id="tab-btn-tenant">
-              Tenant Request
-            </button>
-          </div>
+          <!-- Right Column: Interactive Auth Form -->
+          <div class="auth-card-column">
+            <div class="auth-card">
+              <div class="auth-card-topbar"></div>
+
+              <!-- Header -->
+              <div class="auth-header">
+                <div class="auth-logo-badge">
+                  <i data-lucide="building-2" style="width: 1.75rem; height: 1.75rem;"></i>
+                </div>
+                <h1 class="auth-title">
+                  ${isSignIn ? 'Sign In to Rent Portal' : isLandlordReg ? 'Landlord Onboarding' : 'Tenant Access Request'}
+                </h1>
+                <p class="auth-subtitle">
+                  ${isSignIn
+                    ? 'Sign in to access your tenant or property management account'
+                    : isLandlordReg
+                    ? 'Register your property to accept online M-Pesa till payments'
+                    : 'Request tenancy under an approved landlord to pay rent online'}
+                </p>
+              </div>
+
+              <!-- Tabs -->
+              <div class="auth-tabs">
+                <button class="auth-tab-btn ${isSignIn ? 'active' : ''}" id="tab-btn-signin">
+                  Sign In
+                </button>
+                <button class="auth-tab-btn ${isLandlordReg ? 'active' : ''}" id="tab-btn-landlord">
+                  Landlord Register
+                </button>
+                <button class="auth-tab-btn ${isTenantReg ? 'active' : ''}" id="tab-btn-tenant">
+                  Tenant Request
+                </button>
+              </div>
 
           <!-- Form Area -->
           <div class="auth-form-body">
@@ -603,7 +653,7 @@ class RentPortalApp {
                   <select class="form-select" id="reg-t-ll" required>
                     <option value="">-- Choose Approved Property --</option>
                     ${approvedLandlords.map((ll) => `
-                      <option value="${ll.id}" ${this.prefilledInviteCode === ll.inviteCode ? 'selected' : ''}>
+                      <option value="${ll.id}" ${(this.prefilledInviteCode === ll.inviteCode || this.selectedPropertyId === ll.id) ? 'selected' : ''}>
                         ${ll.propertyName} (${ll.name}) · Till: ${ll.tillNumber}
                       </option>
                     `).join('')}
@@ -654,19 +704,21 @@ class RentPortalApp {
           </div>
         </div>
 
-        <!-- Security / Compliance Strip -->
-        <div class="auth-security-strip">
-          <div class="auth-security-item">
-            <i data-lucide="shield-check" style="width: 0.875rem; height: 0.875rem; color: var(--emerald-600);"></i>
-            <span>256-Bit SSL Encrypted</span>
-          </div>
-          <div class="auth-security-item">
-            <i data-lucide="smartphone" style="width: 0.875rem; height: 0.875rem; color: #16a34a;"></i>
-            <span>Safaricom M-Pesa Integrated</span>
-          </div>
-          <div class="auth-security-item">
-            <i data-lucide="lock" style="width: 0.875rem; height: 0.875rem; color: #6366f1;"></i>
-            <span>Strict Role Isolation</span>
+            <!-- Security / Compliance Strip -->
+            <div class="auth-security-strip" style="border-top: 1px solid var(--slate-100); padding: 1.125rem 1.5rem; margin-top: 0;">
+              <div class="auth-security-item">
+                <i data-lucide="shield-check" style="width: 0.875rem; height: 0.875rem; color: var(--emerald-600);"></i>
+                <span>256-Bit SSL Encrypted</span>
+              </div>
+              <div class="auth-security-item">
+                <i data-lucide="smartphone" style="width: 0.875rem; height: 0.875rem; color: #16a34a;"></i>
+                <span>Safaricom M-Pesa Integrated</span>
+              </div>
+              <div class="auth-security-item">
+                <i data-lucide="lock" style="width: 0.875rem; height: 0.875rem; color: #6366f1;"></i>
+                <span>Strict Role Isolation</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1223,22 +1275,161 @@ class RentPortalApp {
   // --- Landing View (Platform Overview) ---
   renderLandingView() {
     return `
-      <div class="hero-card">
-        <div style="display: inline-block; background-color: rgba(255,255,255,0.2); padding: 0.25rem 0.75rem; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 700; margin-bottom: 1rem;">
-          SECURE RENT & PROPERTY MANAGEMENT PLATFORM
+      <!-- Luxury Hero Banner with Real Estate Imagery -->
+      <div class="hero-card-with-bg">
+        <div class="hero-pill-badge">
+          <i data-lucide="shield-check" style="width: 1rem; height: 1rem; color: #34d399;"></i>
+          <span>Kenya's Verified M-Pesa Rent Settlement Platform</span>
         </div>
-        <h1 class="hero-title">Welcome to Rent Portal</h1>
-        <p class="hero-subtitle">
-          Tenants pay rent online directly to their landlord's verified M-Pesa Till, post transaction messages, and instantly download official receipts.
+        
+        <h1 class="hero-title" style="font-size: clamp(2rem, 4vw, 3rem); font-weight: 900; line-height: 1.15; max-width: 44rem; text-shadow: 0 2px 10px rgba(0,0,0,0.5);">
+          Direct Landlord Till Settlement. <span style="background: linear-gradient(135deg, #34d399, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Zero Fraud.</span>
+        </h1>
+        
+        <p class="hero-subtitle" style="max-width: 38rem; color: #e2e8f0; font-size: 1.0625rem; text-shadow: 0 1px 4px rgba(0,0,0,0.4); margin-top: 1rem; line-height: 1.6;">
+          Tenants pay rent directly to their landlord's verified Safaricom Buy Goods Till. No middlemen, no delays, automatic SMS device verification, and tamper-proof digital receipts.
         </p>
 
-        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 2rem;">
-          <button class="hero-btn" id="btn-hero-login">
-            <i data-lucide="log-in" style="width: 1.125rem; height: 1.125rem;"></i>
-            Go to Log In / Sign In Page
+        <div style="display: flex; gap: 0.875rem; flex-wrap: wrap; margin-top: 2rem; align-items: center;">
+          <button class="hero-btn" id="btn-hero-login" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; border: 1px solid #34d399; font-weight: 800; padding: 0.875rem 1.75rem; border-radius: 9999px; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4); display: inline-flex; align-items: center; gap: 0.625rem; font-size: 1rem; cursor: pointer; transition: all 0.2s ease;">
+            <i data-lucide="log-in" style="width: 1.25rem; height: 1.25rem;"></i>
+            Sign In to Portal
           </button>
+          
+          <button class="hero-btn" id="btn-hero-reg-landlord" style="background: rgba(255, 255, 255, 0.12); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.3); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); font-weight: 700; padding: 0.875rem 1.5rem; border-radius: 9999px; display: inline-flex; align-items: center; gap: 0.625rem; font-size: 0.9375rem; cursor: pointer; transition: all 0.2s ease;">
+            <i data-lucide="building" style="width: 1.125rem; height: 1.125rem;"></i>
+            Register Property
+          </button>
+
+          <a href="#featured-properties" style="color: #cbd5e1; text-decoration: none; font-size: 0.875rem; font-weight: 600; margin-left: 0.5rem; display: inline-flex; align-items: center; gap: 0.35rem;">
+            <span>Explore verified properties</span>
+            <i data-lucide="arrow-down" style="width: 1rem; height: 1rem;"></i>
+          </a>
+        </div>
+
+        <!-- Trust Statistics Bar -->
+        <div class="hero-stats-strip">
+          <div class="hero-stat-item">
+            <div class="hero-stat-value">4,200+</div>
+            <div class="hero-stat-label">Active Residential Units</div>
+          </div>
+          <div class="hero-stat-item">
+            <div class="hero-stat-value">KES 48.5M+</div>
+            <div class="hero-stat-label">Secure Rent Processed</div>
+          </div>
+          <div class="hero-stat-item">
+            <div class="hero-stat-value" style="color: #34d399;">100%</div>
+            <div class="hero-stat-label">Direct Landlord Tills</div>
+          </div>
+          <div class="hero-stat-item">
+            <div class="hero-stat-value" style="color: #60a5fa;">0%</div>
+            <div class="hero-stat-label">Scam & Forgery Guarantee</div>
+          </div>
         </div>
       </div>
+
+      <!-- Featured Verified Properties Showcase Across Kenya -->
+      <section class="properties-showcase-section" id="featured-properties">
+        <div class="section-header-wrap">
+          <span class="section-tag">Direct Till Settlement</span>
+          <h2 class="section-main-title">Featured Verified Properties</h2>
+          <p class="section-main-desc">
+            Explore premier apartment buildings active on Rentmaster. All Till numbers are authenticated directly with Safaricom.
+          </p>
+        </div>
+
+        <div class="property-showcase-grid">
+          <!-- Card 1: Omwoyo Apartments -->
+          <div class="property-card">
+            <div class="property-card-media">
+              <img src="/images/property_omwoyo.jpg" alt="Omwoyo Apartments" class="property-card-img" />
+              <div class="property-card-badge">
+                <i data-lucide="map-pin" style="width: 0.75rem; height: 0.75rem; color: #f43f5e;"></i>
+                Kilimani, Nairobi
+              </div>
+              <div class="property-card-status">
+                <i data-lucide="check-circle" style="width: 0.75rem; height: 0.75rem;"></i>
+                Verified Till Active
+              </div>
+            </div>
+            <div class="property-card-body">
+              <h3 class="property-card-title">Omwoyo Apartments</h3>
+              <p class="property-card-subtitle">
+                <i data-lucide="user" style="width: 0.8125rem; height: 0.8125rem;"></i>
+                Managed by Linus Omwoyo · 24 Units
+              </p>
+              <div class="property-till-pill">
+                <span class="property-till-label">Official Buy Goods Till</span>
+                <span class="property-till-num">582190</span>
+              </div>
+              <button class="btn btn-primary btn-property-select" data-landlord="ll-1" style="margin-top: 1rem; width: 100%; justify-content: center; font-size: 0.8125rem; padding: 0.625rem;">
+                <i data-lucide="credit-card" style="width: 1rem; height: 1rem;"></i>
+                Pay Rent for Omwoyo
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 2: Sunrise Heights -->
+          <div class="property-card">
+            <div class="property-card-media">
+              <img src="/images/property_sunrise.jpg" alt="Sunrise Heights" class="property-card-img" />
+              <div class="property-card-badge">
+                <i data-lucide="map-pin" style="width: 0.75rem; height: 0.75rem; color: #f43f5e;"></i>
+                Nyali, Mombasa
+              </div>
+              <div class="property-card-status">
+                <i data-lucide="check-circle" style="width: 0.75rem; height: 0.75rem;"></i>
+                Verified Till Active
+              </div>
+            </div>
+            <div class="property-card-body">
+              <h3 class="property-card-title">Sunrise Heights</h3>
+              <p class="property-card-subtitle">
+                <i data-lucide="user" style="width: 0.8125rem; height: 0.8125rem;"></i>
+                Managed by Grace Mwangi · 18 Units
+              </p>
+              <div class="property-till-pill">
+                <span class="property-till-label">Official Buy Goods Till</span>
+                <span class="property-till-num">893421</span>
+              </div>
+              <button class="btn btn-primary btn-property-select" data-landlord="ll-2" style="margin-top: 1rem; width: 100%; justify-content: center; font-size: 0.8125rem; padding: 0.625rem;">
+                <i data-lucide="credit-card" style="width: 1rem; height: 1rem;"></i>
+                Pay Rent for Sunrise
+              </button>
+            </div>
+          </div>
+
+          <!-- Card 3: Greenwood Courts -->
+          <div class="property-card">
+            <div class="property-card-media">
+              <img src="/images/property_greenwood.jpg" alt="Greenwood Courts" class="property-card-img" />
+              <div class="property-card-badge">
+                <i data-lucide="map-pin" style="width: 0.75rem; height: 0.75rem; color: #f43f5e;"></i>
+                Karen, Nairobi
+              </div>
+              <div class="property-card-status">
+                <i data-lucide="check-circle" style="width: 0.75rem; height: 0.75rem;"></i>
+                Verified Till Active
+              </div>
+            </div>
+            <div class="property-card-body">
+              <h3 class="property-card-title">Greenwood Courts</h3>
+              <p class="property-card-subtitle">
+                <i data-lucide="user" style="width: 0.8125rem; height: 0.8125rem;"></i>
+                Managed by David Kamau · 12 Units
+              </p>
+              <div class="property-till-pill">
+                <span class="property-till-label">Official Buy Goods Till</span>
+                <span class="property-till-num">304918</span>
+              </div>
+              <button class="btn btn-primary btn-property-select" data-landlord="ll-3" style="margin-top: 1rem; width: 100%; justify-content: center; font-size: 0.8125rem; padding: 0.625rem;">
+                <i data-lucide="credit-card" style="width: 1rem; height: 1rem;"></i>
+                Pay Rent for Greenwood
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <!-- Dual Entrance Cards -->
       <div class="entrance-grid">
@@ -1294,6 +1485,63 @@ class RentPortalApp {
           </div>
         </div>
       </div>
+
+      <!-- Anti-Fraud & Scam Guarantee Architecture -->
+      <div class="anti-fraud-banner">
+        <div style="text-align: center; max-width: 36rem; margin: 0 auto;">
+          <span style="font-size: 0.75rem; font-weight: 800; color: var(--emerald-600); text-transform: uppercase; letter-spacing: 0.08em; background: rgba(16,185,129,0.1); padding: 0.25rem 0.75rem; border-radius: 9999px;">
+            Security Architecture
+          </span>
+          <h2 style="font-size: 1.5rem; font-weight: 800; margin-top: 0.5rem; color: var(--slate-900);">
+            Built from the Ground Up Against Rent Fraud
+          </h2>
+          <p style="font-size: 0.875rem; color: var(--slate-600); margin-top: 0.25rem;">
+            How Rentmaster protects tenants, landlords, and property managers against fraudulent messages and duplicate claims.
+          </p>
+        </div>
+
+        <div class="anti-fraud-grid">
+          <div class="anti-fraud-card">
+            <div class="anti-fraud-icon" style="background: rgba(16, 185, 129, 0.1); color: #059669;">
+              <i data-lucide="smartphone" style="width: 1.35rem; height: 1.35rem;"></i>
+            </div>
+            <h3 class="anti-fraud-title">Direct Safaricom Till</h3>
+            <p class="anti-fraud-text">
+              Zero escrow or 3rd-party middlemen. Money goes straight to the landlord's registered Safaricom Till account.
+            </p>
+          </div>
+
+          <div class="anti-fraud-card">
+            <div class="anti-fraud-icon" style="background: rgba(59, 130, 246, 0.1); color: #2563eb;">
+              <i data-lucide="cpu" style="width: 1.35rem; height: 1.35rem;"></i>
+            </div>
+            <h3 class="anti-fraud-title">Smart Till Verification</h3>
+            <p class="anti-fraud-text">
+              Automated parser reads M-Pesa SMS and matches the recipient Till directly to the landlord's verified building code.
+            </p>
+          </div>
+
+          <div class="anti-fraud-card">
+            <div class="anti-fraud-icon" style="background: rgba(245, 158, 11, 0.1); color: #d97706;">
+              <i data-lucide="fingerprint" style="width: 1.35rem; height: 1.35rem;"></i>
+            </div>
+            <h3 class="anti-fraud-title">Anti-Duplicate Hash</h3>
+            <p class="anti-fraud-text">
+              Every M-Pesa transaction code is permanently cataloged. Re-using or forging someone else's SMS code is rejected immediately.
+            </p>
+          </div>
+
+          <div class="anti-fraud-card">
+            <div class="anti-fraud-icon" style="background: rgba(99, 102, 241, 0.1); color: #4f46e5;">
+              <i data-lucide="shield-check" style="width: 1.35rem; height: 1.35rem;"></i>
+            </div>
+            <h3 class="anti-fraud-title">Digital Verification Seal</h3>
+            <p class="anti-fraud-text">
+              Every official PDF receipt includes an encrypted RMS-SEC security hash and QR verification badge.
+            </p>
+          </div>
+        </div>
+      </div>
     `;
   }
 
@@ -1301,6 +1549,11 @@ class RentPortalApp {
     document.getElementById('btn-hero-login')?.addEventListener('click', () => {
       this.unauthMode = 'login';
       this.authTab = 'signin';
+      this.render();
+    });
+    document.getElementById('btn-hero-reg-landlord')?.addEventListener('click', () => {
+      this.unauthMode = 'login';
+      this.authTab = 'landlord_reg';
       this.render();
     });
     document.getElementById('btn-landlord-go-login')?.addEventListener('click', () => {
@@ -1322,6 +1575,17 @@ class RentPortalApp {
       this.unauthMode = 'login';
       this.authTab = 'tenant_reg';
       this.render();
+    });
+
+    // Property card direct actions
+    document.querySelectorAll('.btn-property-select').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        const landlordId = e.currentTarget.getAttribute('data-landlord');
+        this.unauthMode = 'login';
+        this.authTab = 'tenant_reg';
+        this.selectedPropertyId = landlordId;
+        this.render();
+      });
     });
   }
 
@@ -2029,18 +2293,21 @@ class RentPortalApp {
       ` : ''}
 
       <!-- Landlord Header & Invite Link Share Button -->
-      <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
-        <div>
-          <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <span class="badge badge-approved">Approved Landlord</span>
-            <span style="font-size: 0.8125rem; color: var(--slate-500);">${landlord.propertyName}</span>
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.25rem; margin-bottom: 1.5rem; background: #ffffff; padding: 1.25rem; border-radius: var(--radius-xl); border: 1px solid var(--slate-200); box-shadow: var(--shadow-sm);">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+          <img src="${landlord.image || '/images/hero_apartments.jpg'}" alt="${landlord.propertyName}" class="portal-property-thumb" />
+          <div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+              <span class="badge badge-approved">Approved Landlord</span>
+              <span class="badge" style="background: rgba(16, 185, 129, 0.1); color: #047857; font-weight: 700;">Till ${landlord.tillNumber}</span>
+            </div>
+            <h1 style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; margin-top: 0.25rem; color: var(--slate-900);">
+              ${landlord.propertyName}
+            </h1>
+            <p style="font-size: 0.8125rem; color: var(--slate-600); margin-top: 0.125rem;">
+              Property Manager: <strong>${landlord.name}</strong> · Registered M-Pesa Till: <strong style="font-family: monospace; color: var(--emerald-700);">${landlord.tillNumber}</strong>
+            </p>
           </div>
-          <h1 style="font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em; margin-top: 0.25rem;">
-            ${landlord.propertyName}
-          </h1>
-          <p style="font-size: 0.875rem; color: var(--slate-600);">
-            Online M-Pesa Till: <strong>${landlord.tillNumber}</strong> · Landlord: <strong>${landlord.name}</strong>
-          </p>
         </div>
 
         <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
@@ -2975,12 +3242,24 @@ class RentPortalApp {
     const tillNumber = landlord ? landlord.tillNumber : tenant.tillNumber || '582190';
     const { bills, confirmedTotal, balance, outstandingMonths } = store.getTenantLedger(tenant);
 
+    const propertyImage = landlord?.image || '/images/hero_apartments.jpg';
+
     return `
-      <div style="margin-bottom: 1.5rem;">
-        <h1 style="font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em;">Welcome, ${tenant.name}</h1>
-        <p style="font-size: 0.875rem; color: var(--slate-600); margin-top: 0.25rem;">
-          ${tenant.propertyName || 'Omwoyo Apartments'} · House / unit <strong>${tenant.unit}</strong>
-        </p>
+      <!-- Tenant Property Banner with Real Estate Photo -->
+      <div class="tenant-property-banner">
+        <img src="${propertyImage}" alt="${tenant.propertyName || 'Apartments'}" class="tenant-property-banner-img" />
+        <div style="flex: 1;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+            <span class="badge badge-approved">Active Tenancy</span>
+            <span class="badge" style="background: rgba(16, 185, 129, 0.1); color: #047857; font-weight: 700;">Till ${tillNumber}</span>
+          </div>
+          <h1 style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; margin-top: 0.25rem; color: var(--slate-900);">
+            Welcome, ${tenant.name}
+          </h1>
+          <p style="font-size: 0.8125rem; color: var(--slate-600); margin-top: 0.125rem;">
+            ${tenant.propertyName || 'Apartments'} · House / Unit: <strong style="color: var(--slate-900);">${tenant.unit}</strong> · Landlord: <strong>${landlord ? landlord.name : 'Verified Landlord'}</strong>
+          </p>
+        </div>
       </div>
 
       <!-- KPI Cards -->
@@ -3178,169 +3457,146 @@ class RentPortalApp {
           </div>
         ` : ''}
 
-        <!-- Card 3: Main Action Form (Post M-Pesa Message vs STK Push) -->
+        <!-- Card 3: Main Action Form (Post M-Pesa Till Payment Message) -->
         <div class="card" style="box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);">
           <div class="card-header" style="border-bottom: 1px solid var(--slate-100); padding-bottom: 1rem;">
             <div>
               <h2 class="card-title" style="display: flex; align-items: center; gap: 0.5rem;">
-                <i data-lucide="${this.tenantPaySubTab === 'stk' ? 'smartphone' : 'message-square-plus'}" style="color: var(--primary);"></i>
-                ${this.tenantPaySubTab === 'stk' ? `Pay via M-Pesa STK Push Prompt` : `Post M-Pesa Payment Message to Landlord`}
+                <i data-lucide="shield-check" style="color: var(--primary);"></i>
+                Submit M-Pesa Rent Payment Confirmation
               </h2>
               <p style="font-size: 0.8125rem; color: var(--slate-500); margin-top: 0.25rem;">
-                ${this.tenantPaySubTab === 'stk' 
-                  ? `Receive a direct STK PIN popup prompt on your phone for Till ${tillNumber}.` 
-                  : `Paste your Safaricom M-Pesa SMS confirmation message or enter your code. It will be sent to Landlord <strong>${landlord ? landlord.name : 'Linus Omwoyo'}</strong> for confirmation before payment is approved.`}
+                Pay your monthly rent directly via Safaricom M-Pesa Buy Goods Till <strong>${tillNumber}</strong> (${landlord ? landlord.propertyName : 'Omwoyo Apartments'}), then submit your confirmation below for instant digital verification.
               </p>
             </div>
           </div>
 
-          <!-- Switcher Buttons -->
-          <div style="display: flex; gap: 0.5rem; background: var(--slate-100); padding: 0.375rem; border-radius: var(--radius-lg); margin-bottom: 1.25rem;">
-            <button type="button" class="btn ${this.tenantPaySubTab !== 'stk' ? 'btn-primary' : 'btn-secondary'}" style="flex: 1; font-size: 0.8125rem; padding: 0.5rem;" id="btn-subtab-post-msg">
-              <i data-lucide="message-square" style="width: 0.875rem; height: 0.875rem;"></i>
-              Post M-Pesa Message / SMS (Recommended)
-            </button>
-            <button type="button" class="btn ${this.tenantPaySubTab === 'stk' ? 'btn-primary' : 'btn-secondary'}" style="flex: 1; font-size: 0.8125rem; padding: 0.5rem;" id="btn-subtab-stk">
-              <i data-lucide="smartphone" style="width: 0.875rem; height: 0.875rem;"></i>
-              Trigger Phone STK Push
-            </button>
+          <!-- M-Pesa Payment Instructions Card -->
+          <div style="background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%); border: 1.5px solid #a7f3d0; border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #047857; font-weight: 800;">Official Landlord Buy Goods Till</div>
+              <div style="font-size: 1.75rem; font-weight: 800; font-family: monospace; color: #065f46; letter-spacing: 0.05em; margin-top: 0.125rem;">
+                Till ${tillNumber}
+              </div>
+              <div style="font-size: 0.75rem; color: #047857; font-weight: 600;">
+                Recipient: ${landlord ? landlord.propertyName : 'Omwoyo Apartments'} · ${landlord ? landlord.name : 'Linus Omwoyo'}
+              </div>
+            </div>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <button type="button" class="btn btn-secondary" onclick="navigator.clipboard?.writeText('${tillNumber}'); window.app.showToast('Till number ${tillNumber} copied to clipboard!');" style="background: #ffffff; border-color: #6ee7b7; color: #065f46; font-weight: 700; font-size: 0.8125rem;">
+                <i data-lucide="copy" style="width: 0.875rem; height: 0.875rem;"></i>
+                Copy Till Number
+              </button>
+            </div>
           </div>
 
-          ${this.tenantPaySubTab !== 'stk' ? `
-            <!-- Form 1: Post M-Pesa Message Form with Device Reading & Till Verification -->
-            <form id="form-tenant-post-message" style="display: flex; flex-direction: column; gap: 1rem;">
-              
-              <!-- Device Reading & Auto-Detection Toolbar -->
-              <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                <button type="button" class="btn btn-secondary" id="btn-device-paste-sms" style="flex: 1; min-width: 170px; font-size: 0.8125rem; padding: 0.5rem 0.75rem; display: flex; align-items: center; justify-content: center; gap: 0.375rem; background: #ffffff; border: 1.5px solid #10b981; color: #047857; font-weight: 700; border-radius: var(--radius-md);">
-                  <i data-lucide="clipboard" style="width: 1rem; height: 1rem;"></i>
-                  📋 Read / Paste SMS from Device
-                </button>
-                <button type="button" class="btn btn-secondary" id="btn-auto-detect-payment" style="flex: 1; min-width: 170px; font-size: 0.8125rem; padding: 0.5rem 0.75rem; display: flex; align-items: center; justify-content: center; gap: 0.375rem; background: #ffffff; border: 1.5px solid #0284c7; color: #0369a1; font-weight: 700; border-radius: var(--radius-md);">
-                  <i data-lucide="zap" style="width: 1rem; height: 1rem;"></i>
-                  ⚡ Auto-Detect Live Payment
-                </button>
-                <button type="button" class="btn btn-secondary" id="btn-trigger-screenshot" style="flex: 1; min-width: 140px; font-size: 0.8125rem; padding: 0.5rem 0.75rem; display: flex; align-items: center; justify-content: center; gap: 0.375rem; background: #ffffff; border: 1.5px solid #cbd5e1; color: #475569; border-radius: var(--radius-md);">
-                  <i data-lucide="camera" style="width: 1rem; height: 1rem;"></i>
-                  Attach SMS Photo
-                </button>
-                <input type="file" id="input-sms-screenshot" accept="image/*" capture="environment" style="display: none;" />
-              </div>
-
-              <!-- Screenshot Preview Container (if user attaches image) -->
-              <div id="screenshot-preview-container" style="display: none; align-items: center; gap: 0.75rem; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: var(--radius-md); padding: 0.5rem 0.75rem;">
-                <img id="screenshot-preview-img" src="" alt="SMS screenshot preview" style="width: 44px; height: 44px; object-fit: cover; border-radius: 4px; border: 1px solid #94a3b8; cursor: pointer;" />
-                <div style="flex: 1; font-size: 0.75rem; color: #475569;">
-                  <strong style="color: #0f172a; display: block;">M-Pesa SMS Screenshot Attached</strong>
-                  <span>Click image to view full-size</span>
-                </div>
-                <button type="button" class="btn-icon" id="btn-remove-screenshot" style="color: #ef4444; padding: 0.25rem;">
-                  <i data-lucide="trash-2" style="width: 1rem; height: 1rem;"></i>
-                </button>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label" style="font-weight: 700; display: flex; justify-content: space-between; align-items: center;">
-                  <span>M-Pesa SMS Confirmation Message</span>
-                  <span style="font-size: 0.75rem; font-weight: normal; color: var(--primary);">✨ Auto-verifies Till & extracts details</span>
-                </label>
-                <textarea 
-                  class="form-input" 
-                  id="post-sms-text" 
-                  rows="3" 
-                  placeholder="Paste your Safaricom SMS here, e.g.:&#10;QJD73821K9 Confirmed. Ksh15,000.00 sent to Till ${tillNumber} ${landlord ? landlord.propertyName : 'Omwoyo Apartments'} on ${new Date().toLocaleDateString('en-GB')} at 2:15 PM..."
-                  style="font-family: monospace; font-size: 0.8125rem; line-height: 1.4;"
-                ></textarea>
-              </div>
-
-              <!-- Real-Time Till Accuracy Status Box -->
-              <div id="sms-parse-indicator" style="display: block; background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: var(--radius-md); padding: 0.75rem 1rem; font-size: 0.8125rem; transition: all 0.2s ease;">
-                <div id="sms-till-badge-row" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.25rem;">
-                  <div style="display: flex; align-items: center; gap: 0.375rem; font-weight: 700; color: #475569;">
-                    <i data-lucide="store" style="width: 1rem; height: 1rem; color: #64748b;"></i>
-                    <span>Target Landlord Till: <strong style="font-family: monospace; font-size: 0.9375rem; color: #064e3b;">${tillNumber}</strong> (${landlord ? landlord.propertyName : 'Omwoyo Apartments'})</span>
-                  </div>
-                  <span class="badge" id="till-verify-badge" style="background: #f1f5f9; color: #64748b; font-size: 0.6875rem; font-weight: 800;">AWAITING MESSAGE</span>
-                </div>
-                <div style="font-size: 0.75rem; color: #64748b;" id="sms-parse-details">
-                  Paste your M-Pesa SMS above or click "📋 Read / Paste SMS from Device" to automatically verify that the Till number is accurate.
-                </div>
-              </div>
-
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                <div class="form-group">
-                  <label class="form-label">M-Pesa Transaction Code *</label>
-                  <input type="text" class="form-input" id="post-mpesa-code" placeholder="e.g. QJD73821K9" style="text-transform: uppercase; font-family: monospace; font-weight: 700;" required />
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Amount Paid (KES) *</label>
-                  <input type="number" class="form-input" id="post-amount" min="1" step="1" value="${suggestedAmount}" required />
-                </div>
-              </div>
-
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                <div class="form-group">
-                  <label class="form-label">Rent Month *</label>
-                  <input type="month" class="form-input" id="post-month" value="${getCurrentMonth()}" required />
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Sender Phone Number</label>
-                  <input type="tel" class="form-input" id="post-phone" value="${tenant.phone}" required />
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Optional Note for Landlord</label>
-                <input type="text" class="form-input" id="post-note" placeholder="e.g. Paid via husband's phone / M-Pesa agent" />
-              </div>
-
-              <!-- Explicit Till Confirmation Checkbox if Till Mismatch detected -->
-              <div id="till-mismatch-warning" style="display: none; background: #fff1f2; border: 1.5px solid #ef4444; border-radius: var(--radius-md); padding: 0.75rem; font-size: 0.8125rem; color: #991b1b;">
-                <div style="font-weight: 700; margin-bottom: 0.25rem;">⚠️ Warning: The Till number in your message does not match Till ${tillNumber}.</div>
-                <div style="margin-bottom: 0.5rem; font-size: 0.75rem;">If you are sure this payment was made to your landlord, check the box below to proceed:</div>
-                <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; font-weight: 700; cursor: pointer;">
-                  <input type="checkbox" id="chk-override-till-mismatch" />
-                  <span>I confirm I sent this payment for unit ${tenant.unit}</span>
-                </label>
-              </div>
-
-              <button type="submit" class="btn btn-primary btn-full" style="padding: 0.75rem 1rem; font-weight: 800; font-size: 0.9375rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" id="btn-submit-post-message">
-                <i data-lucide="send" style="width: 1.125rem; height: 1.125rem;"></i>
-                Confirm & Post Payment Message to Landlord
+          <!-- Form: Post M-Pesa Message Form with Device Reading & Till Verification -->
+          <form id="form-tenant-post-message" style="display: flex; flex-direction: column; gap: 1rem;">
+            
+            <!-- Device Reading & Auto-Detection Toolbar -->
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <button type="button" class="btn btn-secondary" id="btn-device-paste-sms" style="flex: 1; min-width: 170px; font-size: 0.8125rem; padding: 0.5rem 0.75rem; display: flex; align-items: center; justify-content: center; gap: 0.375rem; background: #ffffff; border: 1.5px solid #10b981; color: #047857; font-weight: 700; border-radius: var(--radius-md);">
+                <i data-lucide="clipboard" style="width: 1rem; height: 1rem;"></i>
+                📋 Read / Paste SMS from Device
               </button>
-
-              <div style="background-color: var(--slate-50); border-radius: var(--radius-md); padding: 0.75rem; font-size: 0.75rem; color: var(--slate-600); display: flex; align-items: center; gap: 0.5rem;">
-                <i data-lucide="shield-check" style="width: 1rem; height: 1rem; color: var(--emerald-600); flex-shrink: 0;"></i>
-                <span>Your message is matched against Landlord Till <strong>${tillNumber}</strong> (${landlord ? landlord.propertyName : 'Omwoyo Apartments'}) for confirmation before payment is approved.</span>
-              </div>
-            </form>
-          ` : `
-            <!-- Form 2: STK Push Phone Prompt Form -->
-            <form id="form-mpesa-payment" style="display: flex; flex-direction: column; gap: 1rem;">
-              <div class="form-group">
-                <label class="form-label">Payment Date</label>
-                <input type="date" class="form-input" id="pay-date" value="${today}" required />
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">Amount to pay (KES)</label>
-                <input type="number" class="form-input" id="pay-amount" min="1" step="1" value="${suggestedAmount}" required />
-              </div>
-
-              <div class="form-group">
-                <label class="form-label">M-Pesa Phone number</label>
-                <input type="tel" class="form-input" id="pay-phone" value="${tenant.phone}" required />
-              </div>
-
-              <button type="submit" class="btn btn-primary btn-full" style="padding: 0.75rem 1rem; font-weight: 800;">
-                <i data-lucide="smartphone" style="width: 1.125rem; height: 1.125rem;"></i>
-                Send STK Push Prompt to Handset
+              <button type="button" class="btn btn-secondary" id="btn-auto-detect-payment" style="flex: 1; min-width: 170px; font-size: 0.8125rem; padding: 0.5rem 0.75rem; display: flex; align-items: center; justify-content: center; gap: 0.375rem; background: #ffffff; border: 1.5px solid #0284c7; color: #0369a1; font-weight: 700; border-radius: var(--radius-md);">
+                <i data-lucide="zap" style="width: 1rem; height: 1rem;"></i>
+                ⚡ Auto-Detect Live Payment
               </button>
-              <p style="text-align: center; font-size: 0.75rem; color: var(--slate-500);">
-                An M-Pesa STK prompt will appear on your phone screen to enter your PIN.
-              </p>
-            </form>
-          `}
+              <button type="button" class="btn btn-secondary" id="btn-trigger-screenshot" style="flex: 1; min-width: 140px; font-size: 0.8125rem; padding: 0.5rem 0.75rem; display: flex; align-items: center; justify-content: center; gap: 0.375rem; background: #ffffff; border: 1.5px solid #cbd5e1; color: #475569; border-radius: var(--radius-md);">
+                <i data-lucide="camera" style="width: 1rem; height: 1rem;"></i>
+                Attach SMS Photo
+              </button>
+              <input type="file" id="input-sms-screenshot" accept="image/*" capture="environment" style="display: none;" />
+            </div>
+
+            <!-- Screenshot Preview Container (if user attaches image) -->
+            <div id="screenshot-preview-container" style="display: none; align-items: center; gap: 0.75rem; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: var(--radius-md); padding: 0.5rem 0.75rem;">
+              <img id="screenshot-preview-img" src="" alt="SMS screenshot preview" style="width: 44px; height: 44px; object-fit: cover; border-radius: 4px; border: 1px solid #94a3b8; cursor: pointer;" />
+              <div style="flex: 1; font-size: 0.75rem; color: #475569;">
+                <strong style="color: #0f172a; display: block;">M-Pesa SMS Screenshot Attached</strong>
+                <span>Click image to view full-size</span>
+              </div>
+              <button type="button" class="btn-icon" id="btn-remove-screenshot" style="color: #ef4444; padding: 0.25rem;">
+                <i data-lucide="trash-2" style="width: 1rem; height: 1rem;"></i>
+              </button>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" style="font-weight: 700; display: flex; justify-content: space-between; align-items: center;">
+                <span>M-Pesa SMS Confirmation Message</span>
+                <span style="font-size: 0.75rem; font-weight: normal; color: var(--primary);">✨ Auto-verifies Till & extracts details</span>
+              </label>
+              <textarea 
+                class="form-input" 
+                id="post-sms-text" 
+                rows="3" 
+                placeholder="Paste your Safaricom SMS here, e.g.:&#10;QJD73821K9 Confirmed. Ksh15,000.00 sent to Till ${tillNumber} ${landlord ? landlord.propertyName : 'Omwoyo Apartments'} on ${new Date().toLocaleDateString('en-GB')} at 2:15 PM..."
+                style="font-family: monospace; font-size: 0.8125rem; line-height: 1.4;"
+              ></textarea>
+            </div>
+
+            <!-- Real-Time Till Accuracy Status Box -->
+            <div id="sms-parse-indicator" style="display: block; background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: var(--radius-md); padding: 0.75rem 1rem; font-size: 0.8125rem; transition: all 0.2s ease;">
+              <div id="sms-till-badge-row" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.25rem;">
+                <div style="display: flex; align-items: center; gap: 0.375rem; font-weight: 700; color: #475569;">
+                  <i data-lucide="store" style="width: 1rem; height: 1rem; color: #64748b;"></i>
+                  <span>Target Landlord Till: <strong style="font-family: monospace; font-size: 0.9375rem; color: #064e3b;">${tillNumber}</strong> (${landlord ? landlord.propertyName : 'Omwoyo Apartments'})</span>
+                </div>
+                <span class="badge" id="till-verify-badge" style="background: #f1f5f9; color: #64748b; font-size: 0.6875rem; font-weight: 800;">AWAITING MESSAGE</span>
+              </div>
+              <div style="font-size: 0.75rem; color: #64748b;" id="sms-parse-details">
+                Paste your M-Pesa SMS above or click "📋 Read / Paste SMS from Device" to automatically verify that the Till number is accurate.
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label class="form-label">M-Pesa Transaction Code *</label>
+                <input type="text" class="form-input" id="post-mpesa-code" placeholder="e.g. QJD73821K9" style="text-transform: uppercase; font-family: monospace; font-weight: 700;" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Amount Paid (KES) *</label>
+                <input type="number" class="form-input" id="post-amount" min="1" step="1" value="${suggestedAmount}" required />
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label class="form-label">Rent Month *</label>
+                <input type="month" class="form-input" id="post-month" value="${getCurrentMonth()}" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Sender Phone Number</label>
+                <input type="tel" class="form-input" id="post-phone" value="${tenant.phone}" required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Optional Note for Landlord</label>
+              <input type="text" class="form-input" id="post-note" placeholder="e.g. Paid via husband's phone / M-Pesa agent" />
+            </div>
+
+            <!-- Explicit Till Confirmation Checkbox if Till Mismatch detected -->
+            <div id="till-mismatch-warning" style="display: none; background: #fff1f2; border: 1.5px solid #ef4444; border-radius: var(--radius-md); padding: 0.75rem; font-size: 0.8125rem; color: #991b1b;">
+              <div style="font-weight: 700; margin-bottom: 0.25rem;">⚠️ Warning: The Till number in your message does not match Till ${tillNumber}.</div>
+              <div style="margin-bottom: 0.5rem; font-size: 0.75rem;">If you are sure this payment was made to your landlord, check the box below to proceed:</div>
+              <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; font-weight: 700; cursor: pointer;">
+                <input type="checkbox" id="chk-override-till-mismatch" />
+                <span>I confirm I sent this payment for unit ${tenant.unit}</span>
+              </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full" style="padding: 0.75rem 1rem; font-weight: 800; font-size: 0.9375rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" id="btn-submit-post-message">
+              <i data-lucide="send" style="width: 1.125rem; height: 1.125rem;"></i>
+              Confirm & Post Payment Message to Landlord
+            </button>
+
+            <div style="background-color: var(--slate-50); border-radius: var(--radius-md); padding: 0.75rem; font-size: 0.75rem; color: var(--slate-600); display: flex; align-items: center; gap: 0.5rem;">
+              <i data-lucide="shield-check" style="width: 1rem; height: 1rem; color: var(--emerald-600); flex-shrink: 0;"></i>
+              <span>Your message is matched against Landlord Till <strong>${tillNumber}</strong> (${landlord ? landlord.propertyName : 'Omwoyo Apartments'}) for confirmation before payment is approved.</span>
+            </div>
+          </form>
         </div>
       </div>
     `;
@@ -3463,17 +3719,6 @@ class RentPortalApp {
         this.tenantTab = btn.getAttribute('data-tenant-tab');
         this.render();
       });
-    });
-
-    // Subtab switcher between Post Message and STK Push
-    document.getElementById('btn-subtab-post-msg')?.addEventListener('click', () => {
-      this.tenantPaySubTab = 'post_message';
-      this.render();
-    });
-
-    document.getElementById('btn-subtab-stk')?.addEventListener('click', () => {
-      this.tenantPaySubTab = 'stk';
-      this.render();
     });
 
     const landlord = tenant ? store.state.landlords.find((l) => l.id === tenant.landlordId) : null;
@@ -3699,26 +3944,6 @@ class RentPortalApp {
 
     // 6. Start Live Background Payment and Device Detection Watcher
     this.startTenantLivePaymentWatcher(tenant, tillNumber);
-
-    // Handle STK Push Payment
-    const mpesaForm = document.getElementById('form-mpesa-payment');
-    if (mpesaForm && tenant) {
-      mpesaForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const date = document.getElementById('pay-date').value;
-        const amount = Number(document.getElementById('pay-amount').value);
-        const phone = document.getElementById('pay-phone').value;
-
-        const newPayment = store.initiateMpesaPayment({
-          tenantId: tenant.userId,
-          amount,
-          phone,
-          date
-        });
-
-        this.showStkPushModal(newPayment);
-      });
-    }
 
     document.getElementById('btn-tenant-statement')?.addEventListener('click', () => {
       if (tenant) this.showStatementModal(tenant);
