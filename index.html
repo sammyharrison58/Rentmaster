@@ -3,8 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Rent Portal - Rent Payment & Property Management</title>
-  <meta name="description" content="Rent payment portal. Tenants sign in and request access; the landlord admin approves them and sets their rent. Approved tenants pay rent from their private account via Safaricom M-Pesa and track confirmations." />
+  <title>Rentmaster - Verified Rent Payment & Property Management</title>
+  <meta name="description" content="Kenya's verified rent payment portal. Tenants pay directly to landlord M-Pesa Tills, verify SMS codes, and get instant tamper-proof receipts." />
+
+  <!-- Custom Brand Favicon (replaces browser default globe icon) -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="apple-touch-icon" href="/favicon.svg" />
+  <link rel="shortcut icon" href="/favicon.svg" />
 
   <!-- Google Fonts: Inter & Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -24,13 +29,13 @@
   <!-- Header -->
   <header>
     <div class="container header-inner">
-      <div class="brand" onclick="window.app.render()">
-        <div class="brand-icon">
-          <i data-lucide="home" style="width: 1.25rem; height: 1.25rem;"></i>
+      <div class="brand" onclick="window.app.render()" title="Rentmaster Home">
+        <div class="brand-icon" style="padding: 0; background: none; box-shadow: none;">
+          <img src="/favicon.svg" alt="Rentmaster Logo" style="width: 2.375rem; height: 2.375rem; border-radius: 10px; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);" />
         </div>
         <div>
-          <div class="brand-title">Rent Portal</div>
-          <div class="brand-subtitle" id="brand-subtitle">Tenant rent payments</div>
+          <div class="brand-title">Rentmaster</div>
+          <div class="brand-subtitle" id="brand-subtitle">Verified Rent Payments</div>
         </div>
       </div>
 
