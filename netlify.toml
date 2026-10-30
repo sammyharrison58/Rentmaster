@@ -1,12 +1,11 @@
 # Netlify Configuration for Rentmaster
 [build]
-  command = "npm run build"
+  command = "npm install && (chmod -R +x node_modules/.bin 2>/dev/null || true) && node node_modules/vite/bin/vite.js build"
   publish = "dist"
   functions = "netlify/functions"
 
 [build.environment]
   NODE_VERSION = "20"
-  NPM_FLAGS = "--include=dev"
 
 [functions]
   node_bundler = "esbuild"
