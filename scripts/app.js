@@ -221,21 +221,28 @@ class RentPortalApp {
 
     if (!user) {
       if (this.unauthMode === 'overview') {
+        document.body.classList.remove('view-auth');
+        document.body.classList.add('view-overview');
         appMain.innerHTML = this.renderLandingView();
         this.attachLandingEvents();
       } else {
+        document.body.classList.remove('view-overview');
+        document.body.classList.add('view-auth');
         appMain.innerHTML = this.renderLoginPageView();
         this.attachLoginPageEvents();
       }
-    } else if (user.role === 'superadmin') {
-      appMain.innerHTML = this.renderSuperAdminView(user);
-      this.attachSuperAdminEvents(user);
-    } else if (user.role === 'owner' || user.role === 'caretaker') {
-      appMain.innerHTML = this.renderLandlordView(user);
-      this.attachLandlordEvents(user);
-    } else if (user.role === 'tenant') {
-      appMain.innerHTML = this.renderTenantView(user);
-      this.attachTenantEvents(user);
+    } else {
+      document.body.classList.remove('view-auth', 'view-overview');
+      if (user.role === 'superadmin') {
+        appMain.innerHTML = this.renderSuperAdminView(user);
+        this.attachSuperAdminEvents(user);
+      } else if (user.role === 'owner' || user.role === 'caretaker') {
+        appMain.innerHTML = this.renderLandlordView(user);
+        this.attachLandlordEvents(user);
+      } else if (user.role === 'tenant') {
+        appMain.innerHTML = this.renderTenantView(user);
+        this.attachTenantEvents(user);
+      }
     }
   }
 
@@ -245,6 +252,10 @@ class RentPortalApp {
 
     if (!user) {
       userDisplay.innerHTML = `
+        <div class="header-live-badge sm-inline" style="display: none;">
+          <span class="pulse-beacon"></span>
+          <span>Direct Till Network</span>
+        </div>
         <button class="btn btn-secondary" id="btn-header-overview" style="${this.unauthMode === 'overview' ? 'background: var(--slate-200);' : ''}">
           <i data-lucide="info" style="width: 1rem; height: 1rem;"></i>
           Overview
@@ -390,47 +401,80 @@ class RentPortalApp {
           <!-- Left Visual Panel with Real Estate Imagery -->
           <div class="auth-visual-panel">
             <div>
-              <div class="auth-visual-badge">
-                <i data-lucide="shield-check" style="width: 0.875rem; height: 0.875rem; color: #34d399;"></i>
-                <span>Rentmaster Enterprise</span>
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                <div class="auth-visual-badge">
+                  <i data-lucide="shield-check" style="width: 0.875rem; height: 0.875rem; color: #34d399;"></i>
+                  <span>Rentmaster Prime</span>
+                </div>
+                <div class="auth-live-pill">
+                  <span class="pulse-beacon"></span>
+                  <span>Direct Till Network</span>
+                </div>
               </div>
+
               <h2 class="auth-visual-headline">
-                Kenya's Most Trusted Real Estate & Rent Settlement Platform
+                Kenya's Verified Direct Rent Settlement Platform
               </h2>
               <p style="color: #cbd5e1; font-size: 0.875rem; margin-top: 0.75rem; line-height: 1.6;">
-                Direct Safaricom Buy Goods Till integration guarantees immediate fund settlement, automated receipting, and zero intermediary disputes.
+                Tenants pay directly to landlord Safaricom Buy Goods Tills. Enjoy instant automated receipting, tamper-proof audit trails, and zero intermediary disputes.
               </p>
+
+              <!-- Panel Live Trust Strip -->
+              <div class="auth-panel-stats-strip">
+                <div class="auth-panel-stat">
+                  <span class="auth-panel-stat-num">4,200+</span>
+                  <span class="auth-panel-stat-desc">Active Units</span>
+                </div>
+                <div class="auth-panel-stat">
+                  <span class="auth-panel-stat-num">100%</span>
+                  <span class="auth-panel-stat-desc">Direct Tills</span>
+                </div>
+                <div class="auth-panel-stat">
+                  <span class="auth-panel-stat-num">0%</span>
+                  <span class="auth-panel-stat-desc">Dispute Escrow</span>
+                </div>
+              </div>
 
               <div class="auth-property-mini-list">
                 <div class="auth-property-mini-item">
                   <img src="/images/property_omwoyo.jpg" alt="Omwoyo Apartments" class="auth-property-mini-img" />
-                  <div>
-                    <div style="font-weight: 700; font-size: 0.8125rem; color: #ffffff;">Omwoyo Apartments</div>
+                  <div style="flex: 1;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                      <div style="font-weight: 700; font-size: 0.8125rem; color: #ffffff;">Omwoyo Apartments</div>
+                      <span class="mini-verified-tag"><i data-lucide="check" style="width: 0.65rem; height: 0.65rem;"></i> Till Active</span>
+                    </div>
                     <div style="font-size: 0.6875rem; color: #94a3b8;">Kilimani, Nairobi · Till 582190</div>
                   </div>
                 </div>
                 <div class="auth-property-mini-item">
                   <img src="/images/property_sunrise.jpg" alt="Sunrise Heights" class="auth-property-mini-img" />
-                  <div>
-                    <div style="font-weight: 700; font-size: 0.8125rem; color: #ffffff;">Sunrise Heights</div>
+                  <div style="flex: 1;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                      <div style="font-weight: 700; font-size: 0.8125rem; color: #ffffff;">Sunrise Heights</div>
+                      <span class="mini-verified-tag"><i data-lucide="check" style="width: 0.65rem; height: 0.65rem;"></i> Till Active</span>
+                    </div>
                     <div style="font-size: 0.6875rem; color: #94a3b8;">Nyali, Mombasa · Till 893421</div>
                   </div>
                 </div>
                 <div class="auth-property-mini-item">
                   <img src="/images/property_greenwood.jpg" alt="Greenwood Courts" class="auth-property-mini-img" />
-                  <div>
-                    <div style="font-weight: 700; font-size: 0.8125rem; color: #ffffff;">Greenwood Courts</div>
+                  <div style="flex: 1;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                      <div style="font-weight: 700; font-size: 0.8125rem; color: #ffffff;">Greenwood Courts</div>
+                      <span class="mini-verified-tag"><i data-lucide="check" style="width: 0.65rem; height: 0.65rem;"></i> Till Active</span>
+                    </div>
                     <div style="font-size: 0.6875rem; color: #94a3b8;">Karen, Nairobi · Till 304918</div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div style="border-top: 1px solid rgba(255, 255, 255, 0.12); padding-top: 1.25rem; margin-top: 1.5rem;">
+            <div style="border-top: 1px solid rgba(255, 255, 255, 0.12); padding-top: 1.25rem; margin-top: 1.5rem; display: flex; align-items: center; justify-content: space-between;">
               <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: #a7f3d0;">
-                <i data-lucide="lock" style="width: 0.875rem; height: 0.875rem;"></i>
+                <i data-lucide="shield-check" style="width: 0.875rem; height: 0.875rem;"></i>
                 <span>Cryptographic Anti-Forgery Protected</span>
               </div>
+              <span style="font-size: 0.6875rem; color: #94a3b8;">v2.4 Protected</span>
             </div>
           </div>
 
@@ -482,6 +526,25 @@ class RentPortalApp {
 
               <div class="auth-divider">
                 <span>or continue with email</span>
+              </div>
+
+              <!-- Quick Demo Accounts Helper -->
+              <div class="auth-demo-helpers">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <span class="auth-demo-label">Quick Demo Access</span>
+                  <span style="font-size: 0.6875rem; color: var(--slate-400);">Click to auto-fill</span>
+                </div>
+                <div class="auth-demo-buttons">
+                  <button type="button" class="btn-demo-fill" data-email="admin@rentmaster.co.ke" data-pass="admin123" title="Super Admin Account">
+                    <i data-lucide="shield" style="width: 0.75rem; height: 0.75rem; color: #7c3aed;"></i> Admin
+                  </button>
+                  <button type="button" class="btn-demo-fill" data-email="linus@omwoyo.co.ke" data-pass="landlord123" title="Approved Landlord Account">
+                    <i data-lucide="building" style="width: 0.75rem; height: 0.75rem; color: #059669;"></i> Landlord
+                  </button>
+                  <button type="button" class="btn-demo-fill" data-email="sammy@gmail.com" data-pass="tenant123" title="Verified Tenant Account">
+                    <i data-lucide="user" style="width: 0.75rem; height: 0.75rem; color: #0284c7;"></i> Tenant
+                  </button>
+                </div>
               </div>
 
               <!-- Sign In Form -->
@@ -758,6 +821,24 @@ class RentPortalApp {
       this.authTab = 'signin';
       this.authAlert = null;
       this.render();
+    });
+
+    // Demo quick fill buttons
+    document.querySelectorAll('.btn-demo-fill').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        const email = e.currentTarget.getAttribute('data-email');
+        const pass = e.currentTarget.getAttribute('data-pass');
+        const emailInput = document.getElementById('auth-email');
+        const passInput = document.getElementById('auth-password');
+        if (emailInput) {
+          emailInput.value = email;
+          emailInput.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        if (passInput) {
+          passInput.value = pass;
+        }
+        this.showToast(`Prefilled ${e.currentTarget.innerText.trim()} credentials`, 'success');
+      });
     });
 
     // Password visibility toggle
@@ -1373,7 +1454,15 @@ class RentPortalApp {
           Tenants pay rent directly to their landlord's verified Safaricom Buy Goods Till. No middlemen, no delays, automatic SMS device verification, and tamper-proof digital receipts.
         </p>
 
-        <div style="display: flex; gap: 0.875rem; flex-wrap: wrap; margin-top: 2rem; align-items: center;">
+        <!-- Feature Highlights Chips -->
+        <div class="hero-chips-wrap">
+          <span class="hero-chip"><i data-lucide="zap" style="width: 0.875rem; height: 0.875rem; color: #34d399;"></i> Instant M-Pesa STK Push</span>
+          <span class="hero-chip"><i data-lucide="shield-check" style="width: 0.875rem; height: 0.875rem; color: #60a5fa;"></i> Verified Safaricom Tills</span>
+          <span class="hero-chip"><i data-lucide="file-check" style="width: 0.875rem; height: 0.875rem; color: #a7f3d0;"></i> Tamper-Proof PDF Receipts</span>
+          <span class="hero-chip"><i data-lucide="lock" style="width: 0.875rem; height: 0.875rem; color: #fcd34d;"></i> Zero Escrow Holding</span>
+        </div>
+
+        <div style="display: flex; gap: 0.875rem; flex-wrap: wrap; margin-top: 1.75rem; align-items: center;">
           <button class="hero-btn" id="btn-hero-login" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; border: 1px solid #34d399; font-weight: 800; padding: 0.875rem 1.75rem; border-radius: 9999px; box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4); display: inline-flex; align-items: center; gap: 0.625rem; font-size: 1rem; cursor: pointer; transition: all 0.2s ease;">
             <i data-lucide="log-in" style="width: 1.25rem; height: 1.25rem;"></i>
             Sign In to Portal
@@ -1534,27 +1623,27 @@ class RentPortalApp {
       <!-- Dual Entrance Cards with Real Photography -->
       <div class="entrance-grid">
         <!-- Landlord Portal Entrance -->
-        <div class="entrance-card landlord-card" style="display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; padding: 0;">
-          <div style="position: relative; height: 190px; overflow: hidden;">
-            <img src="/images/landlord_profile.jpg" alt="Professional Landlord" style="width: 100%; height: 100%; object-fit: cover; object-position: center 25%;" />
-            <span class="entrance-card-badge" style="position: absolute; top: 1rem; left: 1rem; margin: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">Landlords Only</span>
-            <div style="position: absolute; bottom: 0; inset-inline: 0; height: 35px; background: linear-gradient(transparent, #ffffff);"></div>
+        <div class="entrance-card landlord-card">
+          <div class="entrance-card-media">
+            <img src="/images/landlord_profile.jpg" alt="Professional Landlord" class="entrance-card-img" style="object-position: center 25%;" />
+            <span class="entrance-card-badge">Landlords Only</span>
+            <div class="entrance-card-img-fade"></div>
           </div>
-          <div style="padding: 1.5rem; display: flex; flex-direction: column; flex: 1; justify-content: space-between;">
+          <div class="entrance-card-body">
             <div>
-              <h2 style="font-size: 1.375rem; font-weight: 800; color: var(--slate-900);">
+              <h2 class="entrance-card-title">
                 Landlord Portal
               </h2>
-              <p style="font-size: 0.875rem; color: var(--slate-600); margin-top: 0.5rem; line-height: 1.6;">
+              <p class="entrance-card-desc">
                 Manage your building, provide your M-Pesa Till number, send invite links to your tenants, and mark payments as <strong>Paid</strong> or <strong>Not Paid</strong>.
               </p>
-              <div style="background-color: var(--amber-50); border: 1px solid var(--amber-200); border-radius: var(--radius-lg); padding: 0.75rem; margin-top: 1rem; font-size: 0.75rem; color: var(--amber-800);">
-                <i data-lucide="shield-check" style="width: 1rem; height: 1rem; display: inline-block; vertical-align: middle;"></i>
-                <strong>Approval Required:</strong> New landlord accounts are verified before portal access is activated.
+              <div class="entrance-card-notice notice-amber">
+                <i data-lucide="shield-check" style="width: 1rem; height: 1rem; flex-shrink: 0; margin-top: 0.125rem;"></i>
+                <span><strong>Approval Required:</strong> New landlord accounts are verified before portal access is activated.</span>
               </div>
             </div>
 
-            <div style="margin-top: 1.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <div class="entrance-card-actions">
               <button class="btn btn-primary" id="btn-landlord-go-login" style="flex: 1;">
                 Sign in as Landlord
               </button>
@@ -1566,28 +1655,28 @@ class RentPortalApp {
         </div>
 
         <!-- Tenant Portal Entrance -->
-        <div class="entrance-card tenant-card" style="display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; padding: 0;">
-          <div style="position: relative; height: 190px; overflow: hidden;">
-            <img src="/images/tenant_lifestyle.jpg" alt="Happy Tenant" style="width: 100%; height: 100%; object-fit: cover; object-position: center 20%;" />
-            <span class="entrance-card-badge" style="position: absolute; top: 1rem; left: 1rem; margin: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.2);">Tenants Only</span>
-            <div style="position: absolute; bottom: 0; inset-inline: 0; height: 35px; background: linear-gradient(transparent, #ffffff);"></div>
+        <div class="entrance-card tenant-card">
+          <div class="entrance-card-media">
+            <img src="/images/tenant_lifestyle.jpg" alt="Happy Tenant" class="entrance-card-img" style="object-position: center 20%;" />
+            <span class="entrance-card-badge">Tenants Only</span>
+            <div class="entrance-card-img-fade"></div>
           </div>
-          <div style="padding: 1.5rem; display: flex; flex-direction: column; flex: 1; justify-content: space-between;">
+          <div class="entrance-card-body">
             <div>
-              <h2 style="font-size: 1.375rem; font-weight: 800; color: var(--slate-900);">
+              <h2 class="entrance-card-title">
                 Tenant Portal
               </h2>
-              <p style="font-size: 0.875rem; color: var(--slate-600); margin-top: 0.5rem; line-height: 1.6;">
+              <p class="entrance-card-desc">
                 Pay rent online via M-Pesa using the Till number provided by your landlord. View monthly bills and download official receipts.
               </p>
-              <div style="background-color: var(--sky-50); border: 1px solid var(--sky-200); border-radius: var(--radius-lg); padding: 0.75rem; margin-top: 1rem; font-size: 0.75rem; color: var(--sky-800);">
-                <i data-lucide="lock" style="width: 1rem; height: 1rem; display: inline-block; vertical-align: middle;"></i>
-                <strong>Private Access:</strong> Tenants cannot view the Landlord or Super Admin portals.
+              <div class="entrance-card-notice notice-sky">
+                <i data-lucide="lock" style="width: 1rem; height: 1rem; flex-shrink: 0; margin-top: 0.125rem;"></i>
+                <span><strong>Private Access:</strong> Tenants cannot view the Landlord or Super Admin portals.</span>
               </div>
             </div>
 
-            <div style="margin-top: 1.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-              <button class="btn btn-primary" id="btn-tenant-go-login" style="flex: 1; background-color: #0284c7; border-color: #0284c7;">
+            <div class="entrance-card-actions">
+              <button class="btn btn-primary btn-tenant-blue" id="btn-tenant-go-login" style="flex: 1;">
                 Sign in as Tenant
               </button>
               <button class="btn btn-secondary" id="btn-tenant-go-reg" style="flex: 1;">
@@ -1600,14 +1689,14 @@ class RentPortalApp {
 
       <!-- Anti-Fraud & Scam Guarantee Architecture -->
       <div class="anti-fraud-banner">
-        <div style="text-align: center; max-width: 36rem; margin: 0 auto;">
-          <span style="font-size: 0.75rem; font-weight: 800; color: var(--emerald-600); text-transform: uppercase; letter-spacing: 0.08em; background: rgba(16,185,129,0.1); padding: 0.25rem 0.75rem; border-radius: 9999px;">
+        <div style="text-align: center; max-width: 38rem; margin: 0 auto;">
+          <span class="anti-fraud-pill-tag">
             Security Architecture
           </span>
-          <h2 style="font-size: 1.5rem; font-weight: 800; margin-top: 0.5rem; color: var(--slate-900);">
+          <h2 class="anti-fraud-main-title">
             Built from the Ground Up Against Rent Fraud
           </h2>
-          <p style="font-size: 0.875rem; color: var(--slate-600); margin-top: 0.25rem;">
+          <p class="anti-fraud-main-desc">
             How Rentmaster protects tenants, landlords, and property managers against fraudulent messages and duplicate claims.
           </p>
         </div>

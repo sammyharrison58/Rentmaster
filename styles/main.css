@@ -61,16 +61,97 @@
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background-color: #f8fafc;
   background-image: 
-    radial-gradient(circle at 10% 15%, rgba(16, 185, 129, 0.06) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(99, 102, 241, 0.05) 0%, transparent 45%);
+    radial-gradient(circle at 12% 10%, rgba(16, 185, 129, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 88% 75%, rgba(99, 102, 241, 0.06) 0%, transparent 45%),
+    radial-gradient(circle at 50% 45%, rgba(16, 185, 129, 0.03) 0%, transparent 50%),
+    linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
   background-attachment: fixed;
   color: var(--slate-900);
   line-height: 1.5;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Dynamic Body Themes for Unauthenticated Views */
+body.view-auth {
+  background-color: #0b1120;
+  background-image: 
+    radial-gradient(circle at 15% 20%, rgba(16, 185, 129, 0.22) 0%, transparent 45%),
+    radial-gradient(circle at 85% 75%, rgba(99, 102, 241, 0.18) 0%, transparent 50%),
+    linear-gradient(135deg, rgba(11, 17, 32, 0.88) 0%, rgba(6, 78, 59, 0.75) 50%, rgba(11, 17, 32, 0.94) 100%),
+    url('/images/auth_luxury_bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  color: #f8fafc;
+}
+
+body.view-auth header {
+  background-color: rgba(11, 17, 32, 0.78);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+body.view-auth .brand-title {
+  color: #ffffff;
+}
+
+body.view-auth .brand-subtitle {
+  color: #94a3b8;
+}
+
+body.view-auth #btn-header-overview {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+body.view-auth #btn-header-overview:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+body.view-overview {
+  background-color: #0b1120;
+  background-image: 
+    radial-gradient(circle at 12% 15%, rgba(16, 185, 129, 0.24) 0%, transparent 45%),
+    radial-gradient(circle at 88% 35%, rgba(59, 130, 246, 0.18) 0%, transparent 50%),
+    radial-gradient(circle at 50% 85%, rgba(16, 185, 129, 0.14) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(11, 17, 32, 0.92) 0%, rgba(15, 23, 42, 0.88) 45%, rgba(9, 14, 26, 0.96) 100%),
+    url('/images/luxury_estate_bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  color: #f8fafc;
+}
+
+body.view-overview header {
+  background-color: rgba(11, 17, 32, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+body.view-overview .brand-title {
+  color: #ffffff;
+}
+
+body.view-overview .brand-subtitle {
+  color: #94a3b8;
+}
+
+body.view-overview #btn-header-overview {
+  background: rgba(16, 185, 129, 0.2);
+  color: #34d399;
+  border-color: rgba(52, 211, 153, 0.4);
 }
 
 h1, h2, h3, h4, h5, h6, .brand-title, .auth-title, .card-title {
@@ -1558,20 +1639,23 @@ main {
    ======================================================== */
 .hero-card-with-bg {
   position: relative;
-  border-radius: 1.5rem;
+  border-radius: 1.75rem;
   overflow: hidden;
   margin-bottom: 2.5rem;
-  box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.25);
+  box-shadow: 
+    0 25px 50px -15px rgba(0, 0, 0, 0.5),
+    0 0 40px rgba(16, 185, 129, 0.15);
   background-color: #0f172a;
   background-image: 
-    linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(6, 78, 59, 0.85) 50%, rgba(15, 23, 42, 0.95) 100%),
-    url('/images/hero_apartments.jpg');
+    radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.25) 0%, transparent 40%),
+    linear-gradient(135deg, rgba(11, 17, 32, 0.88) 0%, rgba(6, 78, 59, 0.65) 45%, rgba(11, 17, 32, 0.92) 100%),
+    url('/images/luxury_estate_bg.jpg');
   background-size: cover;
   background-position: center 35%;
   background-repeat: no-repeat;
   color: #ffffff;
-  padding: 3.5rem 1.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 4rem 1.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 @media (min-width: 768px) {
@@ -1584,8 +1668,8 @@ main {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: rgba(16, 185, 129, 0.2);
-  border: 1px solid rgba(52, 211, 153, 0.4);
+  background: rgba(16, 185, 129, 0.22);
+  border: 1px solid rgba(52, 211, 153, 0.45);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   padding: 0.35rem 1rem;
@@ -1596,6 +1680,37 @@ main {
   color: #a7f3d0;
   margin-bottom: 1.25rem;
   text-transform: uppercase;
+}
+
+.hero-chips-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.hero-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-full);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #f1f5f9;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease;
+}
+
+.hero-chip:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(52, 211, 153, 0.5);
+  transform: translateY(-1px);
 }
 
 .hero-stats-strip {
@@ -1886,11 +2001,14 @@ main {
   width: 100%;
   max-width: 68rem;
   margin: 0 auto;
-  border-radius: 1.5rem;
+  border-radius: 1.75rem;
   overflow: hidden;
-  box-shadow: 0 20px 40px -15px rgba(15, 23, 42, 0.15);
+  box-shadow: 
+    0 25px 60px -15px rgba(0, 0, 0, 0.6),
+    0 0 50px -10px rgba(16, 185, 129, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.15);
   background: #ffffff;
-  border: 1px solid var(--slate-200);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 @media (min-width: 960px) {
@@ -1904,23 +2022,23 @@ main {
   position: relative;
   background-color: #0f172a;
   background-image: 
-    linear-gradient(135deg, rgba(15, 23, 42, 0.88) 0%, rgba(6, 78, 59, 0.8) 100%),
-    url('/images/hero_apartments.jpg');
+    linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(6, 78, 59, 0.72) 50%, rgba(15, 23, 42, 0.92) 100%),
+    url('/images/luxury_estate_bg.jpg');
   background-size: cover;
   background-position: center;
-  padding: 2.5rem;
+  padding: 3rem 2.25rem;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   color: #ffffff;
-  border-bottom: 1px solid var(--slate-200);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 @media (min-width: 960px) {
   .auth-visual-panel {
-    width: 45%;
+    width: 46%;
     border-bottom: none;
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    border-right: 1px solid rgba(255, 255, 255, 0.12);
   }
 }
 
@@ -1939,12 +2057,88 @@ main {
   text-transform: uppercase;
 }
 
+.auth-live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(16, 185, 129, 0.18);
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #a7f3d0;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pulse-beacon {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: beaconPulse 2s infinite;
+}
+
+@keyframes beaconPulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.auth-panel-stats-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+  padding: 0.875rem 0.75rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.auth-panel-stat {
+  text-align: center;
+}
+
+.auth-panel-stat-num {
+  display: block;
+  font-size: 1.0625rem;
+  font-weight: 800;
+  color: #34d399;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  line-height: 1.2;
+}
+
+.auth-panel-stat-desc {
+  display: block;
+  font-size: 0.6875rem;
+  color: #cbd5e1;
+  margin-top: 0.15rem;
+}
+
+.mini-verified-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.15);
+  padding: 0.15rem 0.45rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(52, 211, 153, 0.3);
+}
+
 .auth-visual-headline {
   font-size: 1.75rem;
   font-weight: 800;
   line-height: 1.25;
   color: #ffffff;
-  margin-top: 1.5rem;
+  margin-top: 1.25rem;
   letter-spacing: -0.02em;
 }
 
@@ -1952,7 +2146,7 @@ main {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  margin-top: 1.5rem;
+  margin-top: 1.25rem;
 }
 
 .auth-property-mini-item {
@@ -1961,16 +2155,25 @@ main {
   gap: 0.75rem;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  padding: 0.5rem 0.75rem;
+  padding: 0.6rem 0.75rem;
   border-radius: var(--radius-lg);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+}
+
+.auth-property-mini-item:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(52, 211, 153, 0.4);
+  transform: translateX(4px);
 }
 
 .auth-property-mini-img {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-md);
   object-fit: cover;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 .auth-card-column {
@@ -1986,6 +2189,273 @@ main {
   box-shadow: none;
   max-width: none;
   border-radius: 0;
+}
+
+/* Demo Accounts Helper Bar */
+.auth-demo-helpers {
+  background: var(--slate-50);
+  border: 1px dashed var(--slate-300);
+  border-radius: var(--radius-lg);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.auth-demo-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--slate-600);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.auth-demo-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.btn-demo-fill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.375rem 0.75rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--slate-200);
+  background: #ffffff;
+  color: var(--slate-700);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.btn-demo-fill:hover {
+  background: var(--primary-light);
+  border-color: var(--primary-border);
+  color: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(5, 150, 105, 0.15);
+}
+
+/* ========================================================
+   OVERVIEW VIEW COMPONENT DARK LUXURY STYLES
+   ======================================================== */
+body.view-overview .section-main-title {
+  color: #ffffff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+body.view-overview .section-main-desc {
+  color: #cbd5e1;
+}
+
+body.view-overview .property-card {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  color: #ffffff;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.4);
+}
+
+body.view-overview .property-card:hover {
+  border-color: rgba(52, 211, 153, 0.5);
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.6), 0 0 25px rgba(16, 185, 129, 0.2);
+  transform: translateY(-6px);
+}
+
+body.view-overview .property-card-title {
+  color: #ffffff;
+}
+
+body.view-overview .property-card-subtitle {
+  color: #94a3b8;
+}
+
+body.view-overview .property-till-pill {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+body.view-overview .property-till-label {
+  color: #94a3b8;
+}
+
+body.view-overview .property-till-num {
+  color: #34d399;
+  text-shadow: 0 0 10px rgba(52, 211, 153, 0.3);
+}
+
+/* Entrance Cards Dark Luxury Overrides */
+body.view-overview .entrance-card {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  padding: 0;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body.view-overview .entrance-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(52, 211, 153, 0.4);
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.6), 0 0 20px rgba(16, 185, 129, 0.15);
+}
+
+.entrance-card-media {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.entrance-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.entrance-card:hover .entrance-card-img {
+  transform: scale(1.05);
+}
+
+.entrance-card-img-fade {
+  position: absolute;
+  bottom: 0;
+  inset-inline: 0;
+  height: 45px;
+  background: linear-gradient(to bottom, transparent, rgba(15, 23, 42, 0.95));
+  pointer-events: none;
+}
+
+.entrance-card-body {
+  padding: 1.75rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: space-between;
+}
+
+body.view-overview .entrance-card-title {
+  font-size: 1.375rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+
+body.view-overview .entrance-card-desc {
+  font-size: 0.875rem;
+  color: #cbd5e1;
+  margin-top: 0.5rem;
+  line-height: 1.6;
+}
+
+.entrance-card-notice {
+  border-radius: var(--radius-lg);
+  padding: 0.75rem 1rem;
+  margin-top: 1rem;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+}
+
+body.view-overview .notice-amber {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #fde68a;
+}
+
+body.view-overview .notice-sky {
+  background: rgba(14, 165, 233, 0.12);
+  border: 1px solid rgba(14, 165, 233, 0.3);
+  color: #bae6fd;
+}
+
+.entrance-card-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+}
+
+.btn-tenant-blue {
+  background-color: #0284c7 !important;
+  border-color: #0284c7 !important;
+  color: #ffffff !important;
+}
+
+.btn-tenant-blue:hover {
+  background-color: #0369a1 !important;
+  border-color: #0369a1 !important;
+}
+
+/* Anti-Fraud Banner Dark Overrides */
+body.view-overview .anti-fraud-banner {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.94) 0%, rgba(6, 78, 59, 0.65) 50%, rgba(15, 23, 42, 0.96) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.5);
+  border-radius: 1.75rem;
+}
+
+body.view-overview .anti-fraud-pill-tag {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #34d399;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: rgba(16, 185, 129, 0.2);
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  padding: 0.3rem 0.85rem;
+  border-radius: var(--radius-full);
+  display: inline-block;
+}
+
+body.view-overview .anti-fraud-main-title {
+  font-size: 1.625rem;
+  font-weight: 800;
+  margin-top: 0.75rem;
+  color: #ffffff;
+}
+
+body.view-overview .anti-fraud-main-desc {
+  font-size: 0.875rem;
+  color: #cbd5e1;
+  margin-top: 0.35rem;
+  line-height: 1.6;
+}
+
+body.view-overview .anti-fraud-card {
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+  transition: all 0.2s ease;
+}
+
+body.view-overview .anti-fraud-card:hover {
+  background: rgba(15, 23, 42, 0.92);
+  border-color: rgba(52, 211, 153, 0.4);
+  transform: translateY(-2px);
+}
+
+body.view-overview .anti-fraud-title {
+  color: #ffffff;
+}
+
+body.view-overview .anti-fraud-text {
+  color: #94a3b8;
 }
 
 /* ========================================================
@@ -2021,6 +2491,79 @@ main {
   flex-shrink: 0;
   border: 1px solid var(--slate-200);
 }
+
+/* ========================================================
+   ENTERPRISE HEADER LIVE BADGE & ANIMATIONS
+   ======================================================== */
+.header-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  padding: 0.35rem 0.8rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #047857;
+  letter-spacing: 0.02em;
+}
+
+body.view-auth .header-live-badge,
+body.view-overview .header-live-badge {
+  background: rgba(16, 185, 129, 0.16);
+  border-color: rgba(52, 211, 153, 0.4);
+  color: #34d399;
+}
+
+.pulse-beacon {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  display: inline-block;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: pulseBeaconGlow 2s infinite cubic-bezier(0.66, 0, 0, 1);
+}
+
+@keyframes pulseBeaconGlow {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+/* Elevate Showcase Property Images */
+.property-card-img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.property-card:hover .property-card-img {
+  transform: scale(1.05);
+}
+
+/* Glassmorphism Accents */
+.hero-card-with-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(52, 211, 153, 0.8), rgba(96, 165, 250, 0.8), transparent);
+}
+
 
 
 
