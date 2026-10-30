@@ -295,15 +295,15 @@
       <p class="subtitle">Choose an account to continue to <span class="app-name">Rentmaster</span></p>
     </div>
 
-    <!-- View 1: Authentic Google Account Chooser -->
-    <div id="accountChooserView">
+    <!-- View 1: Authentic Google Account Chooser (Shown if user previously used their account in this browser) -->
+    <div id="accountChooserView" style="display: none;">
       <div class="account-list">
         <!-- Detected Google Account from browser session -->
         <button type="button" class="account-item" id="btnMainAccount" onclick="selectAccount()">
-          <div class="account-avatar" id="mainAccountAvatar">S</div>
+          <div class="account-avatar" id="mainAccountAvatar">U</div>
           <div class="account-meta">
-            <div class="account-name" id="mainAccountName">Sammy Harrison</div>
-            <div class="account-email" id="mainAccountEmail">sammyharrison58@gmail.com</div>
+            <div class="account-name" id="mainAccountName">Google User</div>
+            <div class="account-email" id="mainAccountEmail">user@gmail.com</div>
           </div>
           <span class="account-badge">Signed in</span>
         </button>
@@ -321,8 +321,8 @@
       </div>
     </div>
 
-    <!-- View 2: Enter another Google Account email -->
-    <div id="emailInputView" class="input-view">
+    <!-- View 2: Enter Google Account email -->
+    <div id="emailInputView" class="input-view" style="display: block;">
       <form onsubmit="handleCustomEmailSubmit(event)">
         <label for="customGoogleEmail" style="display: block; font-size: 0.8125rem; color: #5f6368; margin-bottom: 0.375rem; font-weight: 500;">
           Email or phone
@@ -334,12 +334,26 @@
           placeholder="Enter your Google Account email" 
           required 
           autocomplete="email"
+          autofocus
         />
+        <div style="margin-bottom: 1rem;">
+          <label for="customGoogleName" style="display: block; font-size: 0.8125rem; color: #5f6368; margin-bottom: 0.375rem; font-weight: 500;">
+            Full name (optional)
+          </label>
+          <input 
+            type="text" 
+            id="customGoogleName" 
+            class="input-field" 
+            placeholder="Your Name (auto-derived if left blank)" 
+            autocomplete="name"
+            style="margin-bottom: 0;"
+          />
+        </div>
         <button type="submit" class="btn-next">Next</button>
       </form>
-      <div style="text-align: center;">
+      <div id="backToChooserWrap" style="text-align: center; display: none;">
         <a href="javascript:void(0)" class="btn-back-accounts" onclick="showAccountChooser()">
-          Back to account chooser
+          Back to saved account
         </a>
       </div>
     </div>
@@ -359,24 +373,40 @@
   </div>
 
   <script>
-    // Detect Google web profile if stored
-    let activeEmail = 'sammyharrison58@gmail.com';
-    let activeName = 'Sammy Harrison';
+    // Clean up any legacy mock super admin profile
+    try {
+      const legacy = localStorage.getItem('google_web_profile');
+      if (legacy && (legacy.includes('sammyharrison58@gmail.com') || legacy.includes('Sammy Harrison'))) {
+        localStorage.removeItem('google_web_profile');
+      }
+    } catch (e) {}
+
+    let activeEmail = '';
+    let activeName = '';
 
     try {
-      const stored = localStorage.getItem('google_web_profile');
+      const stored = localStorage.getItem('google_user_session') || localStorage.getItem('google_web_profile');
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed.email) {
+        if (parsed.email && parsed.email !== 'sammyharrison58@gmail.com' && parsed.email !== 'admin@rentmaster.co.ke') {
           activeEmail = parsed.email;
           activeName = parsed.name || deriveName(parsed.email);
         }
       }
     } catch (e) {}
 
-    document.getElementById('mainAccountName').textContent = activeName;
-    document.getElementById('mainAccountEmail').textContent = activeEmail;
-    document.getElementById('mainAccountAvatar').textContent = activeName.charAt(0).toUpperCase();
+    if (activeEmail) {
+      document.getElementById('mainAccountName').textContent = activeName;
+      document.getElementById('mainAccountEmail').textContent = activeEmail;
+      document.getElementById('mainAccountAvatar').textContent = activeName.charAt(0).toUpperCase();
+      document.getElementById('accountChooserView').style.display = 'block';
+      document.getElementById('emailInputView').style.display = 'none';
+      document.getElementById('backToChooserWrap').style.display = 'block';
+    } else {
+      document.getElementById('accountChooserView').style.display = 'none';
+      document.getElementById('emailInputView').style.display = 'block';
+      document.getElementById('customGoogleEmail').focus();
+    }
 
     function deriveName(email) {
       const username = email.split('@')[0];
@@ -403,7 +433,8 @@
       e.preventDefault();
       const email = document.getElementById('customGoogleEmail').value.trim();
       if (!email) return;
-      const name = deriveName(email);
+      const customName = document.getElementById('customGoogleName')?.value?.trim();
+      const name = customName || deriveName(email);
       completeAuth(email, name);
     }
 
@@ -411,6 +442,7 @@
       document.getElementById('googleLoader').classList.add('active');
 
       try {
+        localStorage.setItem('google_user_session', JSON.stringify({ email, name }));
         localStorage.setItem('google_web_profile', JSON.stringify({ email, name }));
       } catch (e) {}
 

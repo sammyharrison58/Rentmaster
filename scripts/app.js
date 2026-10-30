@@ -1081,19 +1081,29 @@ class RentPortalApp {
     const modalRoot = document.getElementById('modal-root');
     if (!modalRoot) return;
 
-    let activeEmail = 'sammyharrison58@gmail.com';
-    let activeName = 'Sammy Harrison';
+    // Clean up any legacy mock super admin profile
+    try {
+      const legacy = localStorage.getItem('google_web_profile');
+      if (legacy && (legacy.includes('sammyharrison58@gmail.com') || legacy.includes('Sammy Harrison'))) {
+        localStorage.removeItem('google_web_profile');
+      }
+    } catch (e) {}
+
+    let activeEmail = '';
+    let activeName = '';
 
     try {
-      const stored = localStorage.getItem('google_web_profile');
+      const stored = localStorage.getItem('google_user_session') || localStorage.getItem('google_web_profile');
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed.email) {
+        if (parsed.email && parsed.email !== 'sammyharrison58@gmail.com' && parsed.email !== 'admin@rentmaster.co.ke') {
           activeEmail = parsed.email;
           activeName = parsed.name || this.deriveGoogleName(parsed.email);
         }
       }
     } catch (e) {}
+
+    const hasActiveAccount = Boolean(activeEmail);
 
     modalRoot.innerHTML = `
       <div class="modal-backdrop" id="google-modal-backdrop" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 1rem; animation: fadeIn 0.2s ease;">
@@ -1114,18 +1124,18 @@ class RentPortalApp {
               Sign in with Google
             </h3>
             <p style="font-size: 0.875rem; color: #5f6368;">
-              Choose an account to continue to <span style="font-weight: 600; color: #1a73e8;">Rentmaster</span>
+              ${hasActiveAccount ? 'Choose an account to continue to' : 'Enter your Google Account to continue to'} <span style="font-weight: 600; color: #1a73e8;">Rentmaster</span>
             </p>
           </div>
 
           <div style="padding: 0 1.75rem 1.75rem 1.75rem;">
-            <!-- Authentic Google Account Selector View -->
-            <div id="modalAccountChooserView">
+            <!-- View 1: Authentic Google Account Selector View (Only shown if user has a previously entered session) -->
+            <div id="modalAccountChooserView" style="display: ${hasActiveAccount ? 'block' : 'none'};">
               <div style="border: 1px solid #dadce0; border-radius: 8px; overflow: hidden; margin-bottom: 1.25rem;">
                 <!-- Detected Account -->
                 <button type="button" id="btnModalSelectActive" style="display: flex; align-items: center; gap: 0.875rem; padding: 0.875rem 1rem; width: 100%; border: none; background: #ffffff; text-align: left; cursor: pointer; transition: background 0.15s ease; border-bottom: 1px solid #f1f3f4;">
                   <div style="width: 38px; height: 38px; border-radius: 50%; background: #1a73e8; color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 1.125rem; flex-shrink: 0;">
-                    ${activeName.charAt(0).toUpperCase()}
+                    ${activeName ? activeName.charAt(0).toUpperCase() : 'U'}
                   </div>
                   <div style="flex: 1; min-width: 0;">
                     <div style="font-weight: 600; font-size: 0.9375rem; color: #202124; line-height: 1.3;">${activeName}</div>
@@ -1147,8 +1157,8 @@ class RentPortalApp {
               </div>
             </div>
 
-            <!-- Custom Email View -->
-            <div id="modalCustomEmailView" style="display: none; margin-bottom: 1.25rem;">
+            <!-- View 2: Custom Email View -->
+            <div id="modalCustomEmailView" style="display: ${hasActiveAccount ? 'none' : 'block'}; margin-bottom: 1.25rem;">
               <form id="form-modal-google-custom">
                 <label for="modalCustomEmailInput" style="display: block; font-size: 0.8125rem; color: #5f6368; margin-bottom: 0.375rem; font-weight: 500;">
                   Email or phone
@@ -1159,15 +1169,26 @@ class RentPortalApp {
                   class="form-input" 
                   placeholder="Enter your Google Account email" 
                   required 
+                  style="margin-bottom: 0.75rem;"
+                  autofocus
+                />
+                <label for="modalCustomNameInput" style="display: block; font-size: 0.8125rem; color: #5f6368; margin-bottom: 0.375rem; font-weight: 500;">
+                  Full name (optional)
+                </label>
+                <input 
+                  type="text" 
+                  id="modalCustomNameInput" 
+                  class="form-input" 
+                  placeholder="Your Name (auto-derived if left blank)" 
                   style="margin-bottom: 1rem;"
                 />
                 <button type="submit" class="btn btn-primary btn-full" style="background-color: #1a73e8; border-color: #1a73e8; padding: 0.75rem;">
                   Next
                 </button>
               </form>
-              <div style="text-align: center; margin-top: 0.75rem;">
+              <div id="modalBackChooserWrap" style="text-align: center; margin-top: 0.75rem; display: ${hasActiveAccount ? 'block' : 'none'};">
                 <a href="javascript:void(0)" id="btnModalBackChooser" style="color: #1a73e8; font-size: 0.8125rem; text-decoration: none;">
-                  Back to account chooser
+                  Back to saved account
                 </a>
               </div>
             </div>
@@ -1203,6 +1224,7 @@ class RentPortalApp {
       if (loader) loader.style.display = 'block';
 
       try {
+        localStorage.setItem('google_user_session', JSON.stringify({ email, name }));
         localStorage.setItem('google_web_profile', JSON.stringify({ email, name }));
       } catch (e) {}
 
@@ -1221,6 +1243,7 @@ class RentPortalApp {
     document.getElementById('btnModalShowCustom')?.addEventListener('click', () => {
       document.getElementById('modalAccountChooserView').style.display = 'none';
       document.getElementById('modalCustomEmailView').style.display = 'block';
+      document.getElementById('modalBackChooserWrap').style.display = 'block';
       document.getElementById('modalCustomEmailInput')?.focus();
     });
 
@@ -1235,7 +1258,8 @@ class RentPortalApp {
       e.preventDefault();
       const email = document.getElementById('modalCustomEmailInput').value.trim();
       if (!email) return;
-      const name = this.deriveGoogleName(email);
+      const customName = document.getElementById('modalCustomNameInput')?.value?.trim();
+      const name = customName || this.deriveGoogleName(email);
       triggerLogin(email, name);
     });
   }
