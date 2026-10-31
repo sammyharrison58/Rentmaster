@@ -76,7 +76,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Dynamic Body Themes for Unauthenticated Views */
+/* Dynamic Body Themes for Unauthenticated & Authenticated Views */
 body.view-auth {
   background-color: #0b1120;
   background-image: 
@@ -115,6 +115,215 @@ body.view-auth #btn-header-overview {
 
 body.view-auth #btn-header-overview:hover {
   background: rgba(255, 255, 255, 0.2);
+}
+
+/* Later Joining Tenants Registration & Onboarding View */
+body.view-tenant-reg {
+  background-color: #0b1120;
+  background-image: 
+    radial-gradient(circle at 15% 20%, rgba(16, 185, 129, 0.28) 0%, transparent 45%),
+    radial-gradient(circle at 85% 75%, rgba(56, 189, 248, 0.22) 0%, transparent 50%),
+    linear-gradient(135deg, rgba(11, 17, 32, 0.86) 0%, rgba(15, 23, 42, 0.82) 50%, rgba(11, 17, 32, 0.94) 100%),
+    url('/images/tenant_lifestyle.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  color: #f8fafc;
+}
+
+/* Landlord Property Registration & Onboarding View */
+body.view-landlord-reg {
+  background-color: #064e3b;
+  background-image: 
+    radial-gradient(circle at 15% 20%, rgba(16, 185, 129, 0.32) 0%, transparent 45%),
+    radial-gradient(circle at 85% 75%, rgba(5, 150, 105, 0.24) 0%, transparent 50%),
+    linear-gradient(135deg, rgba(6, 78, 59, 0.88) 0%, rgba(15, 23, 42, 0.86) 55%, rgba(6, 78, 59, 0.94) 100%),
+    url('/images/property_greenwood.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  color: #f8fafc;
+}
+
+/* --- TENANTS PORTAL THEME (Existing Approved & Pending Tenants) --- */
+body.view-tenant {
+  background-color: #f8fafc;
+  background-image: 
+    radial-gradient(circle at 10% 12%, rgba(16, 185, 129, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 90% 85%, rgba(59, 130, 246, 0.07) 0%, transparent 45%),
+    linear-gradient(135deg, rgba(248, 250, 252, 0.92) 0%, rgba(241, 245, 249, 0.88) 50%, rgba(226, 232, 240, 0.94) 100%),
+    url('/images/luxury_interior.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  color: var(--slate-900);
+}
+
+body.view-tenant header {
+  background-color: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+}
+
+body.view-tenant .card {
+  background-color: rgba(255, 255, 255, 0.93);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 4px 6px -2px rgba(15, 23, 42, 0.02);
+}
+
+body.view-tenant .kpi-card {
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(226, 232, 240, 0.95);
+}
+
+/* --- LANDLORDS PORTAL THEME (Approved Landlords, Pending Landlords & Caretakers) --- */
+body.view-landlord {
+  background-color: #f8fafc;
+  background-image: 
+    radial-gradient(circle at 12% 10%, rgba(16, 185, 129, 0.12) 0%, transparent 40%),
+    radial-gradient(circle at 88% 80%, rgba(14, 165, 233, 0.08) 0%, transparent 45%),
+    linear-gradient(135deg, rgba(248, 250, 252, 0.93) 0%, rgba(236, 253, 245, 0.87) 50%, rgba(241, 245, 249, 0.94) 100%),
+    url('/images/hero_apartments.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  color: var(--slate-900);
+}
+
+body.view-landlord header {
+  background-color: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06);
+}
+
+body.view-landlord .card {
+  background-color: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.06), 0 4px 6px -2px rgba(15, 23, 42, 0.02);
+}
+
+body.view-landlord .kpi-card {
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(226, 232, 240, 0.95);
+}
+
+/* --- SUPER ADMIN HQ COMMAND CENTER THEME --- */
+body.view-superadmin {
+  background-color: #0b1120;
+  background-image: 
+    radial-gradient(circle at 12% 15%, rgba(99, 102, 241, 0.24) 0%, transparent 45%),
+    radial-gradient(circle at 88% 85%, rgba(16, 185, 129, 0.18) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.10) 0%, transparent 60%),
+    linear-gradient(135deg, rgba(11, 17, 32, 0.94) 0%, rgba(20, 24, 48, 0.91) 50%, rgba(10, 15, 28, 0.96) 100%),
+    url('/images/luxury_estate_bg.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  color: #f8fafc;
+}
+
+body.view-superadmin header {
+  background-color: rgba(11, 17, 32, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+body.view-superadmin .brand-title {
+  color: #ffffff;
+}
+
+body.view-superadmin .brand-subtitle {
+  color: #94a3b8;
+}
+
+body.view-superadmin h1 {
+  color: #f8fafc !important;
+}
+
+body.view-superadmin p {
+  color: #cbd5e1;
+}
+
+body.view-superadmin .card {
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f8fafc;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.4);
+}
+
+body.view-superadmin .card-title {
+  color: #f8fafc !important;
+}
+
+body.view-superadmin .kpi-card {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f8fafc;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+body.view-superadmin .kpi-label {
+  color: #94a3b8;
+}
+
+body.view-superadmin .kpi-value {
+  color: #f8fafc;
+}
+
+body.view-superadmin .table th {
+  background: rgba(15, 23, 42, 0.95);
+  color: #94a3b8;
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+body.view-superadmin .table td {
+  color: #e2e8f0;
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+body.view-superadmin .table tr:hover td {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+body.view-superadmin .tabs-nav {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+body.view-superadmin .tab-btn {
+  color: #cbd5e1;
+}
+
+body.view-superadmin .tab-btn:hover {
+  color: #ffffff;
+}
+
+body.view-superadmin .tab-btn.active {
+  background: rgba(99, 102, 241, 0.25);
+  color: #a5b4fc;
+  border-color: #818cf8;
 }
 
 body.view-overview {

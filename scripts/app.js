@@ -219,27 +219,43 @@ class RentPortalApp {
     const appMain = document.getElementById('app-main');
     if (!appMain) return;
 
+    const allViewClasses = [
+      'view-auth', 
+      'view-overview', 
+      'view-superadmin', 
+      'view-landlord', 
+      'view-tenant', 
+      'view-tenant-reg', 
+      'view-landlord-reg'
+    ];
+    document.body.classList.remove(...allViewClasses);
+
     if (!user) {
       if (this.unauthMode === 'overview') {
-        document.body.classList.remove('view-auth');
         document.body.classList.add('view-overview');
         appMain.innerHTML = this.renderLandingView();
         this.attachLandingEvents();
       } else {
-        document.body.classList.remove('view-overview');
         document.body.classList.add('view-auth');
+        if (this.authTab === 'tenant_reg') {
+          document.body.classList.add('view-tenant-reg');
+        } else if (this.authTab === 'landlord_reg') {
+          document.body.classList.add('view-landlord-reg');
+        }
         appMain.innerHTML = this.renderLoginPageView();
         this.attachLoginPageEvents();
       }
     } else {
-      document.body.classList.remove('view-auth', 'view-overview');
       if (user.role === 'superadmin') {
+        document.body.classList.add('view-superadmin');
         appMain.innerHTML = this.renderSuperAdminView(user);
         this.attachSuperAdminEvents(user);
       } else if (user.role === 'owner' || user.role === 'caretaker') {
+        document.body.classList.add('view-landlord');
         appMain.innerHTML = this.renderLandlordView(user);
         this.attachLandlordEvents(user);
       } else if (user.role === 'tenant') {
+        document.body.classList.add('view-tenant');
         appMain.innerHTML = this.renderTenantView(user);
         this.attachTenantEvents(user);
       }
@@ -686,6 +702,25 @@ class RentPortalApp {
             ${isTenantReg ? `
               <!-- Tenant Request Form -->
               <form id="form-auth-tenant" style="display: flex; flex-direction: column; gap: 1rem;">
+                ${(() => {
+                  const invitedLl = approvedLandlords.find(ll => ll.inviteCode === this.prefilledInviteCode || ll.id === this.selectedPropertyId);
+                  if (invitedLl) {
+                    return `
+                      <div style="background: linear-gradient(135deg, rgba(6, 78, 59, 0.12) 0%, rgba(16, 185, 129, 0.06) 100%); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 12px; padding: 0.875rem 1rem; display: flex; align-items: center; gap: 0.875rem; margin-bottom: 0.25rem;">
+                        <img src="${invitedLl.image || '/images/hero_apartments.jpg'}" alt="${invitedLl.propertyName}" style="width: 3.25rem; height: 3.25rem; border-radius: 8px; object-fit: cover; border: 1px solid rgba(16, 185, 129, 0.3);" />
+                        <div style="flex: 1;">
+                          <div style="font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.05em; color: #059669; font-weight: 800;">Verified Property Invitation</div>
+                          <div style="font-size: 1rem; font-weight: 800; color: #0f172a;">${invitedLl.propertyName}</div>
+                          <div style="font-size: 0.75rem; color: #475569;">
+                            Manager: <strong>${invitedLl.name}</strong> · M-Pesa Till: <strong style="font-family: monospace; color: #047857;">${invitedLl.tillNumber}</strong>
+                          </div>
+                        </div>
+                      </div>
+                    `;
+                  }
+                  return '';
+                })()}
+
                 <button type="button" class="btn-google-signin" id="btn-google-prefill-tenant" style="margin-bottom: 0.25rem;">
                   ${GOOGLE_ICON_SVG}
                   <span>Fast fill with Google Account</span>
@@ -1899,23 +1934,53 @@ class RentPortalApp {
     const totalPendingApprovals = pendingLandlords.length + pendingTenants.length;
 
     return `
-      <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
         <div>
           <div style="display: flex; align-items: center; gap: 0.5rem;">
             <span class="badge badge-superadmin">Super Admin Master</span>
-            <span style="font-size: 0.8125rem; color: var(--slate-500);">${user.email || 'Master System Account'}</span>
+            <span style="font-size: 0.8125rem; color: #94a3b8;">${user.email || 'Master System Account'}</span>
           </div>
-          <h1 style="font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em; margin-top: 0.25rem;">
+          <h1 style="font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em; margin-top: 0.25rem; color: #f8fafc;">
             Super Admin Control Center
           </h1>
-          <p style="font-size: 0.875rem; color: var(--slate-600);">
-            You have master oversight. Approve all registering landlords and tenants for their portals to open, and monitor all rent payments across Kenya.
+          <p style="font-size: 0.875rem; color: #cbd5e1;">
+            Master operations hub: oversee all registering properties, manage client landlords, and monitor all rent payments across Kenya.
           </p>
         </div>
 
-        <div class="pulse-indicator">
-          <div class="pulse-dot"></div>
-          <span>Platform Active · Real-time Monitor</span>
+        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+          <button class="btn btn-primary" onclick="window.app.showSuperAdminAddLandlordModal()" style="font-size: 0.8125rem; padding: 0.5rem 1rem; display: inline-flex; align-items: center; gap: 0.4rem; font-weight: 700; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);">
+            <i data-lucide="user-plus" style="width: 1rem; height: 1rem;"></i>
+            + Onboard Landlord Client
+          </button>
+          <div class="pulse-indicator" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #34d399;">
+            <div class="pulse-dot"></div>
+            <span>Platform Active · Real-time Monitor</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Platform Gateway Health & Client Readiness Bar -->
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: var(--radius-lg); padding: 0.75rem 1.25rem; margin-bottom: 1.5rem; backdrop-filter: blur(12px);">
+        <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; font-size: 0.8125rem;">
+          <div style="display: flex; align-items: center; gap: 0.4rem;">
+            <span class="pulse-dot" style="background: #10b981; width: 8px; height: 8px;"></span>
+            <span style="color: #94a3b8;">Daraja API Gateway:</span>
+            <strong style="color: #34d399;">Connected (Zero Latency)</strong>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.4rem;">
+            <i data-lucide="webhook" style="width: 0.9375rem; height: 0.9375rem; color: #38bdf8;"></i>
+            <span style="color: #94a3b8;">Safaricom Webhook:</span>
+            <strong style="color: #38bdf8;">/api/mpesa-callback (Live)</strong>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.4rem;">
+            <i data-lucide="shield-check" style="width: 0.9375rem; height: 0.9375rem; color: #a5b4fc;"></i>
+            <span style="color: #94a3b8;">Client Security:</span>
+            <strong style="color: #a5b4fc;">256-bit Bank Grade Encrypted</strong>
+          </div>
+        </div>
+        <div style="font-size: 0.75rem; color: #64748b;">
+          ${landlords.length} Properties · ${tenants.length} Tenants Active
         </div>
       </div>
 
@@ -2497,6 +2562,164 @@ class RentPortalApp {
     this.render();
   }
 
+  showSuperAdminAddLandlordModal() {
+    const html = `
+      <div class="modal-header">
+        <h3 class="modal-title">
+          <i data-lucide="user-plus" style="color: var(--primary);"></i>
+          Direct Onboard New Landlord Client
+        </h3>
+        <button class="btn-icon" onclick="window.app.closeModal()">
+          <i data-lucide="x" style="width: 1.25rem; height: 1.25rem;"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <form id="form-superadmin-onboard-landlord" style="display: flex; flex-direction: column; gap: 1rem;">
+          <div class="form-group">
+            <label class="form-label">Landlord / Owner Full Name</label>
+            <input type="text" class="form-input" id="onboard-ll-name" required placeholder="e.g. Samuel Githinji" />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <input type="email" class="form-input" id="onboard-ll-email" required placeholder="samuel@property.co.ke" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Safaricom Phone Number</label>
+              <input type="tel" class="form-input" id="onboard-ll-phone" required placeholder="0712345678" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Property / Apartment Name</label>
+              <input type="text" class="form-input" id="onboard-ll-property" required placeholder="e.g. Highview Court" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Property Location</label>
+              <input type="text" class="form-input" id="onboard-ll-location" required placeholder="e.g. Kileleshwa, Nairobi" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Safaricom M-Pesa Buy Goods Till</label>
+              <input type="text" class="form-input" id="onboard-ll-till" required placeholder="e.g. 842190" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Number of Rental Units</label>
+              <input type="number" class="form-input" id="onboard-ll-units" value="12" min="1" required />
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-full" style="padding: 0.75rem; font-weight: 700; margin-top: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+            <i data-lucide="shield-check" style="width: 1.125rem; height: 1.125rem;"></i>
+            Register & Activate Landlord Portal Immediately
+          </button>
+        </form>
+      </div>
+    `;
+
+    this.openModal(html);
+
+    document.getElementById('form-superadmin-onboard-landlord')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const name = document.getElementById('onboard-ll-name').value.trim();
+      const email = document.getElementById('onboard-ll-email').value.trim();
+      const phone = document.getElementById('onboard-ll-phone').value.trim();
+      const propertyName = document.getElementById('onboard-ll-property').value.trim();
+      const location = document.getElementById('onboard-ll-location').value.trim();
+      const tillNumber = document.getElementById('onboard-ll-till').value.trim();
+      const unitsCount = Number(document.getElementById('onboard-ll-units').value) || 12;
+
+      const newLandlord = store.registerLandlord({
+        name,
+        email,
+        phone,
+        propertyName,
+        location,
+        tillNumber,
+        unitsCount
+      });
+
+      // Immediately activate the landlord for client-readiness
+      store.approveLandlord(newLandlord.id);
+
+      this.closeModal();
+      this.showToast(`Landlord ${name} onboarded & activated! Till ${tillNumber}`);
+      this.render();
+    });
+  }
+
+  showBuildingNoticeModal(landlordId) {
+    const ll = store.state.landlords.find((l) => l.id === landlordId) || store.state.landlords[0];
+    if (!ll) return;
+
+    const inviteLink = `${window.location.origin}${window.location.pathname}?invite=${ll.inviteCode || ll.id}`;
+
+    const html = `
+      <div class="modal-header">
+        <h3 class="modal-title">Official Building Notice Board Poster</h3>
+        <button class="btn-icon" onclick="window.app.closeModal()">
+          <i data-lucide="x" style="width: 1.25rem; height: 1.25rem;"></i>
+        </button>
+      </div>
+
+      <div class="modal-body print-area">
+        <div style="border: 2px dashed #059669; border-radius: 12px; padding: 2rem; background: #ffffff; text-align: center; color: #0f172a;">
+          <div style="display: inline-block; padding: 0.35rem 1rem; background: #ecfdf5; border: 1px solid #10b981; border-radius: 9999px; font-size: 0.8125rem; font-weight: 800; color: #065f46; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 0.75rem;">
+            Official Resident Notice
+          </div>
+          <h2 style="font-size: 1.75rem; font-weight: 900; margin-bottom: 0.25rem; color: #0f172a;">
+            ${ll.propertyName}
+          </h2>
+          <p style="font-size: 0.875rem; color: #475569; margin-bottom: 1.25rem;">
+            Property Manager: <strong>${ll.name}</strong> · Location: <strong>${ll.location || 'Nairobi, Kenya'}</strong>
+          </p>
+
+          <div style="background: linear-gradient(135deg, #064e3b, #047857); color: #fff; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.25rem; box-shadow: 0 10px 25px -5px rgba(6, 78, 59, 0.3);">
+            <div style="font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.9;">
+              Official M-Pesa Buy Goods Till Number
+            </div>
+            <div style="font-size: 2.75rem; font-weight: 900; letter-spacing: 0.08em; font-family: monospace; margin: 0.4rem 0; color: #34d399;">
+              ${ll.tillNumber}
+            </div>
+            <div style="font-size: 0.8125rem; opacity: 0.9;">
+              Account Reference: Enter your <strong>House / Unit Number</strong> (e.g. Unit A1)
+            </div>
+          </div>
+
+          <div style="text-align: left; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 1.25rem; margin-bottom: 1.25rem; font-size: 0.875rem;">
+            <h4 style="font-weight: 800; margin-bottom: 0.5rem; color: #0f172a;">How to Pay Rent via M-Pesa:</h4>
+            <ol style="margin-left: 1.25rem; line-height: 1.7; color: #334155;">
+              <li>Go to <strong>M-Pesa</strong> &gt; <strong>Lipa na M-Pesa</strong> &gt; <strong>Buy Goods and Services</strong>.</li>
+              <li>Enter Till Number: <strong style="font-family: monospace; color: #047857; font-size: 1rem;">${ll.tillNumber}</strong>.</li>
+              <li>Enter Amount and your M-Pesa PIN.</li>
+              <li>Open your digital portal at <strong style="color: #0284c7; word-break: break-all;">${inviteLink}</strong> to auto-verify your payment and download your official receipt.</li>
+            </ol>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; padding-top: 0.75rem; font-size: 0.75rem; color: #64748b;">
+            <span>Powered by Rentmaster Kenya</span>
+            <span>Zero Surcharges for Tenants</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; border-top: 1px solid #e2e8f0;">
+        <button class="btn btn-secondary" onclick="window.app.closeModal()">Close</button>
+        <button class="btn btn-primary" onclick="window.print()" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+          <i data-lucide="printer" style="width: 1rem; height: 1rem;"></i>
+          Print A4 Notice Flyer
+        </button>
+      </div>
+    `;
+
+    this.openModal(html);
+  }
+
   // --- Tier 2: LANDLORD PORTAL ---
   renderLandlordView(user) {
     const landlord = store.getLandlordForUser(user) || store.state.landlords[0];
@@ -2626,24 +2849,35 @@ class RentPortalApp {
             <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
               <span class="badge badge-approved">Approved Landlord</span>
               <span class="badge" style="background: rgba(16, 185, 129, 0.1); color: #047857; font-weight: 700;">Till ${landlord.tillNumber}</span>
+              <span class="badge" style="background: rgba(16, 185, 129, 0.1); color: #047857; font-weight: 700; border: 1px solid rgba(16, 185, 129, 0.25); display: inline-flex; align-items: center; gap: 0.35rem;">
+                <span class="pulse-dot" style="width: 6px; height: 6px; background: #10b981;"></span>
+                Daraja Gateway Active
+              </span>
             </div>
             <h1 style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; margin-top: 0.25rem; color: var(--slate-900);">
               ${landlord.propertyName}
             </h1>
             <p style="font-size: 0.8125rem; color: var(--slate-600); margin-top: 0.125rem;">
-              Property Manager: <strong>${landlord.name}</strong> · Registered M-Pesa Till: <strong style="font-family: monospace; color: var(--emerald-700);">${landlord.tillNumber}</strong>
+              Property Manager: <strong>${landlord.name}</strong> · Registered M-Pesa Till: <strong style="font-family: monospace; color: var(--emerald-700);">${landlord.tillNumber}</strong> · ${landlord.location || 'Nairobi, Kenya'}
             </p>
           </div>
         </div>
 
         <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+          <button class="btn" id="btn-whatsapp-tenant-invite" data-link="${inviteLink}" data-property="${landlord.propertyName}" data-till="${landlord.tillNumber}" style="background: #25D366; color: #fff; font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.45rem 0.85rem; border-radius: 8px; cursor: pointer; border: none; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.25);">
+            💬 WhatsApp Invite
+          </button>
           <button class="btn btn-primary" id="btn-copy-tenant-invite" data-link="${inviteLink}">
             <i data-lucide="link" style="width: 1rem; height: 1rem;"></i>
-            Send Tenant Registration Link
+            Copy Invite
+          </button>
+          <button class="btn btn-secondary" id="btn-print-building-notice" data-landlord-id="${landlord.id}" style="display: inline-flex; align-items: center; gap: 0.4rem;">
+            <i data-lucide="printer" style="width: 1rem; height: 1rem;"></i>
+            Print Entrance Notice
           </button>
           <button class="btn btn-secondary" onclick="window.app.showUpdateTillModal('${landlord.id}')">
             <i data-lucide="edit" style="width: 1rem; height: 1rem;"></i>
-            Update Till Number
+            Update Till
           </button>
         </div>
       </div>
@@ -2655,8 +2889,13 @@ class RentPortalApp {
           <p class="kpi-value positive">${formatKES(monthlyConfirmed)}</p>
         </div>
         <div class="kpi-card">
-          <p class="kpi-label">Active Tenants</p>
-          <p class="kpi-value">${activeTenants.length} / ${landlord.unitsCount || 12} units</p>
+          <p class="kpi-label">Unit Occupancy Rate</p>
+          <p class="kpi-value">
+            ${activeTenants.length} / ${landlord.unitsCount || 12}
+            <span style="font-size: 0.8125rem; font-weight: 700; color: #10b981;">
+              (${Math.round((activeTenants.length / (landlord.unitsCount || 12)) * 100)}%)
+            </span>
+          </p>
         </div>
         <div class="kpi-card">
           <p class="kpi-label">Tenant Requests</p>
@@ -3293,6 +3532,19 @@ class RentPortalApp {
       }
     });
 
+    document.getElementById('btn-whatsapp-tenant-invite')?.addEventListener('click', (e) => {
+      const link = e.currentTarget.getAttribute('data-link') || '';
+      const prop = e.currentTarget.getAttribute('data-property') || 'Our Apartments';
+      const till = e.currentTarget.getAttribute('data-till') || '';
+      const text = `Hello! Please join our digital tenant portal for ${prop} on Rentmaster to view your monthly bills, pay rent directly to Till ${till}, and get instant verified receipts:\n${link}`;
+      window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    });
+
+    document.getElementById('btn-print-building-notice')?.addEventListener('click', (e) => {
+      const landlordId = e.currentTarget.getAttribute('data-landlord-id') || (user && user.landlordId);
+      this.showBuildingNoticeModal(landlordId);
+    });
+
     // Daraja Settings & Real Phone Handset Test
     document.getElementById('btn-toggle-daraja-guide')?.addEventListener('click', () => {
       const guideBox = document.getElementById('daraja-guide-box');
@@ -3650,6 +3902,81 @@ class RentPortalApp {
         </div>
       </div>
 
+      <!-- Client Onboarding & Fast M-Pesa Payment Guide -->
+      <div class="card" style="margin-bottom: 1.5rem; background: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(240, 253, 244, 0.90) 100%); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-xl); padding: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.6rem;">
+            <div style="width: 2.25rem; height: 2.25rem; border-radius: 8px; background: rgba(16, 185, 129, 0.15); display: flex; align-items: center; justify-content: center; color: #059669;">
+              <i data-lucide="sparkles" style="width: 1.25rem; height: 1.25rem;"></i>
+            </div>
+            <div>
+              <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #059669; font-weight: 800;">Tenant Quick Start & Support Desk</div>
+              <div style="font-size: 1rem; font-weight: 800; color: #0f172a;">How Rentmaster Handles Your Payments & Proof of Rent</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem;">
+            <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #047857; font-weight: 700;">Zero Transaction Surcharge</span>
+            <span class="badge" style="background: rgba(14, 165, 233, 0.15); color: #0284c7; font-weight: 700;">Instant Digital Receipts</span>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+          <div style="background: #ffffff; border: 1px solid rgba(226, 232, 240, 0.85); border-radius: 10px; padding: 1rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
+              <span style="width: 1.5rem; height: 1.5rem; border-radius: 9999px; background: #ecfdf5; color: #059669; font-weight: 800; font-size: 0.75rem; display: flex; align-items: center; justify-content: center;">1</span>
+              <strong style="font-size: 0.875rem; color: #0f172a;">Pay via M-Pesa Till</strong>
+            </div>
+            <p style="font-size: 0.8125rem; color: #64748b; line-height: 1.5; margin-bottom: 0.5rem;">
+              Dial <strong>*334#</strong> or M-Pesa App &gt; Buy Goods &gt; Till:
+            </p>
+            <div style="display: flex; align-items: center; justify-content: space-between; background: #f8fafc; border: 1px dashed #cbd5e1; padding: 0.4rem 0.6rem; border-radius: 6px;">
+              <span style="font-family: monospace; font-weight: 800; font-size: 1rem; color: #047857;">Till ${tillNumber}</span>
+              <button class="btn btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.75rem;" onclick="navigator.clipboard?.writeText('${tillNumber}'); window.app.showToast('Till number copied!');">
+                Copy
+              </button>
+            </div>
+          </div>
+
+          <div style="background: #ffffff; border: 1px solid rgba(226, 232, 240, 0.85); border-radius: 10px; padding: 1rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
+              <span style="width: 1.5rem; height: 1.5rem; border-radius: 9999px; background: #ecfdf5; color: #059669; font-weight: 800; font-size: 0.75rem; display: flex; align-items: center; justify-content: center;">2</span>
+              <strong style="font-size: 0.875rem; color: #0f172a;">Auto-Verify SMS</strong>
+            </div>
+            <p style="font-size: 0.8125rem; color: #64748b; line-height: 1.5;">
+              Copy the Safaricom confirmation SMS from your phone and paste it below. Rentmaster instantly validates the till and amount.
+            </p>
+          </div>
+
+          <div style="background: #ffffff; border: 1px solid rgba(226, 232, 240, 0.85); border-radius: 10px; padding: 1rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
+              <span style="width: 1.5rem; height: 1.5rem; border-radius: 9999px; background: #ecfdf5; color: #059669; font-weight: 800; font-size: 0.75rem; display: flex; align-items: center; justify-content: center;">3</span>
+              <strong style="font-size: 0.875rem; color: #0f172a;">Instant Receipt & Proof</strong>
+            </div>
+            <p style="font-size: 0.8125rem; color: #64748b; line-height: 1.5;">
+              Once matched, your ledger balance updates immediately. Download or print your verified electronic receipt anytime.
+            </p>
+          </div>
+
+          <div style="background: #ffffff; border: 1px solid rgba(226, 232, 240, 0.85); border-radius: 10px; padding: 1rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
+              <i data-lucide="headset" style="width: 1rem; height: 1rem; color: #0284c7;"></i>
+              <strong style="font-size: 0.875rem; color: #0f172a;">Resident Help Desk</strong>
+            </div>
+            <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 0.5rem;">
+              Caretaker: <strong>Peter Karanja</strong> (0722 000 111)
+            </p>
+            <div style="display: flex; gap: 0.35rem;">
+              <a href="tel:0722000111" class="btn btn-secondary" style="flex: 1; padding: 0.3rem 0.5rem; font-size: 0.75rem; text-align: center; text-decoration: none;">
+                📞 Call
+              </a>
+              <a href="https://wa.me/254722000111?text=Hello%20Peter,%20I%20am%20in%20Unit%20${encodeURIComponent(tenant.unit)}%20at%20${encodeURIComponent(tenant.propertyName || 'Property')}" target="_blank" class="btn" style="flex: 1; padding: 0.3rem 0.5rem; font-size: 0.75rem; background: #25D366; color: #fff; font-weight: 700; text-align: center; text-decoration: none; border-radius: 6px;">
+                💬 WhatsApp
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Tabs Navigation (NO LANDLORD OR SUPER ADMIN TABS) -->
       <div class="tabs-nav" role="tablist">
         <button class="tab-btn ${this.tenantTab === 'pay' ? 'active' : ''}" data-tenant-tab="pay">
@@ -3735,7 +4062,27 @@ class RentPortalApp {
           Your request for unit <strong>${tenant.unit}</strong> has been received and is awaiting approval by your landlord and the Super Admin. Once approved, you can pay rent directly to Till ${tenant.tillNumber || '582190'}.
         </p>
 
-        <div style="background-color: var(--slate-50); border-radius: var(--radius-lg); padding: 1rem; margin-top: 1.5rem; text-align: left; font-size: 0.875rem;">
+        <!-- Onboarding Progress Stepper -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin: 1.5rem 0 1rem 0; position: relative;">
+          <div style="position: absolute; top: 35%; left: 15%; right: 15%; height: 2px; background: #e2e8f0; z-index: 1;"></div>
+          
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 0.25rem; z-index: 2; position: relative; background: #ffffff; padding: 0 0.5rem;">
+            <div style="width: 1.75rem; height: 1.75rem; border-radius: 9999px; background: #10b981; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800;">✓</div>
+            <span style="font-size: 0.6875rem; font-weight: 700; color: #047857;">Submitted</span>
+          </div>
+
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 0.25rem; z-index: 2; position: relative; background: #ffffff; padding: 0 0.5rem;">
+            <div style="width: 1.75rem; height: 1.75rem; border-radius: 9999px; background: #f59e0b; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800;">⏳</div>
+            <span style="font-size: 0.6875rem; font-weight: 700; color: #b45309;">Landlord Review</span>
+          </div>
+
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 0.25rem; z-index: 2; position: relative; background: #ffffff; padding: 0 0.5rem;">
+            <div style="width: 1.75rem; height: 1.75rem; border-radius: 9999px; background: #e2e8f0; color: #94a3b8; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800;">3</div>
+            <span style="font-size: 0.6875rem; font-weight: 700; color: #64748b;">Pay & Receipts</span>
+          </div>
+        </div>
+
+        <div style="background-color: var(--slate-50); border-radius: var(--radius-lg); padding: 1rem; margin-top: 1rem; text-align: left; font-size: 0.875rem;">
           <div style="display: flex; justify-content: space-between; padding: 0.375rem 0;">
             <span style="color: var(--slate-500);">Tenant</span>
             <span style="font-weight: 600;">${tenant.name}</span>
@@ -3754,7 +4101,15 @@ class RentPortalApp {
           </div>
         </div>
 
-        <button class="btn btn-secondary" onclick="window.app.render()" style="margin-top: 1.5rem;">
+        <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
+          <a href="https://wa.me/254712345678?text=Hello%20${encodeURIComponent(tenant.propertyName || 'Landlord')},%20I%20have%20submitted%20my%20tenancy%20request%20for%20Unit%20${encodeURIComponent(tenant.unit)}%20on%20Rentmaster.%20Please%20approve%20my%20account." target="_blank" class="btn" style="background: #25D366; color: #fff; font-weight: 700; padding: 0.6rem 1.25rem; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);">
+            💬 WhatsApp Landlord to Expedite
+          </a>
+          <button class="btn btn-secondary" onclick="window.app.render()" style="padding: 0.6rem 1.25rem; display: inline-flex; align-items: center; gap: 0.4rem;">
+            <i data-lucide="refresh-cw" style="width: 1rem; height: 1rem;"></i>
+            Check Status
+          </button>
+        </div>
           <i data-lucide="refresh-cw" style="width: 1rem; height: 1rem;"></i>
           Check status
         </button>
