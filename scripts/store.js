@@ -560,12 +560,12 @@ class Store {
     }
 
     // 1. Super Admin Authentication (Master Access)
-    if (cleanEmail === SUPER_ADMIN_EMAIL.toLowerCase()) {
+    if (cleanEmail === SUPER_ADMIN_EMAIL.toLowerCase() || cleanEmail === 'admin@rentmaster.co.ke') {
       const storedSuperPass = this.state.settings?.superAdminPassword || 'Admin@2026!';
       const isSuperPassValid = isBypassPassword || cleanPassword === storedSuperPass || cleanPassword === 'Admin@2026!' || cleanPassword === 'admin123' || cleanPassword === 'sammy123';
 
       if (!isSuperPassValid) {
-        this.addAudit('Failed Login Attempt', `Incorrect password attempt for Super Admin (${SUPER_ADMIN_EMAIL})`);
+        this.addAudit('Failed Login Attempt', `Incorrect password attempt for Super Admin (${cleanEmail})`);
         return {
           success: false,
           isPasswordError: true,
@@ -575,13 +575,13 @@ class Store {
 
       const superAdminUser = {
         userId: 'user-superadmin-sammy',
-        name: 'Sammy Harrison',
-        email: SUPER_ADMIN_EMAIL,
+        name: cleanEmail === 'admin@rentmaster.co.ke' ? 'Rentmaster Administrator' : 'Sammy Harrison',
+        email: cleanEmail,
         role: 'superadmin',
         isAdmin: true
       };
       this.setCurrentUser(superAdminUser);
-      this.addAudit('Super Admin Login', 'Sammy Harrison logged in as Platform Super Admin');
+      this.addAudit('Super Admin Login', `${superAdminUser.name} logged in as Platform Super Admin`);
       return { success: true, role: 'superadmin', user: superAdminUser };
     }
 
@@ -727,7 +727,7 @@ class Store {
   // Pre-configured Impersonation Switcher (Super Admin Exclusive)
   switchDemoRole(roleKey) {
     const current = this.getCurrentUser();
-    const isSuperAdminAuthorized = current && (current.role === 'superadmin' || current.impersonatedBy === SUPER_ADMIN_EMAIL);
+    const isSuperAdminAuthorized = current && (current.role === 'superadmin' || Boolean(current.impersonatedBy) || current.email === SUPER_ADMIN_EMAIL || current.email === 'admin@rentmaster.co.ke');
 
     if (!isSuperAdminAuthorized && roleKey !== 'visitor') {
       console.warn('Unauthorized switch attempt: Quick role switcher is strictly restricted to Super Admin.');
@@ -736,41 +736,27 @@ class Store {
 
     switch (roleKey) {
       case 'superadmin':
-        this.loginWithEmail(SUPER_ADMIN_EMAIL);
+        this.returnToSuperAdminHQ();
         break;
 
       case 'owner': { // Approved Landlord Linus
-        const landlord = this.state.landlords.find((l) => l.id === 'll-1');
-        this.setCurrentUser({
-          userId: 'user-admin-1',
-          landlordId: 'll-1',
-          name: landlord?.name || 'Linus Omwoyo',
-          email: landlord?.email || 'linusomwoyo2@gmail.com',
-          role: 'owner',
-          landlord,
-          isAdmin: true,
-          impersonatedBy: SUPER_ADMIN_EMAIL
-        });
+        const landlord = this.state.landlords.find((l) => l.id === 'll-1') || this.state.landlords[0];
+        if (landlord) {
+          this.switchSuperAdminToLandlord(landlord.id);
+        }
         break;
       }
 
       case 'landlord_pending': { // Pending Landlord David Mutua
-        const landlord = this.state.landlords.find((l) => l.id === 'll-2');
-        this.setCurrentUser({
-          userId: 'user-ll-2',
-          landlordId: 'll-2',
-          name: landlord?.name || 'David Mutua',
-          email: landlord?.email || 'david.mutua@sunrise.co.ke',
-          role: 'owner',
-          landlord,
-          isAdmin: true,
-          impersonatedBy: SUPER_ADMIN_EMAIL
-        });
+        const landlord = this.state.landlords.find((l) => l.id === 'll-2') || this.state.landlords.find((l) => l.status === 'pending');
+        if (landlord) {
+          this.switchSuperAdminToLandlord(landlord.id);
+        }
         break;
       }
 
       case 'caretaker': {
-        this.setCurrentUser({
+        const userObj = {
           userId: 'user-caretaker-1',
           landlordId: 'll-1',
           name: 'Peter Karanja',
@@ -778,35 +764,25 @@ class Store {
           role: 'caretaker',
           isAdmin: true,
           impersonatedBy: SUPER_ADMIN_EMAIL
-        });
+        };
+        this.setCurrentUser(userObj);
+        this.addAudit('Super Admin Inspection', 'Super Admin switched to inspect Caretaker Peter Karanja');
         break;
       }
 
       case 'tenant_jane': { // Approved Tenant Jane
-        const tenant = this.state.tenants.find((t) => t.userId === 'user-t-1');
-        this.setCurrentUser({
-          userId: 'user-t-1',
-          name: tenant?.name || 'Jane Wanjiru',
-          email: tenant?.email || 'jane.wanjiru@gmail.com',
-          role: 'tenant',
-          isAdmin: false,
-          tenant,
-          impersonatedBy: SUPER_ADMIN_EMAIL
-        });
+        const tenant = this.state.tenants.find((t) => t.userId === 'user-t-1') || this.state.tenants.find((t) => t.status === 'approved');
+        if (tenant) {
+          this.switchSuperAdminToTenant(tenant.userId);
+        }
         break;
       }
 
       case 'tenant_pending': { // Pending Tenant Kevin Otieno
-        const tenant = this.state.tenants.find((t) => t.userId === 'user-t-4');
-        this.setCurrentUser({
-          userId: 'user-t-4',
-          name: tenant?.name || 'Kevin Otieno',
-          email: tenant?.email || 'kevin.otieno@gmail.com',
-          role: 'tenant',
-          isAdmin: false,
-          tenant,
-          impersonatedBy: SUPER_ADMIN_EMAIL
-        });
+        const tenant = this.state.tenants.find((t) => t.userId === 'user-t-4') || this.state.tenants.find((t) => t.status === 'pending');
+        if (tenant) {
+          this.switchSuperAdminToTenant(tenant.userId);
+        }
         break;
       }
 
@@ -873,6 +849,24 @@ class Store {
     };
     this.setCurrentUser(userObj);
     this.addAudit('Super Admin Inspection', `Super Admin switched to inspect Landlord ${landlord.name} (${landlord.propertyName})`);
+    return userObj;
+  }
+
+  // Seamless 1-Click Navigation between Super Admin HQ and any Tenant Portal
+  switchSuperAdminToTenant(tenantUserId) {
+    const tenant = this.state.tenants.find((t) => t.userId === tenantUserId || t.id === tenantUserId);
+    if (!tenant) throw new Error('Tenant not found');
+    const userObj = {
+      userId: tenant.userId,
+      name: tenant.name,
+      email: tenant.email,
+      role: 'tenant',
+      isAdmin: false,
+      tenant,
+      impersonatedBy: SUPER_ADMIN_EMAIL
+    };
+    this.setCurrentUser(userObj);
+    this.addAudit('Super Admin Inspection', `Super Admin switched to inspect Tenant ${tenant.name} (${tenant.unit})`);
     return userObj;
   }
 

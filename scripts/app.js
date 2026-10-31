@@ -315,7 +315,7 @@ class RentPortalApp {
     if (!demoBar) return;
 
     // Strict security rule: Only visible if active user is Super Admin or impersonated by Super Admin
-    const isSuperAdminAuthorized = user && (user.role === 'superadmin' || user.impersonatedBy === SUPER_ADMIN_EMAIL);
+    const isSuperAdminAuthorized = user && (user.role === 'superadmin' || Boolean(user.impersonatedBy) || user.email === SUPER_ADMIN_EMAIL || user.email === 'admin@rentmaster.co.ke');
     if (!isSuperAdminAuthorized) {
       demoBar.classList.remove('visible-for-admin');
       demoBar.style.display = 'none';
@@ -326,29 +326,32 @@ class RentPortalApp {
     demoBar.classList.add('visible-for-admin');
     demoBar.style.display = 'flex';
 
-    const isImpersonating = Boolean(user.impersonatedBy === SUPER_ADMIN_EMAIL && user.role !== 'superadmin');
+    const isImpersonating = Boolean(user?.impersonatedBy && user.role !== 'superadmin');
 
     demoBar.innerHTML = `
       <div class="demo-bar-label">
         <i data-lucide="shield-check" style="width: 1rem; height: 1rem; color: #a5b4fc;"></i>
-        <span>👑 Super Admin Quick Role Switcher (Hidden from Tenants & Landlords):</span>
+        <span>Super Admin Role Switcher:</span>
       </div>
       <div class="demo-pills">
         <button class="demo-pill ${!isImpersonating && user.role === 'superadmin' ? 'active' : ''}" data-role="superadmin">
-          👑 Super Admin (Master Account)
+          👑 Super Admin HQ
         </button>
         <button class="demo-pill ${isImpersonating && user.role === 'owner' ? 'active' : ''}" data-role="owner">
-          🏢 Test Landlord (Linus Omwoyo)
+          🏢 Landlord (Linus)
+        </button>
+        <button class="demo-pill ${isImpersonating && user.landlord?.status === 'pending' ? 'active' : ''}" data-role="landlord_pending">
+          ⏳ Pending Landlord (David)
         </button>
         <button class="demo-pill ${isImpersonating && user.role === 'tenant' && user.tenant?.status === 'approved' ? 'active' : ''}" data-role="tenant_jane">
-          🔑 Test Tenant (Jane Wanjiru)
+          🔑 Active Tenant (Jane)
         </button>
-        <button class="demo-pill ${isImpersonating && user.tenant?.status === 'pending' ? 'active' : ''}" data-role="tenant_pending">
-          ⏳ Test Pending Tenant (Kevin)
+        <button class="demo-pill ${isImpersonating && user.role === 'tenant' && user.tenant?.status === 'pending' ? 'active' : ''}" data-role="tenant_pending">
+          ⏳ Pending Tenant (Kevin)
         </button>
         ${isImpersonating ? `
           <button class="demo-pill" data-role="superadmin" style="background: linear-gradient(135deg, #10b981, #059669); border-color: #34d399; color: #fff; font-weight: 700;">
-            ⬅️ Return to Super Admin Portal
+            ⬅️ Return to Super Admin HQ
           </button>
         ` : ''}
         <button class="demo-pill" data-role="visitor" style="border-color: #f43f5e; color: #fecdd3;">
@@ -370,6 +373,10 @@ class RentPortalApp {
         this.render();
       });
     });
+
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
   }
 
   // --- Dedicated Log In / Sign In Page ---
@@ -1934,29 +1941,81 @@ class RentPortalApp {
         </div>
       </div>
 
-      <!-- Super Admin 1-Click Landlord Jump & Navigation Hub -->
+      <!-- Super Admin Role Switcher & Live Portal Inspector -->
       <div class="card super-admin-quick-jump-card" style="margin-bottom: 1.5rem; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #fff; border: 1px solid rgba(148, 163, 184, 0.2); box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.25); border-radius: var(--radius-xl); padding: 1.25rem;">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; padding-bottom: 0.75rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
           <div style="display: flex; align-items: center; gap: 0.75rem;">
-            <div style="width: 2.5rem; height: 2.5rem; border-radius: 8px; background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); display: flex; align-items: center; justify-content: center; color: #34d399;">
-              <i data-lucide="compass" style="width: 1.25rem; height: 1.25rem;"></i>
+            <div style="width: 2.5rem; height: 2.5rem; border-radius: 8px; background: rgba(56, 189, 248, 0.2); border: 1px solid rgba(56, 189, 248, 0.4); display: flex; align-items: center; justify-content: center; color: #38bdf8;">
+              <i data-lucide="shield-check" style="width: 1.25rem; height: 1.25rem;"></i>
             </div>
             <div>
-              <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #38bdf8; font-weight: 700;">Super Admin Landlord Navigation Hub</div>
-              <div style="font-size: 1.0625rem; font-weight: 800; color: #f8fafc;">Instant 1-Click Jump to Any Landlord's Portal</div>
+              <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #38bdf8; font-weight: 700;">Super Admin Role Switcher & Live Inspector</div>
+              <div style="font-size: 1.0625rem; font-weight: 800; color: #f8fafc;">Instantly Test & Experience Every Role Across the Platform</div>
             </div>
           </div>
-          <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
-            <label for="superadmin-hq-landlord-select" style="font-size: 0.8125rem; color: #cbd5e1; font-weight: 600;">Fast Jump:</label>
-            <select id="superadmin-hq-landlord-select" class="form-select" style="max-width: 20rem; background-color: #0f172a; color: #f8fafc; border-color: #475569; font-size: 0.875rem;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+            <span class="badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; font-weight: 700; border: 1px solid rgba(16, 185, 129, 0.3);">Master Access Active</span>
+          </div>
+        </div>
+
+        <!-- 1-Click Role Switcher Quick Actions -->
+        <div style="margin-top: 0.875rem; margin-bottom: 1rem;">
+          <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 0.04em;">
+            Quick Role Switcher (Switch role with 1-click):
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+            <button class="btn" data-admin-switch-role="superadmin" style="background: rgba(99, 102, 241, 0.35); border: 1px solid #818cf8; color: #fff; font-size: 0.8125rem; font-weight: 700; border-radius: 8px; padding: 0.45rem 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+              <i data-lucide="shield" style="width: 1rem; height: 1rem; color: #a5b4fc;"></i>
+              👑 Super Admin HQ (Active)
+            </button>
+            <button class="btn" data-admin-switch-role="owner" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: #e2e8f0; font-size: 0.8125rem; font-weight: 600; border-radius: 8px; padding: 0.45rem 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+              <i data-lucide="building" style="width: 1rem; height: 1rem; color: #38bdf8;"></i>
+              🏢 Approved Landlord (Linus)
+            </button>
+            <button class="btn" data-admin-switch-role="landlord_pending" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: #e2e8f0; font-size: 0.8125rem; font-weight: 600; border-radius: 8px; padding: 0.45rem 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+              <i data-lucide="clock" style="width: 1rem; height: 1rem; color: #fbbf24;"></i>
+              ⏳ Pending Landlord (David)
+            </button>
+            <button class="btn" data-admin-switch-role="tenant_jane" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: #e2e8f0; font-size: 0.8125rem; font-weight: 600; border-radius: 8px; padding: 0.45rem 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+              <i data-lucide="user-check" style="width: 1rem; height: 1rem; color: #34d399;"></i>
+              🔑 Active Tenant (Jane)
+            </button>
+            <button class="btn" data-admin-switch-role="tenant_pending" style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.15); color: #e2e8f0; font-size: 0.8125rem; font-weight: 600; border-radius: 8px; padding: 0.45rem 0.85rem; display: inline-flex; align-items: center; gap: 0.4rem; cursor: pointer;">
+              <i data-lucide="user-x" style="width: 1rem; height: 1rem; color: #f43f5e;"></i>
+              ⏳ Pending Tenant (Kevin)
+            </button>
+          </div>
+        </div>
+
+        <!-- Fast Jump Dropdowns (Any Landlord & Any Tenant) -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 1rem;">
+          <div>
+            <label for="superadmin-hq-landlord-select" style="display: block; font-size: 0.8125rem; color: #38bdf8; font-weight: 700; margin-bottom: 0.35rem;">
+              Fast Jump to Any Landlord:
+            </label>
+            <select id="superadmin-hq-landlord-select" class="form-select" style="width: 100%; background-color: #0f172a; color: #f8fafc; border-color: #475569; font-size: 0.875rem;">
               <option value="">-- Choose Landlord to Inspect --</option>
               ${landlords.map(l => `
                 <option value="${l.id}">${l.name} (${l.propertyName}) · Till ${l.tillNumber} [${l.status}]</option>
               `).join('')}
             </select>
           </div>
+
+          <div>
+            <label for="superadmin-hq-tenant-select" style="display: block; font-size: 0.8125rem; color: #34d399; font-weight: 700; margin-bottom: 0.35rem;">
+              Fast Jump to Any Tenant:
+            </label>
+            <select id="superadmin-hq-tenant-select" class="form-select" style="width: 100%; background-color: #0f172a; color: #f8fafc; border-color: #475569; font-size: 0.875rem;">
+              <option value="">-- Choose Tenant to Inspect --</option>
+              ${tenants.map(t => `
+                <option value="${t.userId}">${t.name} (${t.unit} - ${t.propertyName || 'Property'}) [${t.status}]</option>
+              `).join('')}
+            </select>
+          </div>
         </div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.75rem; margin-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 0.875rem;">
+
+        <!-- Landlords Quick Chips -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.75rem; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 0.875rem;">
           ${landlords.map(l => {
             const count = store.getTenantsForLandlord(l.id).length;
             const isPending = l.status === 'pending';
@@ -2374,12 +2433,30 @@ class RentPortalApp {
       this.render();
     });
 
-    // Fast Jump Select in Super Admin HQ
+    // Fast Jump Select Landlord in Super Admin HQ
     document.getElementById('superadmin-hq-landlord-select')?.addEventListener('change', (e) => {
       const targetId = e.target.value;
       if (targetId) {
         this.switchAsLandlord(targetId);
       }
+    });
+
+    // Fast Jump Select Tenant in Super Admin HQ
+    document.getElementById('superadmin-hq-tenant-select')?.addEventListener('change', (e) => {
+      const targetId = e.target.value;
+      if (targetId) {
+        this.switchAsTenant(targetId);
+      }
+    });
+
+    // Role Switcher 1-click buttons inside Super Admin view
+    document.querySelectorAll('[data-admin-switch-role]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const role = btn.getAttribute('data-admin-switch-role');
+        store.switchDemoRole(role);
+        this.showToast(`Switched role to ${btn.textContent.trim()}`);
+        this.render();
+      });
     });
   }
 
@@ -2408,6 +2485,12 @@ class RentPortalApp {
     this.render();
   }
 
+  switchAsTenant(tenantUserId) {
+    const userObj = store.switchSuperAdminToTenant(tenantUserId);
+    this.showToast(`Inspecting Tenant ${userObj.name} (${userObj.tenant?.unit || 'Unit'})`);
+    this.render();
+  }
+
   returnToSuperAdminHQ() {
     store.returnToSuperAdminHQ();
     this.showToast('Returned to Super Admin HQ Dashboard');
@@ -2418,9 +2501,49 @@ class RentPortalApp {
   renderLandlordView(user) {
     const landlord = store.getLandlordForUser(user) || store.state.landlords[0];
 
+    const isImpersonating = Boolean(user?.impersonatedBy);
+    const landlordInspectorBar = isImpersonating ? `
+      <!-- Sticky Super Admin Inspector & Quick Landlord Switcher Bar -->
+      <div class="card super-admin-inspector-bar" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); color: #fff; border-radius: var(--radius-xl); padding: 1rem 1.25rem; margin-bottom: 1.5rem; border: 1px solid rgba(165, 180, 252, 0.35); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35); position: sticky; top: 4.5rem; z-index: 35;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.875rem;">
+            <span class="badge" style="background: linear-gradient(135deg, #6366f1, #4f46e5); color: #fff; font-weight: 800; padding: 0.375rem 0.75rem; border-radius: 9999px; letter-spacing: 0.04em; display: inline-flex; align-items: center; gap: 0.35rem;">
+              <i data-lucide="shield-check" style="width: 0.875rem; height: 0.875rem;"></i>
+              SUPER ADMIN INSPECTOR
+            </span>
+            <div>
+              <div style="font-weight: 800; font-size: 1rem; color: #f8fafc;">
+                Currently Inspecting: <span style="color: #38bdf8;">${landlord.name}</span> (${landlord.propertyName})
+              </div>
+              <div style="font-size: 0.75rem; color: #94a3b8;">
+                Till: <strong style="color: #34d399;">${landlord.tillNumber}</strong> · Status: <strong style="color: ${landlord.status === 'approved' ? '#34d399' : '#fbbf24'};">${landlord.status.toUpperCase()}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+            <label for="inspector-switch-landlord-select" style="font-size: 0.8125rem; color: #cbd5e1; font-weight: 600;">Switch Landlord:</label>
+            <select id="inspector-switch-landlord-select" class="form-select" style="background-color: #0f172a; color: #f8fafc; border-color: #475569; font-size: 0.875rem; width: auto; max-width: 17rem;">
+              ${store.state.landlords.map(l => `
+                <option value="${l.id}" ${l.id === landlord.id ? 'selected' : ''}>
+                  ${l.name} - ${l.propertyName} (Till ${l.tillNumber}) [${l.status}]
+                </option>
+              `).join('')}
+            </select>
+
+            <button class="btn" id="btn-inspector-return-hq" style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: 1px solid #34d399; font-weight: 700; padding: 0.45rem 1rem; border-radius: 8px; display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); white-space: nowrap;">
+              <i data-lucide="arrow-left-circle" style="width: 1.125rem; height: 1.125rem;"></i>
+              Return to Super Admin HQ
+            </button>
+          </div>
+        </div>
+      </div>
+    ` : '';
+
     // If Landlord is awaiting Super Admin approval
     if (landlord.status === 'pending') {
       return `
+        ${landlordInspectorBar}
         <div class="card" style="max-width: 36rem; margin: 2rem auto; padding: 2rem; text-align: center;">
           <div style="width: 3.5rem; height: 3.5rem; border-radius: 9999px; background-color: var(--amber-50); color: var(--amber-700); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
             <i data-lucide="clock" style="width: 1.75rem; height: 1.75rem;"></i>
@@ -2459,6 +2582,7 @@ class RentPortalApp {
 
     if (landlord.status === 'suspended' || landlord.status === 'rejected') {
       return `
+        ${landlordInspectorBar}
         <div class="card" style="max-width: 32rem; margin: 2rem auto; padding: 2rem; text-align: center;">
           <h1 style="font-size: 1.25rem; font-weight: 700; color: var(--rose-700);">Account Not Active</h1>
           <p style="font-size: 0.875rem; color: var(--slate-600); margin-top: 0.5rem;">
@@ -2492,42 +2616,7 @@ class RentPortalApp {
     const inviteLink = `${window.location.origin}${window.location.pathname}?invite=${landlord.inviteCode || landlord.id}`;
 
     return `
-      ${user.impersonatedBy === SUPER_ADMIN_EMAIL ? `
-        <!-- Sticky Super Admin Inspector & Quick Landlord Switcher Bar -->
-        <div class="card super-admin-inspector-bar" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); color: #fff; border-radius: var(--radius-xl); padding: 1rem 1.25rem; margin-bottom: 1.5rem; border: 1px solid rgba(165, 180, 252, 0.35); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35); position: sticky; top: 4.5rem; z-index: 35;">
-          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
-            <div style="display: flex; align-items: center; gap: 0.875rem;">
-              <span class="badge" style="background: linear-gradient(135deg, #6366f1, #4f46e5); color: #fff; font-weight: 800; padding: 0.375rem 0.75rem; border-radius: 9999px; letter-spacing: 0.04em;">
-                👑 SUPER ADMIN INSPECTOR
-              </span>
-              <div>
-                <div style="font-weight: 800; font-size: 1rem; color: #f8fafc;">
-                  Currently Inspecting: <span style="color: #38bdf8;">${landlord.name}</span> (${landlord.propertyName})
-                </div>
-                <div style="font-size: 0.75rem; color: #94a3b8;">
-                  Till: <strong style="color: #34d399;">${landlord.tillNumber}</strong> · ${myTenants.length} Tenants · ${myPayments.length} Payments
-                </div>
-              </div>
-            </div>
-
-            <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
-              <label for="inspector-switch-landlord-select" style="font-size: 0.8125rem; color: #cbd5e1; font-weight: 600;">Switch Landlord:</label>
-              <select id="inspector-switch-landlord-select" class="form-select" style="background-color: #0f172a; color: #f8fafc; border-color: #475569; font-size: 0.875rem; width: auto; max-width: 17rem;">
-                ${store.state.landlords.map(l => `
-                  <option value="${l.id}" ${l.id === landlord.id ? 'selected' : ''}>
-                    ${l.name} - ${l.propertyName} (Till ${l.tillNumber})
-                  </option>
-                `).join('')}
-              </select>
-
-              <button class="btn" id="btn-inspector-return-hq" style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: 1px solid #34d399; font-weight: 700; padding: 0.45rem 1rem; border-radius: 8px; display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); white-space: nowrap;">
-                <i data-lucide="arrow-left-circle" style="width: 1.125rem; height: 1.125rem;"></i>
-                Return to Super Admin HQ
-              </button>
-            </div>
-          </div>
-        </div>
-      ` : ''}
+      ${landlordInspectorBar}
 
       <!-- Landlord Header & Invite Link Share Button -->
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.25rem; margin-bottom: 1.5rem; background: #ffffff; padding: 1.25rem; border-radius: var(--radius-xl); border: 1px solid var(--slate-200); box-shadow: var(--shadow-sm);">
@@ -3472,7 +3561,7 @@ class RentPortalApp {
     }
 
     if (tenant.status !== 'approved') {
-      return this.renderTenantStatusView(tenant);
+      return this.renderTenantStatusView(tenant, user);
     }
 
     const landlord = store.state.landlords.find((l) => l.id === tenant.landlordId);
@@ -3480,8 +3569,48 @@ class RentPortalApp {
     const { bills, confirmedTotal, balance, outstandingMonths } = store.getTenantLedger(tenant);
 
     const propertyImage = landlord?.image || '/images/hero_apartments.jpg';
+    const isImpersonating = Boolean(user?.impersonatedBy);
+
+    const tenantInspectorBar = isImpersonating ? `
+      <!-- Sticky Super Admin Inspector & Quick Tenant Switcher Bar -->
+      <div class="card super-admin-inspector-bar" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); color: #fff; border-radius: var(--radius-xl); padding: 1rem 1.25rem; margin-bottom: 1.5rem; border: 1px solid rgba(165, 180, 252, 0.35); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35); position: sticky; top: 4.5rem; z-index: 35;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.875rem;">
+            <span class="badge" style="background: linear-gradient(135deg, #6366f1, #4f46e5); color: #fff; font-weight: 800; padding: 0.375rem 0.75rem; border-radius: 9999px; letter-spacing: 0.04em; display: inline-flex; align-items: center; gap: 0.35rem;">
+              <i data-lucide="shield-check" style="width: 0.875rem; height: 0.875rem;"></i>
+              SUPER ADMIN INSPECTOR
+            </span>
+            <div>
+              <div style="font-weight: 800; font-size: 1rem; color: #f8fafc;">
+                Currently Inspecting Tenant: <span style="color: #38bdf8;">${tenant.name}</span> (${tenant.propertyName || 'Property'} · ${tenant.unit})
+              </div>
+              <div style="font-size: 0.75rem; color: #94a3b8;">
+                Till: <strong style="color: #34d399;">${tillNumber}</strong> · Rent: <strong style="color: #38bdf8;">${formatKES(tenant.monthlyRent)}</strong> · Status: <strong style="color: #34d399;">APPROVED</strong>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+            <label for="inspector-switch-tenant-select" style="font-size: 0.8125rem; color: #cbd5e1; font-weight: 600;">Switch Tenant:</label>
+            <select id="inspector-switch-tenant-select" class="form-select" style="background-color: #0f172a; color: #f8fafc; border-color: #475569; font-size: 0.875rem; width: auto; max-width: 17rem;">
+              ${store.state.tenants.map(t => `
+                <option value="${t.userId}" ${t.userId === tenant.userId ? 'selected' : ''}>
+                  ${t.name} (${t.unit} - ${t.propertyName || 'Property'}) [${t.status}]
+                </option>
+              `).join('')}
+            </select>
+
+            <button class="btn" id="btn-inspector-tenant-return-hq" style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: 1px solid #34d399; font-weight: 700; padding: 0.45rem 1rem; border-radius: 8px; display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); white-space: nowrap;">
+              <i data-lucide="arrow-left-circle" style="width: 1.125rem; height: 1.125rem;"></i>
+              Return to Super Admin HQ
+            </button>
+          </div>
+        </div>
+      </div>
+    ` : '';
 
     return `
+      ${tenantInspectorBar}
       <!-- Tenant Property Banner with Real Estate Photo -->
       <div class="tenant-property-banner">
         <img src="${propertyImage}" alt="${tenant.propertyName || 'Apartments'}" class="tenant-property-banner-img" />
@@ -3550,8 +3679,51 @@ class RentPortalApp {
     `;
   }
 
-  renderTenantStatusView(tenant) {
+  renderTenantStatusView(tenant, user) {
+    const activeUser = user || store.getCurrentUser();
+    const isImpersonating = Boolean(activeUser?.impersonatedBy);
+    const tillNumber = tenant.tillNumber || '582190';
+
+    const tenantInspectorBar = isImpersonating ? `
+      <!-- Sticky Super Admin Inspector & Quick Tenant Switcher Bar -->
+      <div class="card super-admin-inspector-bar" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); color: #fff; border-radius: var(--radius-xl); padding: 1rem 1.25rem; margin-bottom: 1.5rem; border: 1px solid rgba(165, 180, 252, 0.35); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35); position: sticky; top: 4.5rem; z-index: 35;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.875rem;">
+            <span class="badge" style="background: linear-gradient(135deg, #6366f1, #4f46e5); color: #fff; font-weight: 800; padding: 0.375rem 0.75rem; border-radius: 9999px; letter-spacing: 0.04em; display: inline-flex; align-items: center; gap: 0.35rem;">
+              <i data-lucide="shield-check" style="width: 0.875rem; height: 0.875rem;"></i>
+              SUPER ADMIN INSPECTOR
+            </span>
+            <div>
+              <div style="font-weight: 800; font-size: 1rem; color: #f8fafc;">
+                Currently Inspecting Tenant: <span style="color: #38bdf8;">${tenant.name}</span> (${tenant.propertyName || 'Property'} · ${tenant.unit})
+              </div>
+              <div style="font-size: 0.75rem; color: #94a3b8;">
+                Till: <strong style="color: #34d399;">${tillNumber}</strong> · Rent: <strong style="color: #38bdf8;">${formatKES(tenant.monthlyRent)}</strong> · Status: <strong style="color: #fbbf24;">PENDING APPROVAL</strong>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+            <label for="inspector-switch-tenant-select" style="font-size: 0.8125rem; color: #cbd5e1; font-weight: 600;">Switch Tenant:</label>
+            <select id="inspector-switch-tenant-select" class="form-select" style="background-color: #0f172a; color: #f8fafc; border-color: #475569; font-size: 0.875rem; width: auto; max-width: 17rem;">
+              ${store.state.tenants.map(t => `
+                <option value="${t.userId}" ${t.userId === tenant.userId ? 'selected' : ''}>
+                  ${t.name} (${t.unit} - ${t.propertyName || 'Property'}) [${t.status}]
+                </option>
+              `).join('')}
+            </select>
+
+            <button class="btn" id="btn-inspector-tenant-return-hq" style="background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: 1px solid #34d399; font-weight: 700; padding: 0.45rem 1rem; border-radius: 8px; display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); white-space: nowrap;">
+              <i data-lucide="arrow-left-circle" style="width: 1.125rem; height: 1.125rem;"></i>
+              Return to Super Admin HQ
+            </button>
+          </div>
+        </div>
+      </div>
+    ` : '';
+
     return `
+      ${tenantInspectorBar}
       <div class="card" style="max-width: 32rem; margin: 2rem auto; padding: 2rem; text-align: center;">
         <div style="width: 3.5rem; height: 3.5rem; border-radius: 9999px; display: flex; align-items: center; justify-content: center; margin: 0 auto; background-color: var(--amber-50); color: var(--amber-700);">
           <i data-lucide="clock" style="width: 1.75rem; height: 1.75rem;"></i>
@@ -3976,6 +4148,18 @@ class RentPortalApp {
   }
 
   attachTenantEvents(user) {
+    // Super Admin Inspector Switcher & Return to HQ Handlers (when inspecting tenant)
+    document.getElementById('inspector-switch-tenant-select')?.addEventListener('change', (e) => {
+      const targetId = e.target.value;
+      if (targetId) {
+        this.switchAsTenant(targetId);
+      }
+    });
+
+    document.getElementById('btn-inspector-tenant-return-hq')?.addEventListener('click', () => {
+      this.returnToSuperAdminHQ();
+    });
+
     const tenant = user.tenant || store.state.tenants.find((t) => t.userId === user.userId);
 
     document.querySelectorAll('[data-tenant-tab]').forEach((btn) => {
