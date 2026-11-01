@@ -29,14 +29,21 @@
   <!-- Header -->
   <header>
     <div class="container header-inner">
-      <div class="brand" onclick="window.app.render()" title="Rentmaster Home">
-        <div class="brand-icon" style="padding: 0; background: none; box-shadow: none;">
-          <img src="/favicon.svg" alt="Rentmaster Logo" style="width: 2.375rem; height: 2.375rem; border-radius: 10px; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);" />
+      <div class="header-left">
+        <div class="brand" onclick="window.app.render()" title="Rentmaster Home">
+          <div class="brand-icon" style="padding: 0; background: none; box-shadow: none;">
+            <img src="/favicon.svg" alt="Rentmaster Logo" style="width: 2.375rem; height: 2.375rem; border-radius: 10px; box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);" />
+          </div>
+          <div>
+            <div class="brand-title">Rentmaster</div>
+            <div class="brand-subtitle" id="brand-subtitle">Verified Rent Payments</div>
+          </div>
         </div>
-        <div>
-          <div class="brand-title">Rentmaster</div>
-          <div class="brand-subtitle" id="brand-subtitle">Verified Rent Payments</div>
-        </div>
+
+        <!-- Dynamic Contextual Breadcrumbs -->
+        <nav class="header-breadcrumbs" id="header-breadcrumbs" aria-label="Breadcrumbs">
+          <!-- Injected dynamically by app.js -->
+        </nav>
       </div>
 
       <div class="header-actions" id="header-user-area">
@@ -59,6 +66,15 @@
 
   <!-- Modal Container Root -->
   <div id="modal-root"></div>
+
+  <!-- Global Command Palette Spotlight Search Root -->
+  <div id="command-palette-root"></div>
+
+  <!-- Mobile Bottom App Navigation Bar -->
+  <nav class="mobile-nav-bar" id="mobile-nav-bar"></nav>
+
+  <!-- Floating Quick Actions Power Dock -->
+  <div class="floating-quick-dock" id="floating-quick-dock"></div>
 
   <!-- Toast Notifications Root -->
   <div class="toast-container" id="toast-container"></div>

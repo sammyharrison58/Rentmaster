@@ -178,10 +178,447 @@ class RentPortalApp {
 
   setupGlobalEvents() {
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && this.activeModal) {
-        this.closeModal();
+      // Toggle Spotlight Command Palette with Ctrl+K or Cmd+K
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        this.toggleCommandPalette();
+        return;
+      }
+
+      if (e.key === 'Escape') {
+        if (this.isCommandPaletteOpen) {
+          this.closeCommandPalette();
+          return;
+        }
+        if (this.isNotifOpen) {
+          this.closeNotifications();
+          return;
+        }
+        if (this.activeModal) {
+          this.closeModal();
+          return;
+        }
+      }
+
+      // Keyboard navigation inside Command Palette
+      if (this.isCommandPaletteOpen) {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          this.navigateCommandPalette(1);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          this.navigateCommandPalette(-1);
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          this.executeActiveCommandPaletteItem();
+        }
       }
     });
+
+    // Close notifications dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (this.isNotifOpen && !e.target.closest('#btn-header-notifs') && !e.target.closest('#notif-flyout')) {
+        this.closeNotifications();
+      }
+    });
+  }
+
+  toggleCommandPalette() {
+    if (this.isCommandPaletteOpen) {
+      this.closeCommandPalette();
+    } else {
+      this.openCommandPalette();
+    }
+  }
+
+  openCommandPalette() {
+    this.isCommandPaletteOpen = true;
+    this.activeCmdIndex = 0;
+    const root = document.getElementById('command-palette-root');
+    if (!root) return;
+
+    root.innerHTML = `
+      <div class="command-palette-backdrop" id="cmd-backdrop">
+        <div class="command-palette-card" onclick="event.stopPropagation()">
+          <div class="command-palette-input-wrap">
+            <i data-lucide="search" style="width: 1.25rem; height: 1.25rem; color: #10b981; flex-shrink: 0;"></i>
+            <input type="text" class="command-palette-input" id="cmd-palette-input" placeholder="Type to search tenant, landlord, receipt, or jump to tab..." autofocus />
+            <button class="btn-icon" id="cmd-palette-close" style="width: 1.75rem; height: 1.75rem;">
+              <i data-lucide="x" style="width: 1rem; height: 1rem;"></i>
+            </button>
+          </div>
+          <div class="command-palette-body" id="cmd-palette-results"></div>
+          <div class="command-palette-footer">
+            <div class="command-palette-hints">
+              <span><kbd>↑</kbd> <kbd>↓</kbd> Navigate</span>
+              <span><kbd>↵</kbd> Select</span>
+              <span><kbd>Esc</kbd> Close</span>
+            </div>
+            <div style="font-weight: 700; color: #059669; display: flex; align-items: center; gap: 0.35rem;">
+              <i data-lucide="zap" style="width: 0.875rem; height: 0.875rem;"></i>
+              Rentmaster Spotlight
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('cmd-backdrop')?.addEventListener('click', () => this.closeCommandPalette());
+    document.getElementById('cmd-palette-close')?.addEventListener('click', () => this.closeCommandPalette());
+
+    const input = document.getElementById('cmd-palette-input');
+    if (input) {
+      input.focus();
+      input.addEventListener('input', (e) => {
+        this.filterCommandPalette(e.target.value);
+      });
+    }
+
+    this.filterCommandPalette('');
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  closeCommandPalette() {
+    this.isCommandPaletteOpen = false;
+    const root = document.getElementById('command-palette-root');
+    if (root) root.innerHTML = '';
+  }
+
+  filterCommandPalette(query) {
+    const q = (query || '').toLowerCase().trim();
+    const container = document.getElementById('cmd-palette-results');
+    if (!container) return;
+
+    const user = store.getCurrentUser();
+    const items = [];
+
+    // 1. Portal & Tab Navigation
+    const navItems = [
+      {
+        title: 'Super Admin HQ - Approvals Queue',
+        desc: 'Review and approve registering landlords & tenants',
+        icon: 'shield-alert',
+        group: 'Navigation & Direct Jumps',
+        action: () => {
+          store.returnToSuperAdminHQ();
+          this.adminTab = 'approvals';
+          this.render();
+        }
+      },
+      {
+        title: 'Super Admin HQ - All Landlords & Tills',
+        desc: 'Directory of all active and pending property managers',
+        icon: 'building',
+        group: 'Navigation & Direct Jumps',
+        action: () => {
+          store.returnToSuperAdminHQ();
+          this.adminTab = 'landlords';
+          this.render();
+        }
+      },
+      {
+        title: 'Super Admin HQ - Global Tenants Roster',
+        desc: 'Master directory of all registered tenants across Kenya',
+        icon: 'users',
+        group: 'Navigation & Direct Jumps',
+        action: () => {
+          store.returnToSuperAdminHQ();
+          this.adminTab = 'all_tenants';
+          this.render();
+        }
+      },
+      {
+        title: 'Super Admin HQ - Global Payments Monitor',
+        desc: 'Live audit of all verified M-Pesa payments',
+        icon: 'receipt',
+        group: 'Navigation & Direct Jumps',
+        action: () => {
+          store.returnToSuperAdminHQ();
+          this.adminTab = 'all_payments';
+          this.render();
+        }
+      },
+      {
+        title: 'Landlord Portal - Payment Approvals',
+        desc: 'Approve or reject incoming tenant M-Pesa payments',
+        icon: 'receipt',
+        group: 'Navigation & Direct Jumps',
+        action: () => {
+          if (!user || user.role !== 'owner') store.switchDemoRole('owner');
+          this.landlordTab = 'payments';
+          this.render();
+        }
+      },
+      {
+        title: 'Landlord Portal - Tenants Directory',
+        desc: 'View all occupied units and monthly tenant balances',
+        icon: 'users',
+        group: 'Navigation & Direct Jumps',
+        action: () => {
+          if (!user || user.role !== 'owner') store.switchDemoRole('owner');
+          this.landlordTab = 'tenants';
+          this.render();
+        }
+      },
+      {
+        title: 'Landlord Portal - Financial Reports & Excel Export',
+        desc: 'View analytics, monthly revenue charts and download workbooks',
+        icon: 'file-spreadsheet',
+        group: 'Navigation & Direct Jumps',
+        action: () => {
+          if (!user || user.role !== 'owner') store.switchDemoRole('owner');
+          this.landlordTab = 'reports';
+          this.render();
+        }
+      },
+      {
+        title: 'Landlord Portal - M-Pesa Daraja Settings',
+        desc: 'Configure Safaricom Till, C2B API keys and SMS forwarding',
+        icon: 'settings',
+        group: 'Navigation & Direct Jumps',
+        action: () => {
+          if (!user || user.role !== 'owner') store.switchDemoRole('owner');
+          this.landlordTab = 'settings';
+          this.render();
+        }
+      },
+      {
+        title: 'Tenant Portal - Pay Rent & Auto-Verify SMS',
+        desc: 'Pay to landlord Till and verify Safaricom SMS code',
+        icon: 'credit-card',
+        group: 'Navigation & Direct Jumps',
+        action: () => {
+          if (!user || user.role !== 'tenant') store.switchDemoRole('tenant_jane');
+          this.tenantTab = 'pay';
+          this.render();
+        }
+      },
+      {
+        title: 'Tenant Portal - Monthly Bills & Ledger',
+        desc: 'View historical rent bills and payment status breakdown',
+        icon: 'receipt',
+        group: 'Navigation & Direct Jumps',
+        action: () => {
+          if (!user || user.role !== 'tenant') store.switchDemoRole('tenant_jane');
+          this.tenantTab = 'bills';
+          this.render();
+        }
+      },
+      {
+        title: 'Tenant Portal - Receipts & Payment History',
+        desc: 'Download official stamped electronic rent receipts',
+        icon: 'history',
+        group: 'Navigation & Direct Jumps',
+        action: () => {
+          if (!user || user.role !== 'tenant') store.switchDemoRole('tenant_jane');
+          this.tenantTab = 'history';
+          this.render();
+        }
+      },
+      {
+        title: 'Public Platform Overview & Feature Showcase',
+        desc: 'Explore Rentmaster verified rent collection features',
+        icon: 'info',
+        group: 'Navigation & Direct Jumps',
+        action: () => {
+          this.unauthMode = 'overview';
+          this.render();
+        }
+      }
+    ];
+
+    navItems.forEach(item => {
+      if (!q || item.title.toLowerCase().includes(q) || item.desc.toLowerCase().includes(q)) {
+        items.push(item);
+      }
+    });
+
+    // 2. Tenants Search
+    store.state.tenants.forEach(t => {
+      const match = !q || 
+        t.name.toLowerCase().includes(q) || 
+        t.unit.toLowerCase().includes(q) || 
+        (t.email && t.email.toLowerCase().includes(q)) || 
+        (t.phone && t.phone.toLowerCase().includes(q));
+      if (match) {
+        items.push({
+          title: `${t.name} · Unit ${t.unit}`,
+          desc: `${t.propertyName || 'Apartments'} · ${t.phone || ''} · ${t.status.toUpperCase()}`,
+          icon: 'user',
+          group: 'Tenants & Units',
+          action: () => {
+            this.switchAsTenant(t.userId);
+          }
+        });
+      }
+    });
+
+    // 3. Landlords & Properties Search
+    store.state.landlords.forEach(l => {
+      const match = !q || 
+        l.propertyName.toLowerCase().includes(q) || 
+        l.name.toLowerCase().includes(q) || 
+        (l.tillNumber && l.tillNumber.toLowerCase().includes(q)) || 
+        (l.location && l.location.toLowerCase().includes(q));
+      if (match) {
+        items.push({
+          title: `${l.propertyName} · ${l.name}`,
+          desc: `Till ${l.tillNumber} · ${l.location || 'Nairobi'} · ${l.status.toUpperCase()}`,
+          icon: 'building',
+          group: 'Landlords & Properties',
+          action: () => {
+            this.switchAsLandlord(l.id);
+          }
+        });
+      }
+    });
+
+    // 4. Payments Search
+    store.state.payments.slice(0, 15).forEach(p => {
+      const match = !q || 
+        (p.mpesaReceipt && p.mpesaReceipt.toLowerCase().includes(q)) || 
+        p.tenantName.toLowerCase().includes(q) || 
+        String(p.amount).includes(q) || 
+        p.unit.toLowerCase().includes(q);
+      if (match) {
+        items.push({
+          title: `Receipt ${p.mpesaReceipt || '-'}: ${p.tenantName} (${formatKES(p.amount)})`,
+          desc: `${p.unit} · ${p.status.toUpperCase()} · ${formatDateTime(p.paidAt || p.createdAt)}`,
+          icon: 'receipt',
+          group: 'Payments & Receipts',
+          action: () => {
+            this.showReceiptModal(p.id);
+          }
+        });
+      }
+    });
+
+    // 5. Power Tools & Actions
+    const actionTools = [
+      {
+        title: 'Print A4 Building Notice Board Flyer',
+        desc: 'Generate printable official poster for apartment entrance',
+        icon: 'printer',
+        group: 'Quick Power Actions',
+        action: () => {
+          this.showBuildingNoticeModal(user?.landlordId || 'll-1');
+        }
+      },
+      {
+        title: 'Onboard New Landlord Client',
+        desc: 'Directly register & activate a property owner in system',
+        icon: 'user-plus',
+        group: 'Quick Power Actions',
+        action: () => {
+          this.showSuperAdminAddLandlordModal();
+        }
+      },
+      {
+        title: 'Export Platform Records to Excel',
+        desc: 'Download complete financial statement spreadsheet',
+        icon: 'file-spreadsheet',
+        group: 'Quick Power Actions',
+        action: () => {
+          exportLandlordStatementToExcel(user?.landlordId || 'll-1');
+          this.showToast('Exported platform records to Excel!');
+        }
+      },
+      {
+        title: 'Open WhatsApp Resident Help Desk',
+        desc: 'Connect directly with caretaker and property emergency support',
+        icon: 'message-circle',
+        group: 'Quick Power Actions',
+        action: () => {
+          window.open('https://wa.me/254722000111?text=Hello%20Rentmaster%20Help%20Desk', '_blank');
+        }
+      }
+    ];
+
+    actionTools.forEach(tool => {
+      if (!q || tool.title.toLowerCase().includes(q) || tool.desc.toLowerCase().includes(q)) {
+        items.push(tool);
+      }
+    });
+
+    this.currentCmdItems = items;
+    if (this.activeCmdIndex >= items.length) {
+      this.activeCmdIndex = 0;
+    }
+
+    if (items.length === 0) {
+      container.innerHTML = `
+        <div style="text-align: center; padding: 3rem 1rem; color: #94a3b8;">
+          <i data-lucide="search-x" style="width: 2.5rem; height: 2.5rem; margin: 0 auto 0.5rem auto; color: #cbd5e1;"></i>
+          <p style="font-weight: 700; color: #475569;">No results found for "${query}"</p>
+          <p style="font-size: 0.8125rem; margin-top: 0.25rem;">Try searching for a tenant name, house number, landlord, or till number.</p>
+        </div>
+      `;
+      if (window.lucide) window.lucide.createIcons();
+      return;
+    }
+
+    // Group items
+    const grouped = {};
+    items.forEach((item, index) => {
+      if (!grouped[item.group]) grouped[item.group] = [];
+      grouped[item.group].push({ ...item, globalIndex: index });
+    });
+
+    let html = '';
+    for (const [groupName, groupItems] of Object.entries(grouped)) {
+      html += `<div class="command-palette-group-title">${groupName}</div>`;
+      groupItems.forEach(item => {
+        const isActive = item.globalIndex === this.activeCmdIndex;
+        html += `
+          <div class="command-palette-item ${isActive ? 'active' : ''}" data-cmd-idx="${item.globalIndex}" onclick="window.app.executeCommandPaletteItem(${item.globalIndex})">
+            <div class="command-palette-item-left">
+              <div class="command-palette-item-icon">
+                <i data-lucide="${item.icon}" style="width: 1.125rem; height: 1.125rem;"></i>
+              </div>
+              <div>
+                <div style="font-weight: 700; font-size: 0.875rem;">${item.title}</div>
+                <div style="font-size: 0.75rem; color: #64748b;">${item.desc}</div>
+              </div>
+            </div>
+            <i data-lucide="chevron-right" style="width: 1rem; height: 1rem; opacity: 0.5;"></i>
+          </div>
+        `;
+      });
+    }
+
+    container.innerHTML = html;
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  navigateCommandPalette(direction) {
+    if (!this.currentCmdItems || this.currentCmdItems.length === 0) return;
+    this.activeCmdIndex = (this.activeCmdIndex + direction + this.currentCmdItems.length) % this.currentCmdItems.length;
+    
+    document.querySelectorAll('.command-palette-item').forEach((el) => {
+      const idx = Number(el.getAttribute('data-cmd-idx'));
+      if (idx === this.activeCmdIndex) {
+        el.classList.add('active');
+        el.scrollIntoView({ block: 'nearest' });
+      } else {
+        el.classList.remove('active');
+      }
+    });
+  }
+
+  executeActiveCommandPaletteItem() {
+    if (this.currentCmdItems && this.currentCmdItems[this.activeCmdIndex]) {
+      this.executeCommandPaletteItem(this.activeCmdIndex);
+    }
+  }
+
+  executeCommandPaletteItem(index) {
+    if (this.currentCmdItems && this.currentCmdItems[index]) {
+      const item = this.currentCmdItems[index];
+      this.closeCommandPalette();
+      if (typeof item.action === 'function') {
+        item.action();
+      }
+    }
   }
 
   openModal(htmlContent, size = 'normal') {
@@ -260,18 +697,52 @@ class RentPortalApp {
         this.attachTenantEvents(user);
       }
     }
+
+    this.renderBreadcrumbs(user);
+    this.renderFloatingDock(user);
+    this.renderMobileNav(user);
+    if (window.lucide) window.lucide.createIcons();
   }
 
   renderHeader(user) {
     const userDisplay = document.getElementById('header-user-area');
     if (!userDisplay) return;
 
-    if (!user) {
-      userDisplay.innerHTML = `
-        <div class="header-live-badge sm-inline" style="display: none;">
-          <span class="pulse-beacon"></span>
-          <span>Direct Till Network</span>
+    const pendingLandlordsCount = store.state.landlords.filter((l) => l.status === 'pending').length;
+    const pendingTenantsCount = store.state.tenants.filter((t) => t.status === 'pending').length;
+    const pendingPaymentsCount = store.state.payments.filter((p) => p.status === 'pending').length;
+    const totalNotifs = pendingLandlordsCount + pendingTenantsCount + pendingPaymentsCount;
+
+    userDisplay.innerHTML = `
+      <!-- Global Spotlight Search Button -->
+      <button class="header-search-btn" id="btn-header-search" title="Search anything or jump to... (Ctrl + K)">
+        <i data-lucide="search" style="width: 0.9375rem; height: 0.9375rem; color: #10b981;"></i>
+        <span class="search-placeholder">Search or jump...</span>
+        <kbd class="search-kbd">Ctrl K</kbd>
+      </button>
+
+      ${user ? `
+        <!-- Live Activity Notifications -->
+        <div style="position: relative;">
+          <button class="header-icon-btn" id="btn-header-notifs" title="Live Platform Activity">
+            <i data-lucide="bell" style="width: 1.0625rem; height: 1.0625rem;"></i>
+            ${totalNotifs > 0 ? `<span class="header-badge-dot"></span>` : ''}
+          </button>
+          <div id="notif-flyout-container"></div>
         </div>
+
+        <span class="hierarchy-pill">
+          <i data-lucide="${user.role === 'superadmin' ? 'shield-alert' : user.role === 'owner' ? 'building' : 'user'}" style="width: 0.875rem; height: 0.875rem;"></i>
+          ${user.role === 'superadmin' ? 'Super Admin' : user.role === 'owner' ? 'Landlord' : 'Tenant'}
+        </span>
+        <span style="font-size: 0.8125rem; color: var(--slate-600); max-width: 10rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" class="sm-inline">
+          ${user.email}
+        </span>
+        <button class="btn btn-secondary" id="btn-header-signout">
+          <i data-lucide="log-out" style="width: 1rem; height: 1rem;"></i>
+          Sign out
+        </button>
+      ` : `
         <button class="btn btn-secondary" id="btn-header-overview" style="${this.unauthMode === 'overview' ? 'background: var(--slate-200);' : ''}">
           <i data-lucide="info" style="width: 1rem; height: 1rem;"></i>
           Overview
@@ -280,39 +751,37 @@ class RentPortalApp {
           <i data-lucide="log-in" style="width: 1rem; height: 1rem;"></i>
           Sign in
         </button>
-      `;
-      document.getElementById('btn-header-overview')?.addEventListener('click', () => {
-        this.unauthMode = this.unauthMode === 'overview' ? 'login' : 'overview';
-        this.render();
-      });
-      document.getElementById('btn-header-login-page')?.addEventListener('click', () => {
-        this.unauthMode = 'login';
-        this.authTab = 'signin';
-        this.render();
-      });
-    } else {
-      userDisplay.innerHTML = `
-        <span class="hierarchy-pill">
-          <i data-lucide="${user.role === 'superadmin' ? 'shield-alert' : user.role === 'owner' ? 'building' : 'user'}" style="width: 0.875rem; height: 0.875rem;"></i>
-          ${user.role === 'superadmin' ? 'Super Admin' : user.role === 'owner' ? 'Landlord' : 'Tenant'}
-        </span>
-        <span style="font-size: 0.875rem; color: var(--slate-600); display: none;" class="sm-inline">
-          ${user.email}
-        </span>
-        <button class="btn btn-secondary" id="btn-header-signout">
-          <i data-lucide="log-out" style="width: 1rem; height: 1rem;"></i>
-          Sign out
-        </button>
-      `;
-      document.getElementById('btn-header-signout')?.addEventListener('click', () => {
-        store.setCurrentUser(null);
-        this.unauthMode = 'login';
-        this.authTab = 'signin';
-        this.authAlert = null;
-        this.showToast('Signed out successfully.');
-        this.render();
-      });
-    }
+      `}
+    `;
+
+    document.getElementById('btn-header-search')?.addEventListener('click', () => {
+      this.openCommandPalette();
+    });
+
+    document.getElementById('btn-header-notifs')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.toggleNotifications();
+    });
+
+    document.getElementById('btn-header-overview')?.addEventListener('click', () => {
+      this.unauthMode = this.unauthMode === 'overview' ? 'login' : 'overview';
+      this.render();
+    });
+
+    document.getElementById('btn-header-login-page')?.addEventListener('click', () => {
+      this.unauthMode = 'login';
+      this.authTab = 'signin';
+      this.render();
+    });
+
+    document.getElementById('btn-header-signout')?.addEventListener('click', () => {
+      store.setCurrentUser(null);
+      this.unauthMode = 'login';
+      this.authTab = 'signin';
+      this.authAlert = null;
+      this.showToast('Signed out successfully.');
+      this.render();
+    });
 
     const sub = document.getElementById('brand-subtitle');
     if (sub) {
@@ -323,6 +792,281 @@ class RentPortalApp {
         sub.textContent = `${ll ? ll.propertyName : 'Landlord Portal'} · Landlord Admin`;
       } else sub.textContent = 'Tenant Account';
     }
+  }
+
+  // --- Dynamic Breadcrumb Navigation ---
+  renderBreadcrumbs(user) {
+    const el = document.getElementById('header-breadcrumbs');
+    if (!el) return;
+
+    if (!user) {
+      if (this.unauthMode === 'overview') {
+        el.innerHTML = `
+          <span class="breadcrumb-separator">/</span>
+          <span class="breadcrumb-item active">Platform Overview</span>
+        `;
+      } else {
+        const modeLabel = this.authTab === 'landlord_reg' 
+          ? 'Landlord Registration' 
+          : this.authTab === 'tenant_reg' 
+            ? 'Tenant Registration' 
+            : 'Sign In';
+        el.innerHTML = `
+          <span class="breadcrumb-separator">/</span>
+          <span class="breadcrumb-item" onclick="window.app.unauthMode='overview'; window.app.render();">Overview</span>
+          <span class="breadcrumb-separator">/</span>
+          <span class="breadcrumb-item active">${modeLabel}</span>
+        `;
+      }
+      return;
+    }
+
+    if (user.role === 'superadmin') {
+      const tabLabels = {
+        approvals: 'Approvals Queue',
+        landlords: 'All Landlords & Tills',
+        all_tenants: 'Global Tenants Roster',
+        all_payments: 'Payments Monitor',
+        audit: 'System Audit Log'
+      };
+      el.innerHTML = `
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-item" onclick="window.app.adminTab='approvals'; window.app.render();">👑 Super Admin HQ</span>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-item active">${tabLabels[this.adminTab] || 'Dashboard'}</span>
+      `;
+    } else if (user.role === 'owner' || user.role === 'caretaker') {
+      const ll = store.getLandlordForUser(user) || store.state.landlords[0];
+      const tabLabels = {
+        payments: 'Payment Approvals',
+        requests: 'Tenant Requests',
+        tenants: 'Tenants Directory',
+        arrears: 'Arrears Tracker',
+        reports: 'Financial Reports',
+        settings: 'Daraja & Till Settings'
+      };
+      el.innerHTML = `
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-item" onclick="window.app.landlordTab='payments'; window.app.render();">🏢 ${ll?.propertyName || 'Property'}</span>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-item active">${tabLabels[this.landlordTab] || 'Dashboard'}</span>
+      `;
+    } else if (user.role === 'tenant') {
+      const tenant = user.tenant || store.state.tenants.find((t) => t.userId === user.userId);
+      const tabLabels = {
+        pay: 'Pay Rent & SMS',
+        bills: 'Bills Ledger',
+        history: 'Receipts & History'
+      };
+      el.innerHTML = `
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-item" onclick="window.app.tenantTab='pay'; window.app.render();">🏠 ${tenant?.propertyName || 'Apartments'}</span>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-item" onclick="window.app.tenantTab='pay'; window.app.render();">Unit ${tenant?.unit || 'Tenancy'}</span>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-item active">${tabLabels[this.tenantTab] || 'Dashboard'}</span>
+      `;
+    }
+  }
+
+  // --- Live Activity Notifications Dropdown Flyout ---
+  toggleNotifications() {
+    this.isNotifOpen = !this.isNotifOpen;
+    const container = document.getElementById('notif-flyout-container');
+    if (!container) return;
+
+    if (!this.isNotifOpen) {
+      container.innerHTML = '';
+      return;
+    }
+
+    const pendingLandlords = store.state.landlords.filter((l) => l.status === 'pending');
+    const pendingTenants = store.state.tenants.filter((t) => t.status === 'pending');
+    const recentPayments = store.state.payments.slice(0, 4);
+
+    container.innerHTML = `
+      <div class="notif-flyout" id="notif-flyout" onclick="event.stopPropagation()">
+        <div class="notif-flyout-header">
+          <div style="font-weight: 800; font-size: 0.875rem; color: #0f172a; display: flex; align-items: center; gap: 0.4rem;">
+            <i data-lucide="bell" style="width: 1rem; height: 1rem; color: #10b981;"></i>
+            Platform Activity & Alerts
+          </div>
+          <span style="font-size: 0.75rem; color: #64748b; font-weight: 600;">Real-time</span>
+        </div>
+        <div class="notif-flyout-body">
+          ${pendingLandlords.length > 0 ? pendingLandlords.map(ll => `
+            <div class="notif-item" onclick="window.app.closeNotifications(); window.app.adminTab='approvals'; window.app.approvalSubTab='landlords'; window.app.render();">
+              <div style="width: 2rem; height: 2rem; border-radius: 6px; background: #fef3c7; color: #d97706; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <i data-lucide="clock" style="width: 1rem; height: 1rem;"></i>
+              </div>
+              <div style="flex: 1; font-size: 0.8125rem;">
+                <div style="font-weight: 700; color: #0f172a;">Landlord Application Pending</div>
+                <div style="color: #64748b; font-size: 0.75rem;">${ll.name} · ${ll.propertyName}</div>
+              </div>
+            </div>
+          `).join('') : ''}
+
+          ${pendingTenants.length > 0 ? pendingTenants.map(t => `
+            <div class="notif-item" onclick="window.app.closeNotifications(); window.app.adminTab='approvals'; window.app.approvalSubTab='tenants'; window.app.render();">
+              <div style="width: 2rem; height: 2rem; border-radius: 6px; background: #e0e7ff; color: #4f46e5; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <i data-lucide="user-check" style="width: 1rem; height: 1rem;"></i>
+              </div>
+              <div style="flex: 1; font-size: 0.8125rem;">
+                <div style="font-weight: 700; color: #0f172a;">Tenant Registration Request</div>
+                <div style="color: #64748b; font-size: 0.75rem;">${t.name} · Unit ${t.unit}</div>
+              </div>
+            </div>
+          `).join('') : ''}
+
+          ${recentPayments.map(p => `
+            <div class="notif-item" onclick="window.app.closeNotifications(); window.app.showReceiptModal('${p.id}');">
+              <div style="width: 2rem; height: 2rem; border-radius: 6px; background: #ecfdf5; color: #059669; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <i data-lucide="receipt" style="width: 1rem; height: 1rem;"></i>
+              </div>
+              <div style="flex: 1; font-size: 0.8125rem;">
+                <div style="font-weight: 700; color: #0f172a;">Rent Payment ${p.mpesaReceipt || 'KES ' + p.amount}</div>
+                <div style="color: #64748b; font-size: 0.75rem;">${p.tenantName} (${p.unit}) · ${formatKES(p.amount)}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+        <div style="padding: 0.625rem 1rem; background: #f8fafc; border-top: 1px solid #f1f5f9; text-align: center; font-size: 0.75rem;">
+          <a href="javascript:void(0)" onclick="window.app.closeNotifications(); window.app.openCommandPalette();" style="color: #0284c7; font-weight: 700; text-decoration: none;">
+            Press Ctrl + K to Search or Jump to Anything ➔
+          </a>
+        </div>
+      </div>
+    `;
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  closeNotifications() {
+    this.isNotifOpen = false;
+    const container = document.getElementById('notif-flyout-container');
+    if (container) container.innerHTML = '';
+  }
+
+  // --- Mobile Bottom Navigation Bar ---
+  renderMobileNav(user) {
+    const el = document.getElementById('mobile-nav-bar');
+    if (!el) return;
+
+    if (!user) {
+      el.innerHTML = `
+        <button class="mobile-nav-item ${this.unauthMode === 'overview' ? 'active' : ''}" onclick="window.app.unauthMode='overview'; window.app.render();">
+          <i data-lucide="info" style="width: 1.25rem; height: 1.25rem;"></i>
+          <span>Overview</span>
+        </button>
+        <button class="mobile-nav-item ${this.unauthMode === 'login' && this.authTab === 'signin' ? 'active' : ''}" onclick="window.app.unauthMode='login'; window.app.authTab='signin'; window.app.render();">
+          <i data-lucide="log-in" style="width: 1.25rem; height: 1.25rem;"></i>
+          <span>Sign In</span>
+        </button>
+        <button class="mobile-nav-item ${this.unauthMode === 'login' && this.authTab === 'tenant_reg' ? 'active' : ''}" onclick="window.app.unauthMode='login'; window.app.authTab='tenant_reg'; window.app.render();">
+          <i data-lucide="key" style="width: 1.25rem; height: 1.25rem;"></i>
+          <span>Join Tenant</span>
+        </button>
+        <button class="mobile-nav-item" onclick="window.app.openCommandPalette();">
+          <i data-lucide="search" style="width: 1.25rem; height: 1.25rem;"></i>
+          <span>Search</span>
+        </button>
+      `;
+      return;
+    }
+
+    if (user.role === 'superadmin') {
+      const pendingLandlords = store.state.landlords.filter((l) => l.status === 'pending').length;
+      const pendingTenants = store.state.tenants.filter((t) => t.status === 'pending').length;
+      const totalPending = pendingLandlords + pendingTenants;
+      el.innerHTML = `
+        <button class="mobile-nav-item ${this.adminTab === 'approvals' ? 'active' : ''}" onclick="window.app.adminTab='approvals'; window.app.render();">
+          <i data-lucide="shield-alert" style="width: 1.25rem; height: 1.25rem;"></i>
+          <span>Approvals</span>
+          ${totalPending > 0 ? `<span class="mobile-nav-badge">${totalPending}</span>` : ''}
+        </button>
+        <button class="mobile-nav-item ${this.adminTab === 'landlords' ? 'active' : ''}" onclick="window.app.adminTab='landlords'; window.app.render();">
+          <i data-lucide="building" style="width: 1.25rem; height: 1.25rem;"></i>
+          <span>Landlords</span>
+        </button>
+        <button class="mobile-nav-item ${this.adminTab === 'all_tenants' ? 'active' : ''}" onclick="window.app.adminTab='all_tenants'; window.app.render();">
+          <i data-lucide="users" style="width: 1.25rem; height: 1.25rem;"></i>
+          <span>Tenants</span>
+        </button>
+        <button class="mobile-nav-item ${this.adminTab === 'all_payments' ? 'active' : ''}" onclick="window.app.adminTab='all_payments'; window.app.render();">
+          <i data-lucide="receipt" style="width: 1.25rem; height: 1.25rem;"></i>
+          <span>Payments</span>
+        </button>
+        <button class="mobile-nav-item" onclick="window.app.openCommandPalette();">
+          <i data-lucide="search" style="width: 1.25rem; height: 1.25rem;"></i>
+          <span>Search</span>
+        </button>
+      `;
+    } else if (user.role === 'owner' || user.role === 'caretaker') {
+      const pendingCount = store.getPaymentsForLandlord(user.landlordId || 'll-1').filter((p) => p.status === 'pending').length;
+      el.innerHTML = `
+        <button class="mobile-nav-item ${this.landlordTab === 'payments' ? 'active' : ''}" onclick="window.app.landlordTab='payments'; window.app.render();">
+          <i data-lucide="receipt" style="width: 1.25rem; height: 1.25rem;"></i>
+          <span>Payments</span>
+          ${pendingCount > 0 ? `<span class="mobile-nav-badge">${pendingCount}</span>` : ''}
+        </button>
+        <button class="mobile-nav-item ${this.landlordTab === 'tenants' ? 'active' : ''}" onclick="window.app.landlordTab='tenants'; window.app.render();">
+          <i data-lucide="users" style="width: 1.25rem; height: 1.25rem;"></i>
+          <span>Tenants</span>
+        </button>
+        <button class="mobile-nav-item ${this.landlordTab === 'reports' ? 'active' : ''}" onclick="window.app.landlordTab='reports'; window.app.render();">
+          <i data-lucide="file-spreadsheet" style="width: 1.25rem; height: 1.25rem;"></i>
+          <span>Reports</span>
+        </button>
+        <button class="mobile-nav-item ${this.landlordTab === 'settings' ? 'active' : ''}" onclick="window.app.landlordTab='settings'; window.app.render();">
+          <i data-lucide="settings" style="width: 1.25rem; height: 1.25rem;"></i>
+          <span>Till</span>
+        </button>
+        <button class="mobile-nav-item" onclick="window.app.openCommandPalette();">
+          <i data-lucide="search" style="width: 1.25rem; height: 1.25rem;"></i>
+          <span>Search</span>
+        </button>
+      `;
+    } else if (user.role === 'tenant') {
+      el.innerHTML = `
+        <button class="mobile-nav-item ${this.tenantTab === 'pay' ? 'active' : ''}" onclick="window.app.tenantTab='pay'; window.app.render();">
+          <i data-lucide="message-square-plus" style="width: 1.25rem; height: 1.25rem;"></i>
+          <span>Pay Rent</span>
+        </button>
+        <button class="mobile-nav-item ${this.tenantTab === 'bills' ? 'active' : ''}" onclick="window.app.tenantTab='bills'; window.app.render();">
+          <i data-lucide="receipt" style="width: 1.25rem; height: 1.25rem;"></i>
+          <span>Bills</span>
+        </button>
+        <button class="mobile-nav-item ${this.tenantTab === 'history' ? 'active' : ''}" onclick="window.app.tenantTab='history'; window.app.render();">
+          <i data-lucide="history" style="width: 1.25rem; height: 1.25rem;"></i>
+          <span>Receipts</span>
+        </button>
+        <button class="mobile-nav-item" onclick="window.open('https://wa.me/254722000111', '_blank');">
+          <i data-lucide="headset" style="width: 1.25rem; height: 1.25rem;"></i>
+          <span>Support</span>
+        </button>
+        <button class="mobile-nav-item" onclick="window.app.openCommandPalette();">
+          <i data-lucide="search" style="width: 1.25rem; height: 1.25rem;"></i>
+          <span>Search</span>
+        </button>
+      `;
+    }
+  }
+
+  // --- Floating Quick Actions Power Dock ---
+  renderFloatingDock(user) {
+    const el = document.getElementById('floating-quick-dock');
+    if (!el) return;
+
+    el.innerHTML = `
+      <button class="dock-btn dock-btn-main" onclick="window.app.openCommandPalette();" title="Spotlight Quick Search (Ctrl + K)">
+        <i data-lucide="search" style="width: 1.125rem; height: 1.125rem;"></i>
+      </button>
+      <button class="dock-btn" onclick="window.open('https://wa.me/254722000111?text=Hello%20Rentmaster%20Help%20Desk,%20I%20need%20assistance', '_blank');" title="Live WhatsApp Support">
+        <i data-lucide="message-circle" style="width: 1.125rem; height: 1.125rem;"></i>
+      </button>
+      <button class="dock-btn" onclick="window.scrollTo({ top: 0, behavior: 'smooth' });" title="Scroll to Top">
+        <i data-lucide="arrow-up" style="width: 1.125rem; height: 1.125rem;"></i>
+      </button>
+    `;
   }
 
   // --- Quick Role Switcher Menu (STRICTLY ONLY AVAILABLE TO SUPER ADMIN, HIDDEN FROM ALL OTHERS) ---
