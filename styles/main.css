@@ -3359,6 +3359,55 @@ body.view-overview .header-live-badge {
   background: linear-gradient(90deg, transparent, rgba(52, 211, 153, 0.8), rgba(96, 165, 250, 0.8), transparent);
 }
 
+/* ==========================================================================
+   Interactive AI Agent (Tenant Concierge & Landlord Copilot) Styles
+   ========================================================================== */
+.ai-launcher-btn {
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
+}
+
+.ai-launcher-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 14px 28px -5px rgba(15, 23, 42, 0.4), 0 0 20px rgba(16, 185, 129, 0.4) !important;
+}
+
+.ai-launcher-btn:active {
+  transform: scale(0.97);
+}
+
+.ai-chat-panel {
+  animation: ai-slide-up 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes ai-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 640px) {
+  #ai-agent-launcher {
+    bottom: 5.25rem !important;
+    right: 1rem !important;
+  }
+
+  #ai-agent-panel {
+    bottom: 0 !important;
+    right: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    max-height: 85vh !important;
+    height: 85vh !important;
+    border-radius: 1.5rem 1.5rem 0 0 !important;
+  }
+}
+
+
 
 
 

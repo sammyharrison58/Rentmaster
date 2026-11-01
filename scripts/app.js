@@ -5,6 +5,7 @@
 import { store, SUPER_ADMIN_EMAIL, formatKES, formatDate, formatDateTime, formatMonth, formatPhone, getCurrentMonth } from './store.js';
 import { generateReceiptPDF, generateStatementPDF } from './pdf.js';
 import { exportYearlyReportXLSX } from './excel.js';
+import { AIAgent } from './ai-agent.js';
 
 const GOOGLE_ICON_SVG = `
   <svg class="google-icon-svg" viewBox="0 0 24 24" width="18" height="18">
@@ -31,11 +32,19 @@ class RentPortalApp {
     this.reportMonth = new Date().getMonth();
     this.paymentFilter = 'all';
     this.activeModal = null;
+    this.aiAgent = new AIAgent(store, this);
 
     this.init();
   }
 
+  openAIAgent() {
+    if (this.aiAgent) this.aiAgent.open();
+  }
+
   init() {
+    // Mount AI Agent Assistant
+    this.aiAgent.mount();
+
     // Check invite query params if present
     const urlParams = new URLSearchParams(window.location.search);
     const inviteCode = urlParams.get('invite');
@@ -701,6 +710,7 @@ class RentPortalApp {
     this.renderBreadcrumbs(user);
     this.renderFloatingDock(user);
     this.renderMobileNav(user);
+    this.aiAgent.setUser(user);
     if (window.lucide) window.lucide.createIcons();
   }
 
@@ -1060,6 +1070,11 @@ class RentPortalApp {
       <button class="dock-btn dock-btn-main" onclick="window.app.openCommandPalette();" title="Spotlight Quick Search (Ctrl + K)">
         <i data-lucide="search" style="width: 1.125rem; height: 1.125rem;"></i>
       </button>
+      ${user && (user.role === 'tenant' || user.role === 'owner' || user.role === 'caretaker' || user.role === 'superadmin') ? `
+      <button class="dock-btn dock-btn-ai" onclick="window.app.openAIAgent();" title="✨ Ask AI Assistant" style="background: linear-gradient(135deg, #064e3b 0%, #1e3a8a 100%); color: #fff; border-color: rgba(52, 211, 153, 0.35); position: relative; overflow: hidden;">
+        <span style="font-size: 1rem; line-height: 1; position: relative; z-index: 1;">✨</span>
+        <span style="position: absolute; inset: 0; background: linear-gradient(135deg, rgba(52,211,153,0.15), rgba(96,165,250,0.15)); opacity: 0; transition: opacity 0.2s;" class="ai-dock-glow"></span>
+      </button>` : ''}
       <button class="dock-btn" onclick="window.open('https://wa.me/254722000111?text=Hello%20Rentmaster%20Help%20Desk,%20I%20need%20assistance', '_blank');" title="Live WhatsApp Support">
         <i data-lucide="message-circle" style="width: 1.125rem; height: 1.125rem;"></i>
       </button>
