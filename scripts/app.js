@@ -3752,7 +3752,12 @@ class RentPortalApp {
                         <span style="font-size: 0.75rem; color: var(--slate-500);">
                           Submitted ${formatDateTime(p.submittedAt || p.createdAt)}
                         </span>
-                        ${p.channel === 'tenant_posted_sms' ? `<span class="badge" style="background:#f1f5f9; color:#475569; font-size:0.6875rem;">Tenant Posted SMS</span>` : ''}
+                        ${p.channel === 'tenant_posted_sms' ? `
+                          <span class="badge" style="background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; font-size: 0.6875rem; font-weight: 800; display: inline-flex; align-items: center; gap: 0.25rem;">
+                            <i data-lucide="shield-check" style="width: 0.75rem; height: 0.75rem; color: #10b981;"></i>
+                            Secured SMS (Verified Till & Freshness)
+                          </span>
+                        ` : ''}
                       </div>
 
                       <div style="font-size: 1.375rem; font-weight: 800; color: var(--slate-900); margin-top: 0.375rem;">
@@ -3762,6 +3767,12 @@ class RentPortalApp {
                       <p style="font-size: 0.8125rem; margin-top: 0.25rem; color: var(--slate-600);">
                         <strong>Tenant:</strong> ${p.tenantName || p.payerName || 'Unknown tenant'} (${p.unit || 'Unit not specified'}) · <strong>Phone:</strong> ${formatPhone(p.payerPhone || '')} · Method: <strong>${p.method}</strong>
                       </p>
+                      ${p.digitalSeal ? `
+                        <div style="margin-top: 0.25rem; font-family: monospace; font-size: 0.6875rem; color: #047857; display: flex; align-items: center; gap: 0.375rem;">
+                          <i data-lucide="lock" style="width: 0.75rem; height: 0.75rem;"></i>
+                          <span>Digital Seal: <strong>${p.digitalSeal}</strong></span>
+                        </div>
+                      ` : ''}
                       ${p.isHighRiskFraud ? `
                         <div style="background: #fff1f2; border: 1px solid #fecdd3; border-radius: 6px; padding: 0.5rem 0.75rem; margin-top: 0.5rem; color: #be123c; font-size: 0.8125rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
                           <i data-lucide="shield-alert" style="width: 1.125rem; height: 1.125rem; flex-shrink: 0;"></i>
@@ -5354,6 +5365,17 @@ class RentPortalApp {
       if (window.lucide) window.lucide.createIcons();
     };
 
+    // Physically seal read-only fields against keyboard, paste, drop, or touch tampering
+    ['post-mpesa-code', 'post-amount', 'post-phone'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.addEventListener('keydown', (e) => e.preventDefault());
+        el.addEventListener('paste', (e) => e.preventDefault());
+        el.addEventListener('cut', (e) => e.preventDefault());
+        el.addEventListener('drop', (e) => e.preventDefault());
+      }
+    });
+
     if (postSmsText) {
       postSmsText.addEventListener('input', autoParseAndVerify);
       postSmsText.addEventListener('paste', () => setTimeout(autoParseAndVerify, 50));
@@ -5423,11 +5445,15 @@ class RentPortalApp {
       if (this.currentSmsScreenshot) this.showImageModal(this.currentSmsScreenshot);
     });
 
-    // 5. Handle Tenant Posting M-Pesa Payment Message to Landlord
+    // 5. Handle Tenant Posting M-Pesa Payment Message to Landlord (Debounced & Replay-Protected)
     const postMsgForm = document.getElementById('form-tenant-post-message');
+    let isSubmittingMessage = false;
+
     if (postMsgForm && tenant) {
       postMsgForm.addEventListener('submit', (e) => {
         e.preventDefault();
+        if (isSubmittingMessage) return;
+
         const smsText = document.getElementById('post-sms-text')?.value || '';
         const mpesaCode = document.getElementById('post-mpesa-code')?.value.trim() || '';
         const amount = Number(document.getElementById('post-amount')?.value || 0);
@@ -5447,30 +5473,45 @@ class RentPortalApp {
           return;
         }
 
-        const fullMessage = smsText.trim() + (note ? `\nNote: ${note}` : '');
-
-        const postRes = store.postTenantPaymentMessage({
-          tenantId: tenant.userId,
-          amount: verification.amount || amount,
-          mpesaCode: verification.code || mpesaCode,
-          smsText: fullMessage,
-          phone: verification.phone || phone,
-          month,
-          screenshot: this.currentSmsScreenshot || ''
-        });
-
-        if (!postRes.success) {
-          if (postRes.isFraud) {
-            alert(`🚨 FRAUD PREVENTION ALERT:\n\n${postRes.message}`);
-          } else {
-            alert(`⚠️ TRANSACTION VALIDATION ERROR:\n\n${postRes.message}`);
-          }
-          return;
+        isSubmittingMessage = true;
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.innerHTML = '<i data-lucide="loader-2" class="spin"></i> Securing & Posting Payment...';
         }
 
-        this.currentSmsScreenshot = '';
-        this.showToast(`✓ Payment submitted with Digital Security Seal (${postRes.digitalSeal.slice(0, 18)}...). Landlord notified!`, 'success');
-        this.render();
+        try {
+          const fullMessage = smsText.trim() + (note ? `\nNote: ${note}` : '');
+
+          const postRes = store.postTenantPaymentMessage({
+            tenantId: tenant.userId,
+            amount: verification.amount || amount,
+            mpesaCode: verification.code || mpesaCode,
+            smsText: fullMessage,
+            phone: verification.phone || phone,
+            month,
+            screenshot: this.currentSmsScreenshot || ''
+          });
+
+          if (!postRes.success) {
+            isSubmittingMessage = false;
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.innerHTML = '<i data-lucide="send"></i> Confirm & Post Payment Message to Landlord';
+            }
+            if (postRes.isFraud) {
+              alert(`🚨 FRAUD PREVENTION ALERT:\n\n${postRes.message}`);
+            } else {
+              alert(`⚠️ TRANSACTION VALIDATION ERROR:\n\n${postRes.message}`);
+            }
+            return;
+          }
+
+          this.currentSmsScreenshot = '';
+          this.showToast(`✓ Payment secured with Digital Seal (${postRes.digitalSeal.slice(0, 18)}...). Landlord notified!`, 'success');
+          this.render();
+        } finally {
+          isSubmittingMessage = false;
+        }
       });
     }
 
