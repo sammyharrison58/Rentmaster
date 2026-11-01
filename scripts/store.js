@@ -1143,12 +1143,18 @@ class Store {
         phone: '',
         detectedTill: '',
         expectedTill: (expectedTill || '').replace(/\D/g, ''),
-        tillMatchStatus: 'not_specified',
-        isTillAccurate: false
+        tillMatchStatus: 'missing',
+        isTillAccurate: false,
+        isSameDay: false,
+        isRecent: false,
+        extractedDate: '',
+        extractedTime: '',
+        errorMessage: 'Payment verification failed: The payment message is invalid, not sent to this property Till, or was completed more than 10 minutes ago. Please make a fresh payment and submit promptly.'
       };
     }
 
     const text = smsText.trim();
+    const cleanExpected = (expectedTill || '582190').replace(/\D/g, '');
 
     // 1. Transaction Code (e.g. QK49L908P1, RC81923019, QJD73821K9)
     let code = '';
@@ -1179,46 +1185,74 @@ class Store {
 
     // 4. Till / Shortcode / Paybill Number Extraction
     let detectedTill = '';
-    // Look for till patterns like "Till 582190", "Till No. 582190", "Buy Goods Till 582190", "paid to 582190"
     const tillPattern = /(?:till(?:\s*no\.?)?|buy goods(?:\s*till)?|paybill|to)\s*[:#-]?\s*(\d{5,7})\b/i;
     const tillMatch = text.match(tillPattern);
     if (tillMatch) {
       detectedTill = tillMatch[1];
     } else {
-      // Secondary check for "sent to [Name] 582190" or "paid to [Name] 582190"
-      const looseMatch = text.match(/(?:sent to|paid to)\s+(?:[A-Za-z0-9\s.'-]{1,30}\s+)?(\d{5,7})\b/i);
+      const looseMatch = text.match(/(?:sent to|paid to)\s+(?:[A-Za-z0-9\s.'-]{1,40}\s+)?(?:till\s*)?(\d{5,7})\b/i);
       if (looseMatch) {
         detectedTill = looseMatch[1];
       }
     }
 
-    // 5. Check Till Accuracy against expected Landlord Till
-    const cleanExpected = (expectedTill || '').replace(/\D/g, '');
-    let tillMatchStatus = 'not_specified'; // 'exact_match' | 'mismatch' | 'not_specified'
-    let isTillAccurate = false;
+    // Strict Till Verification: detected Till must match expected property Till
+    const isTillAccurate = Boolean(detectedTill && cleanExpected && detectedTill === cleanExpected);
+    const tillMatchStatus = isTillAccurate ? 'exact_match' : (detectedTill ? 'mismatch' : 'missing');
 
-    if (detectedTill) {
-      if (cleanExpected && detectedTill === cleanExpected) {
-        tillMatchStatus = 'exact_match';
-        isTillAccurate = true;
-      } else if (cleanExpected && detectedTill !== cleanExpected) {
-        tillMatchStatus = 'mismatch';
-        isTillAccurate = false;
+    // 5. Strict Freshness & Send-Date Validation
+    let isSameDay = false;
+    let isRecent = false;
+    let extractedDate = '';
+    let extractedTime = '';
+
+    const dateMatch = text.match(/\bon\s+(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4})/i);
+    const timeMatch = text.match(/\bat\s+(\d{1,2}[:.]\d{2}(?::\d{2})?\s*(?:[ap]\.?m\.?)?)/i) ||
+                      text.match(/\bon\s+\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}\s+(\d{1,2}[:.]\d{2}(?::\d{2})?\s*(?:[ap]\.?m\.?)?)/i);
+
+    if (dateMatch) extractedDate = dateMatch[1].replace(/[.,;!?]+$/, '').trim();
+    if (timeMatch) extractedTime = timeMatch[1].replace(/[.,;!?]+$/, '').trim();
+
+    if (dateMatch && timeMatch) {
+      const parts = extractedDate.split(/[\/\-\.]/);
+      let day, month, year;
+      if (parts[0].length === 4) {
+        year = parseInt(parts[0], 10);
+        month = parseInt(parts[1], 10);
+        day = parseInt(parts[2], 10);
       } else {
-        tillMatchStatus = 'exact_match';
-        isTillAccurate = true;
+        day = parseInt(parts[0], 10);
+        month = parseInt(parts[1], 10);
+        year = parseInt(parts[2], 10);
+        if (year < 100) year += 2000;
       }
-    } else if (cleanExpected) {
-      tillMatchStatus = 'not_specified';
-      isTillAccurate = false;
+
+      const tParts = extractedTime.replace('.', ':').match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*([ap]\.?m\.?)?$/i);
+      if (tParts) {
+        let hours = parseInt(tParts[1], 10);
+        const minutes = parseInt(tParts[2], 10);
+        const meridiem = tParts[3] ? tParts[3].toLowerCase().replace(/\./g, '') : null;
+        if (meridiem === 'pm' && hours < 12) hours += 12;
+        if (meridiem === 'am' && hours === 12) hours = 0;
+
+        const smsDate = new Date(year, month - 1, day, hours, minutes, 0, 0);
+        const now = new Date();
+
+        // Must be the same calendar day as the current send date
+        isSameDay = (smsDate.getFullYear() === now.getFullYear() &&
+                     smsDate.getMonth() === now.getMonth() &&
+                     smsDate.getDate() === now.getDate());
+
+        // Must be within 10 minutes of current time (allowing minor 1.5 min clock skew)
+        const diffMinutes = (now.getTime() - smsDate.getTime()) / (1000 * 60);
+        isRecent = (diffMinutes >= -1.5 && diffMinutes <= 10);
+      }
     }
 
-    // Extract Date and Time if present
-    const dateMatch = text.match(/\bon\s+(\d{1,2}[\/.-]\d{1,2}[\/.-]\d{2,4})/i);
-    const timeMatch = text.match(/\bat\s+(\d{1,2}:\d{2}\s*(?:[AP]M)?)/i);
+    const isValid = Boolean(code && amount && isTillAccurate && isSameDay && isRecent);
 
     return {
-      isValid: Boolean(code || amount),
+      isValid,
       code,
       amount,
       phone,
@@ -1226,8 +1260,11 @@ class Store {
       expectedTill: cleanExpected,
       tillMatchStatus,
       isTillAccurate,
-      extractedDate: dateMatch ? dateMatch[1] : '',
-      extractedTime: timeMatch ? timeMatch[1] : ''
+      isSameDay,
+      isRecent,
+      extractedDate,
+      extractedTime,
+      errorMessage: isValid ? '' : 'Payment verification failed: The payment message is invalid, not sent to this property Till, or was completed more than 10 minutes ago. Please make a fresh payment and submit promptly.'
     };
   }
 
@@ -1239,15 +1276,19 @@ class Store {
     const landlord = this.state.landlords.find((l) => l.id === tenant.landlordId);
     const expectedTill = landlord ? landlord.tillNumber : tenant.tillNumber || '582190';
 
-    // Verify SMS message against Landlord Till
+    // Verify SMS message strictly against Landlord Till, date (today), and freshness (<= 10 mins)
     const verification = this.parseAndVerifyMpesaSms(smsText, expectedTill);
 
-    let cleanCode = (mpesaCode || '').trim().toUpperCase() || verification.code;
-    let finalAmount = Number(amount) || verification.amount || tenant.monthlyRent;
-
-    if (!cleanCode) {
-      cleanCode = 'QK' + Math.random().toString(36).substring(2, 10).toUpperCase();
+    if (!verification.isValid) {
+      return {
+        success: false,
+        isInvalidFormat: true,
+        message: verification.errorMessage || 'Payment verification failed: The payment message is invalid, not sent to this property Till, or was completed more than 10 minutes ago. Please make a fresh payment and submit promptly.'
+      };
     }
+
+    const cleanCode = verification.code;
+    const finalAmount = verification.amount;
 
     // 1. Anti-Forgery Check: Reject Duplicate M-Pesa Receipt Codes
     const duplicate = this.state.payments.find(
@@ -1280,9 +1321,6 @@ class Store {
     // 3. Cryptographic Digital Verification Seal
     const digitalSeal = `RMS-SEC-${cleanCode}-${Date.now().toString(36).toUpperCase()}-VERIFIED`;
 
-    // 4. Fraud risk assessment
-    const isHighRiskFraud = verification.tillMatchStatus === 'mismatch';
-
     const newPayment = {
       id,
       landlordId: tenant.landlordId || 'll-1',
@@ -1294,7 +1332,7 @@ class Store {
       method: `M-Pesa Till ${expectedTill}`,
       channel: 'tenant_posted_sms',
       mpesaReceipt: cleanCode,
-      payerPhone: phone || verification.phone || tenant.phone,
+      payerPhone: verification.phone || phone || tenant.phone,
       payerName: tenant.name,
       tenantMessage: smsText.trim() || `Payment confirmation code ${cleanCode} submitted for ${formatKES(finalAmount)}`,
       smsText: smsText.trim(),
@@ -1303,10 +1341,10 @@ class Store {
       detectedTill: verification.detectedTill || '',
       isTillAccurate: verification.isTillAccurate,
       tillMatchStatus: verification.tillMatchStatus,
-      isHighRiskFraud,
+      isHighRiskFraud: false,
       digitalSeal,
       securityHash: btoa(`${cleanCode}:${finalAmount}:${expectedTill}:${id}`).slice(0, 24),
-      antiFraudCheck: isHighRiskFraud ? 'FLAGGED_TILL_MISMATCH' : 'PASSED_SECURE',
+      antiFraudCheck: 'PASSED_SECURE',
       screenshot: screenshot || '',
       status: 'pending', // Awaiting Landlord confirmation!
       submittedAt: Date.now(),
@@ -1316,7 +1354,7 @@ class Store {
     this.state.payments.unshift(newPayment);
     this.addAudit(
       'Tenant Payment Dispatched',
-      `${tenant.name} (${tenant.unit}) submitted payment for ${formatKES(finalAmount)} (Code: ${cleanCode}, Seal: ${digitalSeal.slice(0, 16)}...) - Till ${expectedTill} ${verification.isTillAccurate ? 'Accurate ✓' : isHighRiskFraud ? '⚠️ TILL MISMATCH' : 'Verified'}`
+      `${tenant.name} (${tenant.unit}) submitted verified payment for ${formatKES(finalAmount)} (Code: ${cleanCode}, Seal: ${digitalSeal.slice(0, 16)}...) - Till ${expectedTill} Verified ✓`
     );
     this.saveState();
     return { success: true, payment: newPayment, verification, digitalSeal };

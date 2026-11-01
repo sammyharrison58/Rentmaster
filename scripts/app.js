@@ -5060,7 +5060,7 @@ class RentPortalApp {
             <div class="form-group">
               <label class="form-label" style="font-weight: 700; display: flex; justify-content: space-between; align-items: center;">
                 <span>M-Pesa SMS Confirmation Message</span>
-                <span style="font-size: 0.75rem; font-weight: normal; color: var(--primary);">✨ Auto-verifies Till & extracts details</span>
+                <span style="font-size: 0.75rem; font-weight: normal; color: var(--primary);">✨ Auto-verifies & extracts details</span>
               </label>
               <textarea 
                 class="form-input" 
@@ -5071,28 +5071,28 @@ class RentPortalApp {
               ></textarea>
             </div>
 
-            <!-- Real-Time Till Accuracy Status Box -->
-            <div id="sms-parse-indicator" style="display: block; background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: var(--radius-md); padding: 0.75rem 1rem; font-size: 0.8125rem; transition: all 0.2s ease;">
-              <div id="sms-till-badge-row" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.25rem;">
-                <div style="display: flex; align-items: center; gap: 0.375rem; font-weight: 700; color: #475569;">
-                  <i data-lucide="store" style="width: 1rem; height: 1rem; color: #64748b;"></i>
-                  <span>Target Landlord Till: <strong style="font-family: monospace; font-size: 0.9375rem; color: #064e3b;">${tillNumber}</strong> (${landlord ? landlord.propertyName : 'Omwoyo Apartments'})</span>
-                </div>
-                <span class="badge" id="till-verify-badge" style="background: #f1f5f9; color: #64748b; font-size: 0.6875rem; font-weight: 800;">AWAITING MESSAGE</span>
-              </div>
-              <div style="font-size: 0.75rem; color: #64748b;" id="sms-parse-details">
-                Paste your M-Pesa SMS above or click "📋 Read / Paste SMS from Device" to automatically verify that the Till number is accurate.
+            <!-- Real-Time Verification Status Alert (Clean, non-revealing to tenant) -->
+            <div id="tenant-sms-status-box" style="display: block; background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: var(--radius-md); padding: 0.75rem 1rem; font-size: 0.8125rem; transition: all 0.2s ease; margin-bottom: 0.5rem;">
+              <div style="display: flex; align-items: center; gap: 0.5rem; color: #475569;">
+                <i data-lucide="info" style="width: 1rem; height: 1rem; color: #0284c7; flex-shrink: 0;"></i>
+                <span>Paste your M-Pesa SMS confirmation above to automatically verify and fill payment details.</span>
               </div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
               <div class="form-group">
-                <label class="form-label">M-Pesa Transaction Code *</label>
-                <input type="text" class="form-input" id="post-mpesa-code" placeholder="e.g. QJD73821K9" style="text-transform: uppercase; font-family: monospace; font-weight: 700;" required />
+                <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+                  <span>M-Pesa Transaction Code *</span>
+                  <span style="font-size: 0.7rem; color: #64748b; font-weight: 600;"><i data-lucide="lock" style="width: 0.75rem; height: 0.75rem; vertical-align: middle;"></i> Read-only</span>
+                </label>
+                <input type="text" class="form-input" id="post-mpesa-code" placeholder="Auto-filled from verified SMS" readonly style="text-transform: uppercase; font-family: monospace; font-weight: 700; background: var(--slate-100); cursor: not-allowed;" required />
               </div>
               <div class="form-group">
-                <label class="form-label">Amount Paid (KES) *</label>
-                <input type="number" class="form-input" id="post-amount" min="1" step="1" value="${suggestedAmount}" required />
+                <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+                  <span>Amount Paid (KES) *</span>
+                  <span style="font-size: 0.7rem; color: #64748b; font-weight: 600;"><i data-lucide="lock" style="width: 0.75rem; height: 0.75rem; vertical-align: middle;"></i> Read-only</span>
+                </label>
+                <input type="number" class="form-input" id="post-amount" placeholder="Auto-filled from verified SMS" readonly style="font-weight: 700; background: var(--slate-100); cursor: not-allowed;" required />
               </div>
             </div>
 
@@ -5102,8 +5102,11 @@ class RentPortalApp {
                 <input type="month" class="form-input" id="post-month" value="${getCurrentMonth()}" required />
               </div>
               <div class="form-group">
-                <label class="form-label">Sender Phone Number</label>
-                <input type="tel" class="form-input" id="post-phone" value="${tenant.phone}" required />
+                <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+                  <span>Sender Phone Number</span>
+                  <span style="font-size: 0.7rem; color: #64748b; font-weight: 600;"><i data-lucide="lock" style="width: 0.75rem; height: 0.75rem; vertical-align: middle;"></i> Read-only</span>
+                </label>
+                <input type="tel" class="form-input" id="post-phone" value="${tenant.phone}" readonly style="background: var(--slate-100); cursor: not-allowed;" required />
               </div>
             </div>
 
@@ -5112,24 +5115,14 @@ class RentPortalApp {
               <input type="text" class="form-input" id="post-note" placeholder="e.g. Paid via husband's phone / M-Pesa agent" />
             </div>
 
-            <!-- Explicit Till Confirmation Checkbox if Till Mismatch detected -->
-            <div id="till-mismatch-warning" style="display: none; background: #fff1f2; border: 1.5px solid #ef4444; border-radius: var(--radius-md); padding: 0.75rem; font-size: 0.8125rem; color: #991b1b;">
-              <div style="font-weight: 700; margin-bottom: 0.25rem;">⚠️ Warning: The Till number in your message does not match Till ${tillNumber}.</div>
-              <div style="margin-bottom: 0.5rem; font-size: 0.75rem;">If you are sure this payment was made to your landlord, check the box below to proceed:</div>
-              <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; font-weight: 700; cursor: pointer;">
-                <input type="checkbox" id="chk-override-till-mismatch" />
-                <span>I confirm I sent this payment for unit ${tenant.unit}</span>
-              </label>
-            </div>
-
-            <button type="submit" class="btn btn-primary btn-full" style="padding: 0.75rem 1rem; font-weight: 800; font-size: 0.9375rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;" id="btn-submit-post-message">
+            <button type="submit" class="btn btn-primary btn-full" style="padding: 0.75rem 1rem; font-weight: 800; font-size: 0.9375rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; opacity: 0.5; cursor: not-allowed;" id="btn-submit-post-message" disabled>
               <i data-lucide="send" style="width: 1.125rem; height: 1.125rem;"></i>
               Confirm & Post Payment Message to Landlord
             </button>
 
             <div style="background-color: var(--slate-50); border-radius: var(--radius-md); padding: 0.75rem; font-size: 0.75rem; color: var(--slate-600); display: flex; align-items: center; gap: 0.5rem;">
               <i data-lucide="shield-check" style="width: 1rem; height: 1rem; color: var(--emerald-600); flex-shrink: 0;"></i>
-              <span>Your message is matched against Landlord Till <strong>${tillNumber}</strong> (${landlord ? landlord.propertyName : 'Omwoyo Apartments'}) for confirmation before payment is approved.</span>
+              <span>Your message is verified for accuracy and recent completion before payment is dispatched to the landlord.</span>
             </div>
           </form>
         </div>
@@ -5271,99 +5264,94 @@ class RentPortalApp {
     const landlord = tenant ? store.state.landlords.find((l) => l.id === tenant.landlordId) : null;
     const tillNumber = landlord ? landlord.tillNumber : tenant.tillNumber || '582190';
 
-    // 1. Real-time Safaricom M-Pesa SMS Auto-Parser & Till Verification Engine
+    // 1. Real-time Safaricom M-Pesa SMS Auto-Parser & Strict Verification Engine
     const postSmsText = document.getElementById('post-sms-text');
+    const codeInput = document.getElementById('post-mpesa-code');
+    const amtInput = document.getElementById('post-amount');
+    const phoneInput = document.getElementById('post-phone');
+    const statusBox = document.getElementById('tenant-sms-status-box');
+    const submitBtn = document.getElementById('btn-submit-post-message');
+
     const autoParseAndVerify = () => {
       if (!postSmsText) return;
       const text = postSmsText.value;
       if (!text || !text.trim()) {
-        const indicator = document.getElementById('sms-parse-indicator');
-        const badgeRow = document.getElementById('sms-till-badge-row');
-        const details = document.getElementById('sms-parse-details');
-        const mismatchWarning = document.getElementById('till-mismatch-warning');
-        if (indicator && badgeRow && details) {
-          indicator.style.background = '#f8fafc';
-          indicator.style.borderColor = '#cbd5e1';
-          badgeRow.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 0.375rem; font-weight: 700; color: #475569;">
-              <i data-lucide="store" style="width: 1rem; height: 1rem; color: #64748b;"></i>
-              <span>Target Landlord Till: <strong style="font-family: monospace; font-size: 0.9375rem; color: #064e3b;">${tillNumber}</strong> (${landlord ? landlord.propertyName : 'Omwoyo Apartments'})</span>
+        if (statusBox) {
+          statusBox.style.background = '#f8fafc';
+          statusBox.style.borderColor = '#cbd5e1';
+          statusBox.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 0.5rem; color: #475569;">
+              <i data-lucide="info" style="width: 1rem; height: 1rem; color: #0284c7; flex-shrink: 0;"></i>
+              <span>Paste your M-Pesa SMS confirmation above to automatically verify and fill payment details.</span>
             </div>
-            <span class="badge" style="background: #f1f5f9; color: #64748b; font-size: 0.6875rem; font-weight: 800;">AWAITING MESSAGE</span>
           `;
-          details.innerHTML = 'Paste your M-Pesa SMS above or click "📋 Read / Paste SMS from Device" to automatically verify that the Till number is accurate.';
-          if (mismatchWarning) mismatchWarning.style.display = 'none';
-          if (window.lucide) window.lucide.createIcons();
         }
+        if (codeInput) codeInput.value = '';
+        if (amtInput) amtInput.value = '';
+        if (phoneInput) phoneInput.value = tenant.phone || '';
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.style.opacity = '0.5';
+          submitBtn.style.cursor = 'not-allowed';
+        }
+        if (window.lucide) window.lucide.createIcons();
         return;
       }
 
-      // Run store verification engine
+      // Run store verification engine: checks Till, date (today), freshness (<= 10 mins), format
       const res = store.parseAndVerifyMpesaSms(text, tillNumber);
 
-      const codeInput = document.getElementById('post-mpesa-code');
-      const amtInput = document.getElementById('post-amount');
-      const phoneInput = document.getElementById('post-phone');
-      const indicator = document.getElementById('sms-parse-indicator');
-      const badgeRow = document.getElementById('sms-till-badge-row');
-      const details = document.getElementById('sms-parse-details');
-      const mismatchWarning = document.getElementById('till-mismatch-warning');
+      if (res.isValid) {
+        // Successful verification: Populate read-only fields
+        if (codeInput) codeInput.value = res.code;
+        if (amtInput) amtInput.value = Math.round(res.amount);
+        if (phoneInput) phoneInput.value = res.phone || tenant.phone;
 
-      if (res.code && codeInput && (!codeInput.value || codeInput.value.length < 5)) {
-        codeInput.value = res.code;
-      }
-      if (res.amount && amtInput) {
-        amtInput.value = Math.round(res.amount);
-      }
-      if (res.phone && phoneInput) {
-        phoneInput.value = res.phone;
-      }
-
-      if (indicator && badgeRow && details) {
-        indicator.style.display = 'block';
-
-        if (res.isTillAccurate) {
-          // Accurate Till Match!
-          indicator.style.background = '#ecfdf5';
-          indicator.style.borderColor = '#10b981';
-          badgeRow.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 0.375rem; font-weight: 800; color: #065f46;">
-              <i data-lucide="shield-check" style="width: 1.125rem; height: 1.125rem; color: #10b981;"></i>
-              <span>Till Number Verified Accurate: <strong>Till ${tillNumber}</strong> (${landlord ? landlord.propertyName : 'Omwoyo Apartments'})</span>
+        if (statusBox) {
+          statusBox.style.background = '#ecfdf5';
+          statusBox.style.borderColor = '#10b981';
+          statusBox.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+              <div style="display: flex; align-items: center; gap: 0.5rem; color: #065f46; font-weight: 700;">
+                <i data-lucide="shield-check" style="width: 1.125rem; height: 1.125rem; color: #10b981; flex-shrink: 0;"></i>
+                <span>M-Pesa Payment Message Verified</span>
+              </div>
+              <span class="badge badge-paid" style="font-size: 0.6875rem; font-weight: 800;">✓ VERIFIED</span>
             </div>
-            <span class="badge badge-paid" style="font-size: 0.6875rem; font-weight: 800;">✓ TILL ACCURATE</span>
           `;
-          details.innerHTML = `Code: <strong>${res.code || 'Detected'}</strong> · Amount: <strong>KES ${Number(res.amount || amtInput?.value || 0).toLocaleString()}</strong> ${res.phone ? `· Phone: <strong>${res.phone}</strong>` : ''} ${res.extractedDate ? `· Date: <strong>${res.extractedDate}</strong>` : ''}`;
-          if (mismatchWarning) mismatchWarning.style.display = 'none';
-        } else if (res.tillMatchStatus === 'mismatch') {
-          // Till Mismatch Warning!
-          indicator.style.background = '#fff1f2';
-          indicator.style.borderColor = '#ef4444';
-          badgeRow.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 0.375rem; font-weight: 800; color: #991b1b;">
-              <i data-lucide="alert-triangle" style="width: 1.125rem; height: 1.125rem; color: #ef4444;"></i>
-              <span>Till Number Mismatch: Found Till <strong>${res.detectedTill}</strong>, Expected <strong>${tillNumber}</strong></span>
-            </div>
-            <span class="badge badge-unpaid" style="font-size: 0.6875rem; font-weight: 800;">TILL MISMATCH</span>
-          `;
-          details.innerHTML = `Your SMS text indicates money was sent to Till <strong>${res.detectedTill}</strong>. Your landlord's registered Till is <strong>${tillNumber}</strong> (${landlord ? landlord.propertyName : 'Omwoyo Apartments'}). Please verify you sent to the right Till.`;
-          if (mismatchWarning) mismatchWarning.style.display = 'block';
-        } else {
-          // Till not explicitly specified in SMS
-          indicator.style.background = '#f0fdf4';
-          indicator.style.borderColor = '#34d399';
-          badgeRow.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 0.375rem; font-weight: 700; color: #065f46;">
-              <i data-lucide="info" style="width: 1rem; height: 1rem; color: #10b981;"></i>
-              <span>Confirming Payment to Till: <strong>${tillNumber}</strong> (${landlord ? landlord.propertyName : 'Omwoyo Apartments'})</span>
-            </div>
-            <span class="badge" style="background: #e0f2fe; color: #0369a1; font-size: 0.6875rem; font-weight: 800;">VERIFYING TILL</span>
-          `;
-          details.innerHTML = `Code: <strong>${res.code || 'Detected'}</strong> · Amount: <strong>KES ${Number(res.amount || amtInput?.value || 0).toLocaleString()}</strong> · Ensure your payment was sent to Till <strong>${tillNumber}</strong>.`;
-          if (mismatchWarning) mismatchWarning.style.display = 'none';
         }
-        if (window.lucide) window.lucide.createIcons();
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.style.opacity = '1';
+          submitBtn.style.cursor = 'pointer';
+        }
+      } else {
+        // Conditions not met: Clear read-only fields and show clean error without exposing internal check details
+        if (codeInput) codeInput.value = '';
+        if (amtInput) amtInput.value = '';
+        if (phoneInput) phoneInput.value = tenant.phone || '';
+
+        if (statusBox) {
+          statusBox.style.background = '#fef2f2';
+          statusBox.style.borderColor = '#ef4444';
+          statusBox.innerHTML = `
+            <div style="display: flex; align-items: flex-start; gap: 0.5rem; color: #991b1b;">
+              <i data-lucide="alert-circle" style="width: 1.125rem; height: 1.125rem; color: #ef4444; flex-shrink: 0; margin-top: 0.125rem;"></i>
+              <div>
+                <strong style="display: block; font-weight: 700; margin-bottom: 0.125rem;">Payment Verification Error</strong>
+                <span style="font-size: 0.75rem; color: #b91c1c;">Payment verification failed: The payment message is invalid, not sent to this property's Till, or was completed more than 10 minutes ago. Please make a fresh payment and submit promptly.</span>
+              </div>
+            </div>
+          `;
+        }
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.style.opacity = '0.5';
+          submitBtn.style.cursor = 'not-allowed';
+        }
       }
+
+      if (window.lucide) window.lucide.createIcons();
     };
 
     if (postSmsText) {
@@ -5387,7 +5375,7 @@ class RentPortalApp {
         if (postSmsText) {
           postSmsText.value = clipText.trim();
           autoParseAndVerify();
-          this.showToast('M-Pesa SMS pasted from device! Till accuracy checked.', 'success');
+          this.showToast('M-Pesa SMS pasted from device! Verifying payment details...', 'info');
         }
       } catch (err) {
         postSmsText?.focus();
@@ -5442,34 +5430,31 @@ class RentPortalApp {
         e.preventDefault();
         const smsText = document.getElementById('post-sms-text')?.value || '';
         const mpesaCode = document.getElementById('post-mpesa-code')?.value.trim() || '';
-        const amount = Number(document.getElementById('post-amount')?.value || tenant.monthlyRent);
+        const amount = Number(document.getElementById('post-amount')?.value || 0);
         const month = document.getElementById('post-month')?.value || getCurrentMonth();
         const phone = document.getElementById('post-phone')?.value || tenant.phone;
         const note = document.getElementById('post-note')?.value.trim() || '';
 
-        if (!mpesaCode) {
-          alert('Please enter or paste your M-Pesa transaction code.');
+        if (!smsText.trim()) {
+          alert('Please paste your Safaricom M-Pesa SMS confirmation message.');
           return;
         }
 
-        // Validate Till number
+        // Validate Till number, date, and 10-minute freshness strictly
         const verification = store.parseAndVerifyMpesaSms(smsText, tillNumber);
-        if (verification.tillMatchStatus === 'mismatch') {
-          const overrideChecked = document.getElementById('chk-override-till-mismatch')?.checked;
-          if (!overrideChecked) {
-            alert(`⚠️ TILL NUMBER MISMATCH:\n\nYour SMS indicates payment to Till ${verification.detectedTill}, but Landlord's registered Till is ${tillNumber} (${landlord ? landlord.propertyName : 'Omwoyo Apartments'}).\n\nPlease verify that your payment was made to the correct Till before submitting.`);
-            return;
-          }
+        if (!verification.isValid) {
+          alert('⚠️ Payment verification failed: The payment message is invalid, not sent to this property\'s Till, or was completed more than 10 minutes ago. Please make a fresh payment and submit promptly.');
+          return;
         }
 
-        const fullMessage = smsText.trim() || (note ? `${note} (Code: ${mpesaCode}, Amount: KES ${amount})` : `Payment confirmation code ${mpesaCode} submitted for KES ${amount}`);
+        const fullMessage = smsText.trim() + (note ? `\nNote: ${note}` : '');
 
         const postRes = store.postTenantPaymentMessage({
           tenantId: tenant.userId,
-          amount,
-          mpesaCode,
+          amount: verification.amount || amount,
+          mpesaCode: verification.code || mpesaCode,
           smsText: fullMessage,
-          phone,
+          phone: verification.phone || phone,
           month,
           screenshot: this.currentSmsScreenshot || ''
         });
@@ -5585,7 +5570,7 @@ class RentPortalApp {
               if (smsInput && (!smsInput.value || smsInput.value !== clip)) {
                 smsInput.value = clip;
                 smsInput.dispatchEvent(new Event('input'));
-                this.showToast('📱 M-Pesa SMS detected from device! Till accuracy checked.', 'success');
+                this.showToast('📱 M-Pesa SMS detected from device! Verifying payment message...', 'info');
               }
             }
           }
