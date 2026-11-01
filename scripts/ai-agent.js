@@ -1,6 +1,6 @@
-// Rentmaster AI Agent - High-Cognition Resident Concierge & Landlord Copilot
-// Features: Semantic Intent Analysis, Deep Knowledge Base, Kenyan Tenancy Law (Cap 296/301),
-// Bank-Grade M-Pesa Security Explanations, Live Mathematical Ledger Deduction, and Swahili/Sheng NLP.
+// Rentmaster AI Agent - High-Cognition Resident Concierge, Landlord Copilot & Super Admin Executive Console
+// Features: Semantic Intent Analysis, Role-Isolated Personas (Tenant / Landlord / Super Admin),
+// Kenyan Tenancy Law (Cap 296/293), Bank-Grade M-Pesa Security Explanations, Live Mathematical Ledger Deduction, and Swahili/Sheng NLP.
 
 export class AIAgent {
   constructor(store, app) {
@@ -29,7 +29,35 @@ export class AIAgent {
     this.renderLauncher();
   }
 
-  // --- Live Context Extraction Engine ---
+  // --- Live Super Admin Context (Sammy Harrison / Platform Principal) ---
+  getSuperAdminContext(user) {
+    if (!user) return null;
+    const landlords = this.store.state.landlords || [];
+    const tenants = this.store.state.tenants || [];
+    const payments = this.store.state.payments || [];
+    const confirmedPayments = payments.filter((p) => p.status === 'confirmed');
+    const pendingPayments = payments.filter((p) => p.status === 'pending');
+    const totalVolume = confirmedPayments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+    const totalUnits = landlords.reduce((sum, l) => sum + (Number(l.unitsCount) || 0), 0);
+    const auditLogs = this.store.state.audit || [];
+
+    return {
+      type: 'superadmin',
+      name: user.name || 'Sammy Harrison',
+      email: user.email || 'sammyharrison58@gmail.com',
+      role: 'Platform Super Administrator',
+      totalLandlords: landlords.length,
+      totalTenants: tenants.length,
+      totalUnits: totalUnits || tenants.length,
+      totalPaymentsCount: confirmedPayments.length,
+      pendingPaymentsCount: pendingPayments.length,
+      totalVolume,
+      auditLogsCount: auditLogs.length,
+      landlordsList: landlords
+    };
+  }
+
+  // --- Live Context Extraction Engine for Tenants ---
   getTenantContext(user) {
     if (!user) return null;
     const tenant = user.tenant || (this.store.state.tenants && this.store.state.tenants.find((t) => t.userId === user.userId));
@@ -37,8 +65,8 @@ export class AIAgent {
 
     const landlord = this.store.state.landlords && this.store.state.landlords.find((l) => l.id === tenant.landlordId);
     const tillNumber = landlord ? landlord.tillNumber : tenant.tillNumber || '582190';
-    const propertyName = landlord ? landlord.propertyName : 'Omwoyo Apartments';
-    const landlordName = landlord ? landlord.name : 'Linus Omwoyo';
+    const propertyName = landlord ? landlord.propertyName : (tenant.propertyName || 'Residential Living');
+    const landlordName = landlord ? landlord.name : 'Property Management';
 
     // Calculate live ledger and balance
     const bills = this.store.getTenantBills ? this.store.getTenantBills(tenant) : [];
@@ -73,12 +101,13 @@ export class AIAgent {
     };
   }
 
+  // --- Live Context Extraction Engine for Landlords & Caretakers ---
   getLandlordContext(user) {
     if (!user) return null;
     const landlord = user.landlord || 
       (this.store.state.landlords && this.store.state.landlords.find((l) => l.userId === user.userId)) || 
       (this.store.state.landlords && this.store.state.landlords[0]) ||
-      { id: 'l1', name: 'Linus Omwoyo', propertyName: 'Omwoyo Apartments', tillNumber: '582190', unitsCount: 24 };
+      { id: 'l1', name: 'Property Owner', propertyName: 'Residential Portfolio', tillNumber: '582190', unitsCount: 24 };
 
     const tenants = (this.store.state.tenants || []).filter((t) => t.landlordId === landlord.id);
     const approvedTenants = tenants.filter((t) => t.status === 'approved');
@@ -121,9 +150,13 @@ export class AIAgent {
     const rawQ = (query || '').trim();
     const q = rawQ.toLowerCase();
     const user = this.currentUser;
-    const isTenant = user && user.role === 'tenant';
-    const isLandlord = user && (user.role === 'owner' || user.role === 'landlord' || user.role === 'caretaker' || user.role === 'superadmin');
 
+    // Strict role segmentation: Super Admin is isolated from Landlords and Tenants
+    const isSuperAdmin = user && (user.role === 'superadmin' || user.email === 'sammyharrison58@gmail.com' || (user.impersonatedBy && !user.role));
+    const isTenant = !isSuperAdmin && user && user.role === 'tenant';
+    const isLandlord = !isSuperAdmin && user && (user.role === 'owner' || user.role === 'landlord' || user.role === 'caretaker');
+
+    const sCtx = isSuperAdmin ? this.getSuperAdminContext(user) : null;
     const tCtx = isTenant ? this.getTenantContext(user) : null;
     const lCtx = isLandlord ? this.getLandlordContext(user) : null;
 
@@ -134,13 +167,55 @@ export class AIAgent {
       return matches ? matches.map(m => parseInt(m.replace(/,/g, ''), 10)).filter(n => !isNaN(n)) : [];
     };
 
-    // -------------------------------------------------------------
-    // INTENT SCORING ENGINE (Multi-lingual: English, Swahili, Sheng)
-    // -------------------------------------------------------------
     const hasAny = (keywords) => keywords.some(k => q.includes(k));
-    const hasAll = (keywords) => keywords.every(k => q.includes(k));
 
-    // 1. GREETINGS & CASUAL INTERACTION
+    // -------------------------------------------------------------
+    // SUPER ADMIN EXCLUSIVE INTELLIGENCE & RESPONSES (SAMMY HARRISON)
+    // -------------------------------------------------------------
+    if (sCtx) {
+      // 1. Greetings for Super Admin
+      if (/^(hi|hello|hey|habari|jambo|mambo|sasa|niaje|good (morning|afternoon|evening)|vipi|kazi gani)/i.test(q) && q.split(' ').length <= 4) {
+        return `> 🧠 **AI Executive Intelligence:** Authenticated session for Super Administrator **${sCtx.name}**\n\nGreetings **${sCtx.name}**! 🛡️ Welcome to your **Rentmaster Super Admin Executive Intelligence Console**.\n\n**Enterprise System Health:**\n- 🌐 **Managed Landlord Portfolios:** ${sCtx.totalLandlords} Client Account(s)\n- 🏢 **Total Units Under System:** ${sCtx.totalUnits} Units Across Kenya\n- 👥 **Total Registered Tenants:** ${sCtx.totalTenants} Active Residents\n- 💰 **System-Wide Processed Volume:** **${kes(sCtx.totalVolume)}** (${sCtx.totalPaymentsCount} Confirmed Records)\n- ⏳ **Pending Inflows Under Review:** ${sCtx.pendingPaymentsCount} Transaction(s)\n- 🔒 **Tamper-Evident Audit Logs:** ${sCtx.auditLogsCount} System Audit Entries\n\nHow would you like to direct platform operations today? You can audit registered landlords, review gross payment volumes, or inspect cryptographic security integrity.`;
+      }
+
+      // 2. Platform Overview & System Statistics
+      if (hasAny(['overview', 'system', 'platform', 'stats', 'how many', 'summary', 'total', 'health', 'metrics', 'analytics'])) {
+        return `> 🧠 **System Telemetry:** Platform Core Performance Report\n\n### 🌐 Rentmaster Enterprise Telemetry Overview\n\n- **Principal Administrator:** **${sCtx.name}** (${sCtx.email})\n- **Active Landlord Client Accounts:** **${sCtx.totalLandlords}** Properties Registered\n- **Total Managed Inventory:** **${sCtx.totalUnits} Units**\n- **Total Active Residents:** **${sCtx.totalTenants} Tenants**\n- **Gross Transaction Volume (GMV):** **${kes(sCtx.totalVolume)}**\n- **Confirmed System Receipts:** **${sCtx.totalPaymentsCount}** verified cryptographic receipts\n- **Inflow Queue:** **${sCtx.pendingPaymentsCount}** pending landlord sign-offs\n- **Security Ledger Status:** All cryptographic signatures, anti-replay registries, and carrier timestamps operating with **100% integrity**.\n\n*Tip: Use the top Super Admin Role Switcher bar to preview the platform as any specific landlord or tenant account with full impersonation rights.*`;
+      }
+
+      // 3. Landlords Directory & Accounts
+      if (hasAny(['landlord', 'landlords', 'owners', 'properties', 'portfolio', 'clients', 'buildings'])) {
+        const listStr = sCtx.landlordsList.length > 0 
+          ? sCtx.landlordsList.map((l, i) => `${i + 1}. **${l.name}** — *${l.propertyName}* (${l.unitsCount || 0} Units) · Till: \`${l.tillNumber || 'N/A'}\` · Location: ${l.location || 'Nairobi'}`).join('\n')
+          : 'No external landlord accounts registered yet.';
+
+        return `> 🧠 **Client Management Desk:** Managed Landlord Accounts\n\n### 🏢 Registered Landlord Portfolio Accounts (${sCtx.totalLandlords})\n\n${listStr}\n\n**Super Admin Privileges:**\n- You can onboard new landlords from the **Landlords Directory** tab.\n- You can assign custom Till numbers, manage unit limits, or impersonate their view via the **Role Switcher** bar at the top of the screen.`;
+      }
+
+      // 4. Gross Transaction Revenue & Payments Roll
+      if (hasAny(['revenue', 'volume', 'pesa', 'collection', 'financial', 'income', 'money', 'gmv', 'transactions', 'gross'])) {
+        return `> 🧠 **Platform Financial Intelligence:** Gross Volume Analytics\n\n### 💰 System-Wide Financial Roll & Transaction Volume\n\n- **Cumulative Processed Volume:** **${kes(sCtx.totalVolume)}**\n- **Total Confirmed Transactions:** **${sCtx.totalPaymentsCount}**\n- **Pending Inflow Approvals:** **${sCtx.pendingPaymentsCount}** transaction(s)\n- **M-Pesa Routing Protocols:** Safaricom Buy Goods (Till) with direct 10-minute carrier verification\n- **Settlement Architecture:** Direct-to-merchant ledger with automated receipt generation and zero custodial leakage.`;
+      }
+
+      // 5. Security Architecture, Tamper Prevention & Audit Logs
+      if (hasAny(['audit', 'security', 'seal', 'tamper', 'fraud', 'hash', 'integrity', 'loophole', 'carrier', 'sha-256', 'protection'])) {
+        return `> 🧠 **Cryptographic Security Core:** Bank-Grade Zero-Trust Audit\n\n### 🔒 Rentmaster Security & Tamper-Proof Infrastructure\n\nAs Super Administrator **${sCtx.name}**, your platform runs the following perimeter security protocols:\n\n1. **Anti-Replay Registry (\`usedMpesaCodes\`):** Eliminates double-submission or recycled SMS receipts permanently across the entire network.\n2. **10-Minute Freshness Perimeter:** Strictly enforces that tenant payment SMS must be generated and submitted within 10 minutes of real time.\n3. **Event-Locked Read-Only Fields:** Transaction Codes and Amounts are parsed directly from Safaricom signatures and locked to prevent client-side DOM tampering.\n4. **Cryptographic SHA-256 Receipts:** Every confirmed payment is stamped with an immutable digital seal (\`RMS-SEC-...\`) admissible in Kenyan courts and banks.\n5. **Audit Trail Entries:** Recorded **${sCtx.auditLogsCount}** immutable security events capturing logins, role transitions, and payment approvals.`;
+      }
+
+      // 6. Role Switcher & Impersonation
+      if (hasAny(['switch', 'impersonat', 'demo bar', 'role bar', 'how to switch', 'preview'])) {
+        return `> 🧠 **Executive Privilege:** Super Admin Impersonation Control\n\n### ⚙️ Super Admin Role Switcher Guide\n\n- **Location:** The dark top bar labeled **"Super Admin Role Switcher"** is exclusively visible to you (**${sCtx.email}**).\n- **Instant Preview:** Click **"Landlord Mode"** or **"Tenant Mode"** to experience any user's exact workflow without requiring their passwords.\n- **Return to Super Admin:** Click the **"Back to Super Admin"** badge on the top banner at any time to restore your root administrative session.`;
+      }
+
+      // 7. Emergency & Support Desk
+      if (hasAny(['caretaker', 'sammy', 'emergency', 'phone', 'contact', 'hotline', '0748'])) {
+        return `> 🧠 **Central Support Dispatch:** Lead Executive Contact\n\n### 🚨 Central Emergency & Operations Desk\n\n- **Platform Principal & Lead Caretaker:** **Sammy Harrison**\n- **Direct Cellular:** [0748 082 906](tel:0748082906)\n- **WhatsApp Escalation:** [Chat on WhatsApp](https://wa.me/254748082906)\n- **Status:** All dispatch, maintenance, and emergency escalations route directly to your central operations line.`;
+      }
+    }
+
+    // -------------------------------------------------------------
+    // GREETINGS FOR TENANT & LANDLORD
+    // -------------------------------------------------------------
     if (/^(hi|hello|hey|habari|jambo|mambo|sasa|niaje|good (morning|afternoon|evening)|vipi|kazi gani)/i.test(q) && q.split(' ').length <= 4) {
       if (tCtx) {
         return `> 🧠 **AI Resident Assistant:** Initialized session for **${tCtx.name}** · Unit **${tCtx.unit}**\n\nHello **${tCtx.name}**! 👋 Welcome to your **Rentmaster AI Concierge** for **${tCtx.propertyName}**.\n\nI am equipped with high-level knowledge of your property ledger, Safaricom M-Pesa protocols, building operations, and Kenyan tenancy rights. How can I assist you today?\n\n- 💳 **M-Pesa Rent Payments** (Till: \`${tCtx.tillNumber}\`)\n- 🧾 **Real-Time Account Balance** (${tCtx.totalOutstanding > 0 ? `Current arrears: ${kes(tCtx.totalOutstanding)}` : 'Zero balance 🎉'})\n- ⏰ **10-Minute SMS Verification & Security Seal Rules**\n- 🔧 **Emergency & Maintenance Desk** (Caretaker Sammy Harrison: \`0748 082 906\`)\n- ⚖️ **Kenyan Tenancy Law & Eviction Protections**`;
@@ -274,16 +349,21 @@ export class AIAgent {
 
     // General: What is Rentmaster
     if (hasAny(['what is rentmaster', 'about', 'how does this work', 'mfumo huu', 'rentmaster'])) {
-      return `> 🧠 **System Architecture:** About Rentmaster Core\n\n### 🏢 About Rentmaster Enterprise Property Cloud\n\nRentmaster is Kenya's premier automated property management operating system, engineering trust between landlords, caretakers, and tenants:\n\n- **Automated M-Pesa Buy Goods Integration** with instant 10-minute anti-fraud validation\n- **Tamper-Evident SHA-256 Cryptographic Receipts**\n- **Real-Time Resident Ledgers & PDF Statements**\n- **Kenyan Tenancy Law (Cap 296 & 293) Compliance Advisory**\n- **Resident Maintenance Desk** powered by Caretaker Sammy Harrison (\`0748 082 906\`)`;
+      return `> 🧠 **System Architecture:** About Rentmaster Enterprise Property Cloud\n\n### 🏢 About Rentmaster Enterprise Property Cloud\n\nRentmaster is Kenya's premier automated property management operating system, engineering trust between landlords, caretakers, and tenants:\n\n- **Automated M-Pesa Buy Goods Integration** with instant 10-minute anti-fraud validation\n- **Tamper-Evident SHA-256 Cryptographic Receipts**\n- **Real-Time Resident Ledgers & PDF Statements**\n- **Kenyan Tenancy Law (Cap 296 & 293) Compliance Advisory**\n- **Resident Maintenance Desk** powered by Caretaker Sammy Harrison (\`0748 082 906\`)`;
     }
 
     // -------------------------------------------------------------
     // HIGH-COGNITION CONTEXTUAL FALLBACK
     // -------------------------------------------------------------
-    const userRoleStr = isTenant ? `Resident Tenant (${tCtx.unit})` : isLandlord ? `Property Manager (${lCtx.propertyName})` : 'Guest User';
+    const userRoleStr = isSuperAdmin ? `Super Admin (${sCtx.name})` : isTenant ? `Resident Tenant (${tCtx.unit})` : isLandlord ? `Property Manager (${lCtx.propertyName})` : 'Guest User';
     const tillDisplay = (tCtx && tCtx.tillNumber) || (lCtx && lCtx.tillNumber) || '582190';
 
-    return `> 🧠 **Cognitive Synthesis:** Interpreting inquiry "${rawQ}" for ${userRoleStr}\n\n### Rentmaster Property Intelligence Desk\n\nI have analyzed your query regarding **"${rawQ}"** within the context of **${(tCtx && tCtx.propertyName) || (lCtx && lCtx.propertyName) || 'the property'}**.\n\nHere are direct insights and actions relevant to your profile:\n\n${isTenant ? `
+    return `> 🧠 **Cognitive Synthesis:** Interpreting inquiry "${rawQ}" for ${userRoleStr}\n\n### Rentmaster Property Intelligence Desk\n\nI have analyzed your query regarding **"${rawQ}"**.\n\nHere are direct insights and actions relevant to your profile:\n\n${isSuperAdmin ? `
+- 🌐 **Platform Telemetry:** Review system-wide metrics across all ${sCtx.totalLandlords} registered landlords and ${sCtx.totalUnits} units.
+- 💰 **System Volume:** Total platform collections processed: **${kes(sCtx.totalVolume)}**.
+- 🔒 **Security Audits:** Check carrier timestamp integrity and anti-replay registries.
+- ⚙️ **Role Switcher:** Test portals as Landlord or Tenant via the top switcher bar.
+` : isTenant ? `
 - 💳 **Make a Payment:** Use Official Property Till **\`${tillDisplay}\`** via Lipa na M-PESA Buy Goods.
 - ⏰ **Submit SMS Verification:** Paste your carrier confirmation within 10 minutes to verify your payment.
 - 🧾 **Check Balance:** Your current account balance is **${kes(tCtx.totalOutstanding)}**.
@@ -476,7 +556,13 @@ export class AIAgent {
 
     launcher.style.display = 'block';
 
-    if (user.role === 'tenant') {
+    const isSuperAdmin = user.role === 'superadmin' || user.email === 'sammyharrison58@gmail.com' || (user.impersonatedBy && !user.role);
+
+    if (isSuperAdmin) {
+      btn.style.background = 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)';
+      btn.style.borderColor = 'rgba(165, 180, 252, 0.45)';
+      textEl.innerText = 'Super Admin AI Core';
+    } else if (user.role === 'tenant') {
       btn.style.background = 'linear-gradient(135deg, #064e3b 0%, #065f46 100%)';
       btn.style.borderColor = 'rgba(52, 211, 153, 0.35)';
       textEl.innerText = 'Ask AI Concierge';
@@ -494,11 +580,17 @@ export class AIAgent {
 
     if (!titleEl || !subtitleEl) return;
 
-    if (user && user.role === 'tenant') {
+    const isSuperAdmin = user && (user.role === 'superadmin' || user.email === 'sammyharrison58@gmail.com' || (user.impersonatedBy && !user.role));
+
+    if (isSuperAdmin) {
+      const sCtx = this.getSuperAdminContext(user);
+      titleEl.innerText = 'Rentmaster Super Admin AI Core';
+      subtitleEl.innerHTML = `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#818cf8;"></span><span>Executive Console · ${sCtx.name} (Platform Principal)</span>`;
+    } else if (user && user.role === 'tenant') {
       const tCtx = this.getTenantContext(user);
       titleEl.innerText = 'Rentmaster Tenant Concierge';
       subtitleEl.innerHTML = `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#10b981;"></span><span>${tCtx ? tCtx.propertyName : 'Residential Living'} · Unit ${tCtx ? tCtx.unit : ''}</span>`;
-    } else if (user && (user.role === 'owner' || user.role === 'caretaker' || user.role === 'landlord' || user.role === 'superadmin')) {
+    } else if (user && (user.role === 'owner' || user.role === 'caretaker' || user.role === 'landlord')) {
       const lCtx = this.getLandlordContext(user);
       titleEl.innerText = 'Rentmaster Property Copilot';
       subtitleEl.innerHTML = `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#38bdf8;"></span><span>${lCtx ? lCtx.propertyName : 'Portfolio HQ'} · Cognitive Intelligence</span>`;
@@ -510,9 +602,20 @@ export class AIAgent {
     if (!bar) return;
 
     const user = this.currentUser;
-    const isTenant = user && user.role === 'tenant';
+    const isSuperAdmin = user && (user.role === 'superadmin' || user.email === 'sammyharrison58@gmail.com' || (user.impersonatedBy && !user.role));
+    const isTenant = !isSuperAdmin && user && user.role === 'tenant';
 
-    const prompts = isTenant
+    const prompts = isSuperAdmin
+      ? [
+          { label: '🌐 Platform Overview', query: 'Give me a complete overview of the system, registered landlords, and total units' },
+          { label: '🏢 Landlords Directory', query: 'Show me the list of all registered landlords and their properties' },
+          { label: '💰 Gross Platform Volume', query: 'What is the total cumulative transaction volume processed by the platform?' },
+          { label: '🔒 Security & Audit Logs', query: 'How do Rentmaster cryptographic seals and tamper-evident audit logs work?' },
+          { label: '⚙️ Role Switcher Guide', query: 'How does the Super Admin Role Switcher and user impersonation work?' },
+          { label: '🏛️ System Tax Compliance', query: 'What are the KRA 7.5% MRI tax reporting metrics across properties?' },
+          { label: '🚨 Emergency Hotline', query: 'What are the contact details for central dispatch and Caretaker Sammy Harrison?' }
+        ]
+      : isTenant
       ? [
           { label: '💳 How to Pay Rent', query: 'How do I pay rent through M-Pesa Till?' },
           { label: '🧾 Current Balance', query: 'What is my current balance and ledger summary?' },
@@ -560,10 +663,15 @@ export class AIAgent {
     const user = this.currentUser;
     let welcomeText = '';
 
-    if (user && user.role === 'tenant') {
+    const isSuperAdmin = user && (user.role === 'superadmin' || user.email === 'sammyharrison58@gmail.com' || (user.impersonatedBy && !user.role));
+
+    if (isSuperAdmin) {
+      const sCtx = this.getSuperAdminContext(user);
+      welcomeText = `> 🧠 **AI Executive Intelligence:** Initialized session for Super Administrator **${sCtx.name}**\n\nGreetings **${sCtx.name}**! 🛡️ Welcome to your **Rentmaster Super Admin Executive Intelligence Console**.\n\n**Enterprise System Health:**\n- 🌐 **Managed Landlord Portfolios:** ${sCtx.totalLandlords} Client Account(s)\n- 🏢 **Total Units Under System:** ${sCtx.totalUnits} Units Across Kenya\n- 👥 **Total Registered Tenants:** ${sCtx.totalTenants} Active Residents\n- 💰 **System-Wide Processed Volume:** **KES ${Number(sCtx.totalVolume).toLocaleString()}** (${sCtx.totalPaymentsCount} Confirmed Records)\n- 🔒 **Tamper-Evident Audit Logs:** ${sCtx.auditLogsCount} System Audit Entries\n\nHow would you like to direct platform operations today?`;
+    } else if (user && user.role === 'tenant') {
       const tCtx = this.getTenantContext(user);
       welcomeText = `> 🧠 **AI Resident Assistant:** Initialized session for **${tCtx ? tCtx.name : 'Resident'}** · Unit **${tCtx ? tCtx.unit : ''}**\n\nHello **${tCtx ? tCtx.name : 'Resident'}**! 👋 I am your **Rentmaster Resident AI Concierge** for **${tCtx ? tCtx.propertyName : 'your apartment'}**.\n\nI can answer questions regarding your rent balance (**${tCtx && tCtx.totalOutstanding > 0 ? `Current arrears: KES ${Number(tCtx.totalOutstanding).toLocaleString()}` : 'Zero balance 🎉'}**), M-Pesa Till **\`${tCtx ? tCtx.tillNumber : '582190'}\`**, Safaricom 10-minute verification, or contact Caretaker **Sammy Harrison** (\`0748 082 906\`). How can I help you today?`;
-    } else if (user && (user.role === 'owner' || user.role === 'caretaker' || user.role === 'landlord' || user.role === 'superadmin')) {
+    } else if (user && (user.role === 'owner' || user.role === 'caretaker' || user.role === 'landlord')) {
       const lCtx = this.getLandlordContext(user);
       welcomeText = `> 🧠 **AI Property Copilot:** Portfolio HQ Analysis for **${lCtx ? lCtx.propertyName : 'Portfolio'}**\n\nHello **${lCtx ? lCtx.name : 'Property Owner'}**! 👋 I am your **Rentmaster Intelligent Property Copilot**.\n\nI monitor your live financial collections (**KES ${Number(lCtx ? lCtx.totalCollected : 0).toLocaleString()}** recorded), flag unpaid units, explain payment security hashes, and provide legal guidance under Kenyan Tenancy Law & KRA 7.5% MRI Tax. What would you like to review?`;
     } else {
