@@ -538,7 +538,7 @@ class RentPortalApp {
         icon: 'message-circle',
         group: 'Quick Power Actions',
         action: () => {
-          window.open('https://wa.me/254722000111?text=Hello%20Rentmaster%20Help%20Desk', '_blank');
+          window.open('https://wa.me/254748082906?text=Hello%20Rentmaster%20Help%20Desk', '_blank');
         }
       }
     ];
@@ -1049,7 +1049,7 @@ class RentPortalApp {
           <i data-lucide="history" style="width: 1.25rem; height: 1.25rem;"></i>
           <span>Receipts</span>
         </button>
-        <button class="mobile-nav-item" onclick="window.open('https://wa.me/254722000111', '_blank');">
+        <button class="mobile-nav-item" onclick="window.open('https://wa.me/254748082906', '_blank');">
           <i data-lucide="headset" style="width: 1.25rem; height: 1.25rem;"></i>
           <span>Support</span>
         </button>
@@ -1075,7 +1075,7 @@ class RentPortalApp {
         <span style="font-size: 1rem; line-height: 1; position: relative; z-index: 1;">✨</span>
         <span style="position: absolute; inset: 0; background: linear-gradient(135deg, rgba(52,211,153,0.15), rgba(96,165,250,0.15)); opacity: 0; transition: opacity 0.2s;" class="ai-dock-glow"></span>
       </button>` : ''}
-      <button class="dock-btn" onclick="window.open('https://wa.me/254722000111?text=Hello%20Rentmaster%20Help%20Desk,%20I%20need%20assistance', '_blank');" title="Live WhatsApp Support">
+      <button class="dock-btn" onclick="window.open('https://wa.me/254748082906?text=Hello%20Rentmaster%20Help%20Desk,%20I%20need%20assistance', '_blank');" title="Live WhatsApp Support">
         <i data-lucide="message-circle" style="width: 1.125rem; height: 1.125rem;"></i>
       </button>
       <button class="dock-btn" onclick="window.scrollTo({ top: 0, behavior: 'smooth' });" title="Scroll to Top">
@@ -4733,13 +4733,13 @@ class RentPortalApp {
               <strong style="font-size: 0.875rem; color: #0f172a;">Resident Help Desk</strong>
             </div>
             <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 0.5rem;">
-              Caretaker: <strong>Peter Karanja</strong> (0722 000 111)
+              Caretaker: <strong>Sammy Harrison</strong> (0748 082 906)
             </p>
             <div style="display: flex; gap: 0.35rem;">
               <a href="tel:0722000111" class="btn btn-secondary" style="flex: 1; padding: 0.3rem 0.5rem; font-size: 0.75rem; text-align: center; text-decoration: none;">
                 📞 Call
               </a>
-              <a href="https://wa.me/254722000111?text=Hello%20Peter,%20I%20am%20in%20Unit%20${encodeURIComponent(tenant.unit)}%20at%20${encodeURIComponent(tenant.propertyName || 'Property')}" target="_blank" class="btn" style="flex: 1; padding: 0.3rem 0.5rem; font-size: 0.75rem; background: #25D366; color: #fff; font-weight: 700; text-align: center; text-decoration: none; border-radius: 6px;">
+              <a href="https://wa.me/254748082906?text=Hello%20Sammy,%20I%20am%20in%20Unit%20${encodeURIComponent(tenant.unit)}%20at%20${encodeURIComponent(tenant.propertyName || 'Property')}" target="_blank" class="btn" style="flex: 1; padding: 0.3rem 0.5rem; font-size: 0.75rem; background: #25D366; color: #fff; font-weight: 700; text-align: center; text-decoration: none; border-radius: 6px;">
                 💬 WhatsApp
               </a>
             </div>

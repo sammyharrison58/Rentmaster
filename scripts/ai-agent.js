@@ -62,8 +62,8 @@ export class AIAgent {
       pendingPaymentsCount: pendingPayments.length,
       lastPayment: payments[0] || null,
       caretaker: {
-        name: 'Peter Karanja',
-        phone: '0722 000 111',
+        name: 'Sammy Harrison',
+        phone: '0748 082 906',
         role: 'Resident Caretaker & Maintenance Desk'
       }
     };
@@ -126,7 +126,7 @@ export class AIAgent {
     // 1. Swahili & English Greetings
     if (/^(hi|hello|hey|habari|jambo|mambo|sasa|good (morning|afternoon|evening)|niaje)/i.test(q)) {
       if (tCtx) {
-        return `Hello **${tCtx.name}**! 👋 I am your **Rentmaster Resident AI Concierge** for **${tCtx.propertyName} (${tCtx.unit})**.\n\nI can help you with:\n- 💳 Paying rent directly to Till **${tCtx.tillNumber}**\n- ⏰ M-Pesa 10-minute SMS verification rules\n- 🧾 Checking your current balance & receipts\n- 🔧 Contacting Caretaker **Peter Karanja** (${tCtx.caretaker.phone})\n\nHow can I assist you today?`;
+        return `Hello **${tCtx.name}**! 👋 I am your **Rentmaster Resident AI Concierge** for **${tCtx.propertyName} (${tCtx.unit})**.\n\nI can help you with:\n- 💳 Paying rent directly to Till **${tCtx.tillNumber}**\n- ⏰ M-Pesa 10-minute SMS verification rules\n- 🧾 Checking your current balance & receipts\n- 🔧 Contacting Caretaker **Sammy Harrison** (${tCtx.caretaker.phone})\n\nHow can I assist you today?`;
       }
       if (lCtx) {
         return `Hello **${lCtx.name}**! 👋 I am your **Rentmaster Property AI Copilot** for **${lCtx.propertyName}**.\n\nI can help you with:\n- 📊 Today's collections (${kes(lCtx.totalCollected)})\n- ⚠️ Tracking ${lCtx.unpaidTenants.length} tenants with pending rent this month\n- 🔒 Reviewing pending payments & digital security seals\n- 📜 Kenyan Tenancy Tribunal & eviction guidelines\n\nWhat would you like to review?`;
@@ -208,7 +208,7 @@ export class AIAgent {
     // -------------------------------------------------------------
     // GENERAL FALLBACK RESPONSE
     // -------------------------------------------------------------
-    return `### Rentmaster Intelligent Property Assistant\n\nI understand your question regarding "${query}".\n\nHere are quick actions you can take right now:\n- **For Payments:** Pay via Official Till **${(tCtx && tCtx.tillNumber) || (lCtx && lCtx.tillNumber) || '582190'}**.\n- **For Verification:** Paste complete Safaricom SMS within 10 minutes.\n- **For Emergency On-Site Help:** Contact Caretaker **Peter Karanja** at **0722 000 111**.\n\nCould you specify if you are inquiring about **rent payments**, **balances**, **tenant onboarding**, or **payment verification**?`;
+    return `### Rentmaster Intelligent Property Assistant\n\nI understand your question regarding "${query}".\n\nHere are quick actions you can take right now:\n- **For Payments:** Pay via Official Till **${(tCtx && tCtx.tillNumber) || (lCtx && lCtx.tillNumber) || '582190'}**.\n- **For Verification:** Paste complete Safaricom SMS within 10 minutes.\n- **For Emergency On-Site Help:** Contact Caretaker **Sammy Harrison** at **0748 082 906**.\n\nCould you specify if you are inquiring about **rent payments**, **balances**, **tenant onboarding**, or **payment verification**?`;
   }
 
   // --- UI Component Rendering ---
