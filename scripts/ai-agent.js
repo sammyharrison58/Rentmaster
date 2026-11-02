@@ -334,13 +334,11 @@ export class AIAgent {
 
     root.innerHTML = `
       
-      <div id="ai-agent-launcher" class="ai-launcher-container" style="position: fixed; bottom: 5.75rem; right: 1.5rem; z-index: 990; transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);">
-        <button id="btn-toggle-ai-agent" type="button" class="ai-launcher-btn" style="display: flex; align-items: center; gap: 0.625rem; padding: 0.625rem 1.125rem; border-radius: 9999px; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; border: 1.5px solid rgba(255, 255, 255, 0.15); box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.35), 0 0 15px rgba(16, 185, 129, 0.2); cursor: pointer; font-family: inherit; font-size: 0.875rem; font-weight: 700;">
-          <span style="display: inline-flex; align-items: center; justify-content: center; width: 1.75rem; height: 1.75rem; border-radius: 50%; background: linear-gradient(135deg, #10b981 0%, #065f46 100%); color: #ffffff; font-size: 0.875rem; box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);">
-            ✨
-          </span>
-          <span id="ai-launcher-text">Ask AI Concierge</span>
-          <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981;"></span>
+      <div id="ai-agent-launcher" class="ai-launcher-container">
+        <button id="btn-toggle-ai-agent" type="button" class="ai-launcher-btn" title="Rentmaster AI Concierge">
+          <span class="ai-launcher-icon">✨</span>
+          <span id="ai-launcher-text" class="ai-launcher-label">AI Concierge</span>
+          <span class="ai-launcher-pulse"></span>
         </button>
       </div>
 
@@ -504,15 +502,15 @@ export class AIAgent {
     if (isSuperAdmin) {
       btn.style.background = 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)';
       btn.style.borderColor = 'rgba(165, 180, 252, 0.45)';
-      textEl.innerText = 'Super Admin AI Core';
+      textEl.innerText = 'Super Admin AI';
     } else if (user.role === 'tenant') {
       btn.style.background = 'linear-gradient(135deg, #064e3b 0%, #065f46 100%)';
       btn.style.borderColor = 'rgba(52, 211, 153, 0.35)';
-      textEl.innerText = 'Ask AI Concierge';
+      textEl.innerText = 'AI Concierge';
     } else {
       btn.style.background = 'linear-gradient(135deg, #1e1b4b 0%, #1e3a8a 100%)';
       btn.style.borderColor = 'rgba(96, 165, 250, 0.35)';
-      textEl.innerText = 'Property AI Copilot';
+      textEl.innerText = 'AI Copilot';
     }
   }
 

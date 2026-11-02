@@ -54,6 +54,10 @@
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -770,31 +774,31 @@ header {
 
 .floating-quick-dock {
   position: fixed;
-  bottom: 1.5rem;
-  right: 1.5rem;
+  bottom: 1.25rem;
+  right: 1.25rem;
   z-index: 90;
   display: flex;
   align-items: center;
-  gap: 0.35rem;
-  background: rgba(15, 23, 42, 0.88);
+  gap: 0.25rem;
+  background: rgba(15, 23, 42, 0.82);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 9999px;
-  padding: 0.35rem 0.5rem;
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.35);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0.2rem 0.35rem;
+  box-shadow: 0 6px 20px -3px rgba(0, 0, 0, 0.28);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .floating-quick-dock:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.45);
-  border-color: rgba(52, 211, 153, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.38);
+  border-color: rgba(52, 211, 153, 0.35);
 }
 
 .dock-btn {
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 1.85rem;
+  height: 1.85rem;
   border-radius: 9999px;
   display: flex;
   align-items: center;
@@ -807,10 +811,16 @@ header {
   position: relative;
 }
 
+.dock-btn svg,
+.dock-btn i {
+  width: 0.95rem !important;
+  height: 0.95rem !important;
+}
+
 .dock-btn:hover {
   background: rgba(255, 255, 255, 0.15);
   color: #ffffff;
-  transform: scale(1.08);
+  transform: scale(1.06);
 }
 
 .dock-btn-main {
@@ -822,6 +832,133 @@ header {
 .dock-btn-main:hover {
   background: linear-gradient(135deg, #34d399, #10b981);
   color: #ffffff;
+}
+
+.ai-launcher-container {
+  position: fixed;
+  bottom: 3.75rem;
+  right: 1.25rem;
+  z-index: 990;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ai-launcher-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 6px 16px -3px rgba(15, 23, 42, 0.3), 0 0 10px rgba(16, 185, 129, 0.15);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  user-select: none;
+}
+
+.ai-launcher-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px -4px rgba(15, 23, 42, 0.4), 0 0 14px rgba(16, 185, 129, 0.25);
+}
+
+.ai-launcher-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10b981 0%, #065f46 100%);
+  color: #ffffff;
+  font-size: 0.7rem;
+  flex-shrink: 0;
+}
+
+.ai-launcher-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.ai-launcher-pulse {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 5px #10b981;
+  flex-shrink: 0;
+}
+
+netlify-drawer,
+.netlify-drawer,
+[data-netlify-drawer],
+[data-netlify-feedback],
+[class*="netlify-drawer"],
+[class*="netlify-feedback"],
+[id^="netlify-feedback"],
+#netlify-identity-widget,
+[data-netlify-identity-menu],
+.netlify-cookie-control,
+.netlify-honeypot,
+iframe[src*="netlify.app"],
+iframe[src*="netlify-drawer"],
+iframe[title*="Netlify"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  height: 0 !important;
+  width: 0 !important;
+  position: absolute !important;
+  z-index: -9999 !important;
+}
+
+@keyframes pageFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#app-main,
+#superadmin-tab-content,
+.superadmin-dashboard-container,
+.dashboard-grid,
+.auth-form-card,
+.database-explorer-container {
+  animation: pageFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.tab-btn,
+.nav-tab-btn,
+.mobile-nav-item,
+.dock-btn,
+.btn {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mobile-nav-item {
+  transition: transform 0.15s ease, color 0.15s ease, background 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-nav-item:active {
+  transform: scale(0.92);
+}
+
+.mobile-nav-item.active {
+  color: var(--primary-dark);
+  font-weight: 800;
 }
 
 
@@ -840,8 +977,36 @@ header {
     padding: 0.4rem 0.6rem;
   }
   .floating-quick-dock {
-    bottom: 4.8rem;
-    right: 1rem;
+    bottom: 4.85rem !important;
+    right: 3.5rem !important;
+    padding: 0.15rem 0.25rem !important;
+    gap: 0.2rem !important;
+  }
+  .dock-btn {
+    width: 1.75rem !important;
+    height: 1.75rem !important;
+  }
+  .dock-btn svg,
+  .dock-btn i {
+    width: 0.875rem !important;
+    height: 0.875rem !important;
+  }
+  .ai-launcher-container {
+    bottom: 4.85rem !important;
+    right: 0.75rem !important;
+  }
+  .ai-launcher-label {
+    display: none !important;
+  }
+  .ai-launcher-btn {
+    width: 2.15rem !important;
+    height: 2.15rem !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    justify-content: center !important;
+  }
+  .ai-launcher-pulse {
+    display: none !important;
   }
 
   .mobile-nav-bar {
@@ -3622,8 +3787,36 @@ body.view-overview .header-live-badge {
     white-space: nowrap;
   }
   .floating-quick-dock {
-    bottom: 4.8rem !important;
+    bottom: 4.85rem !important;
+    right: 3.5rem !important;
+    padding: 0.15rem 0.25rem !important;
+    gap: 0.2rem !important;
+  }
+  .dock-btn {
+    width: 1.75rem !important;
+    height: 1.75rem !important;
+  }
+  .dock-btn svg,
+  .dock-btn i {
+    width: 0.875rem !important;
+    height: 0.875rem !important;
+  }
+  .ai-launcher-container {
+    bottom: 4.85rem !important;
     right: 0.75rem !important;
+  }
+  .ai-launcher-label {
+    display: none !important;
+  }
+  .ai-launcher-btn {
+    width: 2.15rem !important;
+    height: 2.15rem !important;
+    padding: 0 !important;
+    border-radius: 50% !important;
+    justify-content: center !important;
+  }
+  .ai-launcher-pulse {
+    display: none !important;
   }
 }
 
@@ -3642,6 +3835,22 @@ body.view-overview .header-live-badge {
   }
   .btn {
     font-size: 0.8125rem;
+  }
+  .floating-quick-dock {
+    bottom: 4.8rem !important;
+    right: 3.25rem !important;
+  }
+  .ai-launcher-container {
+    bottom: 4.8rem !important;
+    right: 0.5rem !important;
+  }
+  #ai-agent-panel {
+    bottom: 4.5rem !important;
+    right: 0.5rem !important;
+    left: 0.5rem !important;
+    width: auto !important;
+    max-height: calc(100vh - 5.5rem) !important;
+    border-radius: 1rem !important;
   }
 }
 

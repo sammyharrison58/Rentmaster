@@ -40,6 +40,16 @@ class RentPortalApp {
   }
 
   init() {
+    const suppressNetlify = () => {
+      const targets = document.querySelectorAll('netlify-drawer, [data-netlify-drawer], [data-netlify-feedback], [class*="netlify-feedback"], [id^="netlify-feedback"], iframe[src*="netlify"]');
+      targets.forEach((t) => t.remove());
+    };
+    suppressNetlify();
+    if (typeof MutationObserver !== 'undefined') {
+      const mo = new MutationObserver(() => suppressNetlify());
+      mo.observe(document.documentElement, { childList: true, subtree: true });
+    }
+
     this.aiAgent.mount();
 
     const urlParams = new URLSearchParams(window.location.search);
