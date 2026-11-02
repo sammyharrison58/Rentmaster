@@ -1791,15 +1791,26 @@ class RentPortalApp {
       this.render();
     });
 
-    document.getElementById('btn-google-signin')?.addEventListener('click', () => {
-      this.openGoogleAuthPopup('signin');
-    });
-    document.getElementById('btn-google-prefill-landlord')?.addEventListener('click', () => {
-      this.openGoogleAuthPopup('landlord_reg');
-    });
-    document.getElementById('btn-google-prefill-tenant')?.addEventListener('click', () => {
-      this.openGoogleAuthPopup('tenant_reg');
-    });
+    const _googleBtnClick = (id, tab) => {
+      const btn = document.getElementById(id);
+      if (!btn) return;
+      btn.addEventListener('click', () => {
+        const span = btn.querySelector('span');
+        const origText = span ? span.textContent : '';
+        btn.disabled = true;
+        btn.style.opacity = '0.75';
+        if (span) span.textContent = 'Connecting…';
+        this.openGoogleAuthPopup(tab);
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.style.opacity = '';
+          if (span) span.textContent = origText;
+        }, 2000);
+      });
+    };
+    _googleBtnClick('btn-google-signin', 'signin');
+    _googleBtnClick('btn-google-prefill-landlord', 'landlord_reg');
+    _googleBtnClick('btn-google-prefill-tenant', 'tenant_reg');
   }
 
   openGoogleAuthPopup(targetTab = 'signin') {
