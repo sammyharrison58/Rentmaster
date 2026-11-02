@@ -4,6 +4,21 @@ export default defineConfig({
   server: {
     port: 5173
   },
+  build: {
+    target: 'es2022',
+    minify: 'esbuild',
+    cssMinify: true,
+    cssCodeSplit: true,
+    assetsInlineLimit: 4096,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'ai-agent': ['./scripts/ai-agent.js']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000
+  },
   plugins: [
     {
       name: 'safaricom-daraja-stk-api',

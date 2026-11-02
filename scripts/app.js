@@ -1219,7 +1219,7 @@ class RentPortalApp {
 
               <div class="auth-property-mini-list">
                 <div class="auth-property-mini-item">
-                  <img src="/images/property_omwoyo.jpg" alt="Omwoyo Apartments" class="auth-property-mini-img" />
+                  <img src="/images/property_omwoyo.jpg" alt="Omwoyo Apartments" class="auth-property-mini-img" loading="lazy" decoding="async" />
                   <div style="flex: 1;">
                     <div style="display: flex; align-items: center; justify-content: space-between;">
                       <div style="font-weight: 700; font-size: 0.8125rem; color: #ffffff;">Omwoyo Apartments</div>
@@ -1229,7 +1229,7 @@ class RentPortalApp {
                   </div>
                 </div>
                 <div class="auth-property-mini-item">
-                  <img src="/images/property_sunrise.jpg" alt="Sunrise Heights" class="auth-property-mini-img" />
+                  <img src="/images/property_sunrise.jpg" alt="Sunrise Heights" class="auth-property-mini-img" loading="lazy" decoding="async" />
                   <div style="flex: 1;">
                     <div style="display: flex; align-items: center; justify-content: space-between;">
                       <div style="font-weight: 700; font-size: 0.8125rem; color: #ffffff;">Sunrise Heights</div>
@@ -1239,7 +1239,7 @@ class RentPortalApp {
                   </div>
                 </div>
                 <div class="auth-property-mini-item">
-                  <img src="/images/property_greenwood.jpg" alt="Greenwood Courts" class="auth-property-mini-img" />
+                  <img src="/images/property_greenwood.jpg" alt="Greenwood Courts" class="auth-property-mini-img" loading="lazy" decoding="async" />
                   <div style="flex: 1;">
                     <div style="display: flex; align-items: center; justify-content: space-between;">
                       <div style="font-weight: 700; font-size: 0.8125rem; color: #ffffff;">Greenwood Courts</div>
@@ -1466,7 +1466,7 @@ class RentPortalApp {
                   if (invitedLl) {
                     return `
                       <div style="background: linear-gradient(135deg, rgba(6, 78, 59, 0.12) 0%, rgba(16, 185, 129, 0.06) 100%); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 12px; padding: 0.875rem 1rem; display: flex; align-items: center; gap: 0.875rem; margin-bottom: 0.25rem;">
-                        <img src="${invitedLl.image || '/images/hero_apartments.jpg'}" alt="${invitedLl.propertyName}" style="width: 3.25rem; height: 3.25rem; border-radius: 8px; object-fit: cover; border: 1px solid rgba(16, 185, 129, 0.3);" />
+                        <img src="${invitedLl.image || '/images/hero_apartments.jpg'}" alt="${invitedLl.propertyName}" style="width: 3.25rem; height: 3.25rem; border-radius: 8px; object-fit: cover; border: 1px solid rgba(16, 185, 129, 0.3);" loading="lazy" decoding="async" />
                         <div style="flex: 1;">
                           <div style="font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.05em; color: #059669; font-weight: 800;">Verified Property Invitation</div>
                           <div style="font-size: 1rem; font-weight: 800; color: #0f172a;">${invitedLl.propertyName}</div>
@@ -2339,7 +2339,7 @@ class RentPortalApp {
           <!-- Card 1: Omwoyo Apartments -->
           <div class="property-card">
             <div class="property-card-media">
-              <img src="/images/property_omwoyo.jpg" alt="Omwoyo Apartments" class="property-card-img" />
+              <img src="/images/property_omwoyo.jpg" alt="Omwoyo Apartments" class="property-card-img" loading="lazy" decoding="async" />
               <div class="property-card-badge">
                 <i data-lucide="map-pin" style="width: 0.75rem; height: 0.75rem; color: #f43f5e;"></i>
                 Kilimani, Nairobi
@@ -2369,7 +2369,7 @@ class RentPortalApp {
           <!-- Card 2: Sunrise Heights -->
           <div class="property-card">
             <div class="property-card-media">
-              <img src="/images/property_sunrise.jpg" alt="Sunrise Heights" class="property-card-img" />
+              <img src="/images/property_sunrise.jpg" alt="Sunrise Heights" class="property-card-img" loading="lazy" decoding="async" />
               <div class="property-card-badge">
                 <i data-lucide="map-pin" style="width: 0.75rem; height: 0.75rem; color: #f43f5e;"></i>
                 Nyali, Mombasa
@@ -2399,7 +2399,7 @@ class RentPortalApp {
           <!-- Card 3: Greenwood Courts -->
           <div class="property-card">
             <div class="property-card-media">
-              <img src="/images/property_greenwood.jpg" alt="Greenwood Courts" class="property-card-img" />
+              <img src="/images/property_greenwood.jpg" alt="Greenwood Courts" class="property-card-img" loading="lazy" decoding="async" />
               <div class="property-card-badge">
                 <i data-lucide="map-pin" style="width: 0.75rem; height: 0.75rem; color: #f43f5e;"></i>
                 Karen, Nairobi
@@ -2430,7 +2430,7 @@ class RentPortalApp {
 
       <!-- Modern Living Spaces Feature Banner -->
       <div style="position: relative; border-radius: 1.5rem; overflow: hidden; margin-bottom: 3rem; box-shadow: 0 16px 36px -10px rgba(15, 23, 42, 0.2); border: 1px solid var(--slate-200);">
-        <img src="/images/luxury_interior.jpg" alt="Luxury Kenyan Modern Apartment Interior" style="width: 100%; height: 380px; object-fit: cover; display: block;" />
+        <img src="/images/luxury_interior.jpg" alt="Luxury Kenyan Modern Apartment Interior" style="width: 100%; height: 380px; object-fit: cover; display: block;" loading="lazy" decoding="async" />
         <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15, 23, 42, 0.1) 0%, rgba(15, 23, 42, 0.88) 100%); display: flex; flex-direction: column; justify-content: flex-end; padding: 2.25rem 2rem; color: #ffffff;">
           <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(16, 185, 129, 0.3); backdrop-filter: blur(8px); border: 1px solid rgba(52, 211, 153, 0.5); padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 800; color: #a7f3d0; margin-bottom: 0.75rem; width: fit-content;">
             <i data-lucide="sparkles" style="width: 0.875rem; height: 0.875rem;"></i>
@@ -2450,7 +2450,7 @@ class RentPortalApp {
         <!-- Landlord Portal Entrance -->
         <div class="entrance-card landlord-card">
           <div class="entrance-card-media">
-            <img src="/images/landlord_profile.jpg" alt="Professional Landlord" class="entrance-card-img" style="object-position: center 25%;" />
+            <img src="/images/landlord_profile.jpg" alt="Professional Landlord" class="entrance-card-img" style="object-position: center 25%;" loading="lazy" decoding="async" />
             <span class="entrance-card-badge">Landlords Only</span>
             <div class="entrance-card-img-fade"></div>
           </div>
@@ -2482,7 +2482,7 @@ class RentPortalApp {
         <!-- Tenant Portal Entrance -->
         <div class="entrance-card tenant-card">
           <div class="entrance-card-media">
-            <img src="/images/tenant_lifestyle.jpg" alt="Happy Tenant" class="entrance-card-img" style="object-position: center 20%;" />
+            <img src="/images/tenant_lifestyle.jpg" alt="Happy Tenant" class="entrance-card-img" style="object-position: center 20%;" loading="lazy" decoding="async" />
             <span class="entrance-card-badge">Tenants Only</span>
             <div class="entrance-card-img-fade"></div>
           </div>
@@ -2933,7 +2933,7 @@ class RentPortalApp {
                 ${pendingLandlords.map((ll) => `
                   <div style="border: 1px solid var(--amber-200); background-color: var(--amber-50); border-radius: var(--radius-xl); padding: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.25rem;">
                     <div style="display: flex; align-items: center; gap: 1rem;">
-                      <img src="${ll.image || '/images/hero_apartments.jpg'}" alt="${ll.propertyName}" style="width: 64px; height: 64px; border-radius: 12px; object-fit: cover; flex-shrink: 0; border: 2px solid #ffffff; box-shadow: 0 4px 10px rgba(0,0,0,0.1);" />
+                      <img src="${ll.image || '/images/hero_apartments.jpg'}" alt="${ll.propertyName}" style="width: 64px; height: 64px; border-radius: 12px; object-fit: cover; flex-shrink: 0; border: 2px solid #ffffff; box-shadow: 0 4px 10px rgba(0,0,0,0.1);" loading="lazy" decoding="async" />
                       <div>
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
                           <h3 style="font-weight: 800; font-size: 1.125rem;">${ll.name}</h3>
@@ -3056,7 +3056,7 @@ class RentPortalApp {
                   <tr>
                     <td style="font-weight: 700;">
                       <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <img src="${ll.image || '/images/hero_apartments.jpg'}" alt="${ll.propertyName}" style="width: 46px; height: 46px; border-radius: 10px; object-fit: cover; flex-shrink: 0; border: 1px solid var(--slate-200); box-shadow: 0 2px 6px rgba(0,0,0,0.06);" />
+                        <img src="${ll.image || '/images/hero_apartments.jpg'}" alt="${ll.propertyName}" style="width: 46px; height: 46px; border-radius: 10px; object-fit: cover; flex-shrink: 0; border: 1px solid var(--slate-200); box-shadow: 0 2px 6px rgba(0,0,0,0.06);" loading="lazy" decoding="async" />
                         <div>
                           <div style="font-weight: 800; color: var(--slate-900); font-size: 0.9375rem;">${ll.name}</div>
                           <div style="font-size: 0.6875rem; color: var(--slate-500); font-weight: normal;">ID: ${ll.id}</div>
@@ -3603,7 +3603,7 @@ class RentPortalApp {
       <!-- Landlord Header & Invite Link Share Button -->
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.25rem; margin-bottom: 1.5rem; background: #ffffff; padding: 1.25rem; border-radius: var(--radius-xl); border: 1px solid var(--slate-200); box-shadow: var(--shadow-sm);">
         <div style="display: flex; align-items: center; gap: 1rem;">
-          <img src="${landlord.image || '/images/hero_apartments.jpg'}" alt="${landlord.propertyName}" class="portal-property-thumb" />
+          <img src="${landlord.image || '/images/hero_apartments.jpg'}" alt="${landlord.propertyName}" class="portal-property-thumb" loading="lazy" decoding="async" />
           <div>
             <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
               <span class="badge badge-approved">Approved Landlord</span>
@@ -4635,7 +4635,7 @@ class RentPortalApp {
       ${tenantInspectorBar}
       <!-- Tenant Property Banner with Real Estate Photo -->
       <div class="tenant-property-banner">
-        <img src="${propertyImage}" alt="${tenant.propertyName || 'Apartments'}" class="tenant-property-banner-img" />
+        <img src="${propertyImage}" alt="${tenant.propertyName || 'Apartments'}" class="tenant-property-banner-img" loading="lazy" decoding="async" />
         <div style="flex: 1;">
           <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
             <span class="badge badge-approved">Active Tenancy</span>
