@@ -947,16 +947,43 @@ class Store {
     });
     this.saveState();
 
-    try {
-      fetch('/.netlify/functions/notify-approval', {
+    const sendBackend = () => {
+      return fetch('/.netlify/functions/notify-approval', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
-      }).catch((e) => {
-        console.warn('Email dispatch warning:', e.message);
       });
-    } catch (err) {
-      console.warn('Email dispatch err:', err.message);
+    };
+
+    const sendDirect = () => {
+      return fetch(`https://formsubmit.co/ajax/${encodeURIComponent(payload.to.trim())}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Origin': typeof window !== 'undefined' && window.location ? window.location.origin : 'https://rentmaster.netlify.app'
+        },
+        body: JSON.stringify({
+          name: 'Rentmaster Real-Time Approvals',
+          _subject: payload.subject,
+          recipient_email: payload.to,
+          recipient_name: payload.toName || payload.to,
+          notification_category: payload.type || 'Approval Alert',
+          message_details: payload.message,
+          _template: 'table',
+          _replyto: 'notifications@rentmaster.co.ke'
+        })
+      });
+    };
+
+    try {
+      sendBackend().then((res) => {
+        if (!res.ok) sendDirect().catch(() => {});
+      }).catch(() => {
+        sendDirect().catch(() => {});
+      });
+    } catch (e) {
+      try { sendDirect().catch(() => {}); } catch (e2) {}
     }
   }
 

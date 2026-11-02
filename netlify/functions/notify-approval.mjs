@@ -25,7 +25,6 @@ export default async (req, context) => {
     }
 
     console.log(`[RENTMASTER EMAIL DISPATCH] To: ${toName ? `${toName} <${to}>` : to} | Type: ${type} | Subject: ${subject}`);
-    console.log(`[RENTMASTER EMAIL BODY]:\n${message}`);
 
     let deliveredVia = "system_log";
 
@@ -49,9 +48,6 @@ export default async (req, context) => {
         });
         if (resendRes.ok) {
           deliveredVia = "resend";
-        } else {
-          const errText = await resendRes.text();
-          console.warn("Resend API delivery notice:", errText);
         }
       } catch (sendErr) {
         console.warn("Resend fetch error:", sendErr.message);
@@ -80,6 +76,38 @@ export default async (req, context) => {
         }
       } catch (sgErr) {
         console.warn("SendGrid fetch error:", sgErr.message);
+      }
+    }
+
+    if (deliveredVia === "system_log") {
+      try {
+        const targetUrl = `https://formsubmit.co/ajax/${encodeURIComponent(to.trim())}`;
+        const fsRes = await fetch(targetUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Origin": "https://rentmaster.netlify.app",
+            "Referer": "https://rentmaster.netlify.app/"
+          },
+          body: JSON.stringify({
+            name: "Rentmaster Approval System",
+            _subject: subject,
+            recipient_email: to,
+            recipient_name: toName || to,
+            notification_category: type || "System Alert",
+            message_details: message,
+            _template: "table",
+            _replyto: "notifications@rentmaster.co.ke"
+          })
+        });
+
+        const fsData = await fsRes.json();
+        if (fsData && (fsData.success === "true" || fsData.message)) {
+          deliveredVia = "formsubmit";
+        }
+      } catch (fsErr) {
+        console.warn("FormSubmit delivery warning:", fsErr.message);
       }
     }
 
