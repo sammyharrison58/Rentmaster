@@ -26,7 +26,7 @@ export default defineConfig({
         server.middlewares.use(async (req, res, next) => {
           const url = new URL(req.url, `http://${req.headers.host}`);
 
-          // --- 1. POST /api/mpesa/stkpush ---
+          
           if (req.method === 'POST' && url.pathname === '/api/mpesa/stkpush') {
             let body = '';
             req.on('data', chunk => { body += chunk; });
@@ -44,22 +44,22 @@ export default defineConfig({
                   consumerSecret,
                   passkey,
                   shortcode,
-                  tillType = 'till', // 'till' | 'paybill'
+                  tillType = 'till', 
                   env = 'production'
                 } = data;
 
-                // Format phone number to 254XXXXXXXXX
+                
                 let cleanPhone = (phone || '').replace(/\D/g, '');
                 if (cleanPhone.startsWith('0')) cleanPhone = '254' + cleanPhone.slice(1);
                 if (cleanPhone.startsWith('7') || cleanPhone.startsWith('1')) cleanPhone = '254' + cleanPhone;
 
-                // Check if user provided real Safaricom Daraja API keys
+                
                 if (consumerKey && consumerSecret && passkey) {
                   const baseUrl = env === 'production' 
                     ? 'https://api.safaricom.co.ke' 
                     : 'https://sandbox.safaricom.co.ke';
 
-                  // 1. Get OAuth Bearer Token from Safaricom
+                  
                   const authHeader = Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64');
                   const tokenRes = await fetch(`${baseUrl}/oauth/v1/generate?grant_type=client_credentials`, {
                     headers: { 'Authorization': `Basic ${authHeader}` }
@@ -75,20 +75,20 @@ export default defineConfig({
                     }));
                   }
 
-                  // 2. Generate Lipa Na M-Pesa Password
+                  
                   const now = new Date();
                   const pad = n => String(n).padStart(2, '0');
                   const timestamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
                   const activeShortcode = shortcode || tillNumber || '174379';
                   const password = Buffer.from(`${activeShortcode}${passkey}${timestamp}`).toString('base64');
 
-                  // In Safaricom Daraja:
-                  // For Buy Goods Till (Supermarket style): TransactionType is CustomerBuyGoodsOnline
-                  // For Paybill: TransactionType is CustomerPayBillOnline
+                  
+                  
+                  
                   const isBuyGoods = tillType === 'till' || (!tillType && activeShortcode.length <= 7 && activeShortcode !== '174379');
                   const transactionType = isBuyGoods ? 'CustomerBuyGoodsOnline' : 'CustomerPayBillOnline';
 
-                  // 3. Send STK Push Request to Safaricom
+                  
                   const stkPayload = {
                     BusinessShortCode: activeShortcode,
                     Password: password,
@@ -135,7 +135,7 @@ export default defineConfig({
                     }));
                   }
                 } else {
-                  // Fallback: Daraja credentials not yet configured
+                  
                   return res.end(JSON.stringify({
                     success: true,
                     isRealDaraja: false,
@@ -153,7 +153,7 @@ export default defineConfig({
             return;
           }
 
-          // --- 2. POST /api/mpesa/query (Check status of STK Push) ---
+          
           if (req.method === 'POST' && url.pathname === '/api/mpesa/query') {
             let body = '';
             req.on('data', chunk => { body += chunk; });
@@ -168,7 +168,7 @@ export default defineConfig({
                     ? 'https://api.safaricom.co.ke' 
                     : 'https://sandbox.safaricom.co.ke';
 
-                  // Get token
+                  
                   const authHeader = Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64');
                   const tokenRes = await fetch(`${baseUrl}/oauth/v1/generate?grant_type=client_credentials`, {
                     headers: { 'Authorization': `Basic ${authHeader}` }
@@ -208,7 +208,7 @@ export default defineConfig({
             return;
           }
 
-          // --- 3. GET & POST /api/sync (State Sync Support) ---
+          
           if (url.pathname === '/api/sync') {
             res.setHeader('Content-Type', 'application/json');
             if (req.method === 'GET') {

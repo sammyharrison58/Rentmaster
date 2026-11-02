@@ -1,4 +1,4 @@
-/* Rent Portal - Master Stylesheet */
+
 :root {
   --primary: #059669;
   --primary-hover: #047857;
@@ -76,7 +76,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Dynamic Body Themes for Unauthenticated & Authenticated Views */
+
 body.view-auth {
   background-color: #0b1120;
   background-image: 
@@ -117,7 +117,7 @@ body.view-auth #btn-header-overview:hover {
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* Later Joining Tenants Registration & Onboarding View */
+
 body.view-tenant-reg {
   background-color: #0b1120;
   background-image: 
@@ -132,7 +132,7 @@ body.view-tenant-reg {
   color: #f8fafc;
 }
 
-/* Landlord Property Registration & Onboarding View */
+
 body.view-landlord-reg {
   background-color: #064e3b;
   background-image: 
@@ -147,7 +147,7 @@ body.view-landlord-reg {
   color: #f8fafc;
 }
 
-/* --- TENANTS PORTAL THEME (Existing Approved & Pending Tenants) --- */
+
 body.view-tenant {
   background-color: #f8fafc;
   background-image: 
@@ -185,7 +185,7 @@ body.view-tenant .kpi-card {
   border: 1px solid rgba(226, 232, 240, 0.95);
 }
 
-/* --- LANDLORDS PORTAL THEME (Approved Landlords, Pending Landlords & Caretakers) --- */
+
 body.view-landlord {
   background-color: #f8fafc;
   background-image: 
@@ -223,7 +223,7 @@ body.view-landlord .kpi-card {
   border: 1px solid rgba(226, 232, 240, 0.95);
 }
 
-/* --- SUPER ADMIN HQ COMMAND CENTER THEME --- */
+
 body.view-superadmin {
   background-color: #0b1120;
   background-image: 
@@ -368,7 +368,7 @@ h1, h2, h3, h4, h5, h6, .brand-title, .auth-title, .card-title {
   letter-spacing: -0.02em;
 }
 
-/* Layout */
+
 .container {
   max-width: 74rem;
   margin-left: auto;
@@ -377,7 +377,7 @@ h1, h2, h3, h4, h5, h6, .brand-title, .auth-title, .card-title {
   padding-right: 1.25rem;
 }
 
-/* Header with Glassmorphism */
+
 header {
   background-color: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(16px);
@@ -451,7 +451,7 @@ header {
   flex-wrap: wrap;
 }
 
-/* --- Contextual Breadcrumb Navigation --- */
+
 .header-breadcrumbs {
   display: flex;
   align-items: center;
@@ -492,7 +492,7 @@ header {
   user-select: none;
 }
 
-/* --- Modern Spotlight Search Pill Button --- */
+
 .header-search-btn {
   display: inline-flex;
   align-items: center;
@@ -533,7 +533,7 @@ header {
   color: var(--slate-600);
 }
 
-/* --- Header Notification & Icon Buttons --- */
+
 .header-icon-btn {
   position: relative;
   width: 2.375rem;
@@ -569,7 +569,7 @@ header {
   box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
 }
 
-/* --- Live Notification Flyout Dropdown --- */
+
 .notif-flyout {
   position: absolute;
   top: 3.5rem;
@@ -619,7 +619,7 @@ header {
   background: #f1f5f9;
 }
 
-/* --- Global Command Palette Spotlight Search --- */
+
 .command-palette-backdrop {
   position: fixed;
   inset: 0;
@@ -767,7 +767,7 @@ header {
   font-size: 0.6875rem;
 }
 
-/* --- Floating Quick Actions Power Dock --- */
+
 .floating-quick-dock {
   position: fixed;
   bottom: 1.5rem;
@@ -824,7 +824,7 @@ header {
   color: #ffffff;
 }
 
-/* --- Mobile Native App Bottom Navigation Bar --- */
+
 .mobile-nav-bar {
   display: none;
 }
@@ -902,7 +902,7 @@ header {
   }
 }
 
-/* Dark view overrides for breadcrumbs and search */
+
 body.view-superadmin .header-breadcrumbs .breadcrumb-item,
 body.view-auth .header-breadcrumbs .breadcrumb-item,
 body.view-overview .header-breadcrumbs .breadcrumb-item {
@@ -982,7 +982,7 @@ body.view-superadmin .mobile-nav-item.active {
   color: #38bdf8;
 }
 
-/* Dark Command Palette adjustments for Super Admin */
+
 body.view-superadmin .command-palette-card {
   background: #0f172a;
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -1030,7 +1030,7 @@ body.view-superadmin .command-palette-hints kbd {
   color: #f8fafc;
 }
 
-/* Role Switcher Bar - HIDDEN by default; only displayed for authorized Super Admin accounts */
+
 .demo-bar {
   display: none;
   background: linear-gradient(90deg, #1e1b4b 0%, #0f172a 100%);
@@ -1089,7 +1089,7 @@ body.view-superadmin .command-palette-hints kbd {
   box-shadow: 0 2px 6px rgba(79, 70, 229, 0.5);
 }
 
-/* Dedicated Log In / Sign In Page Styles */
+
 .auth-page-wrapper {
   min-height: calc(85vh - 70px);
   display: flex;
@@ -1266,7 +1266,7 @@ body.view-superadmin .command-palette-hints kbd {
   text-decoration: underline;
 }
 
-/* Google Auth Button & Divider */
+
 .btn-google-signin {
   width: 100%;
   display: flex;
@@ -1327,7 +1327,7 @@ body.view-superadmin .command-palette-hints kbd {
   letter-spacing: 0.05em;
 }
 
-/* Google Account Chooser Modal */
+
 .google-modal-card {
   width: 100%;
   max-width: 26rem;
@@ -1400,7 +1400,7 @@ body.view-superadmin .command-palette-hints kbd {
   text-overflow: ellipsis;
 }
 
-/* Google Role Selection Modal */
+
 .google-role-card {
   border: 2px solid var(--slate-200);
   border-radius: var(--radius-xl);
@@ -1452,13 +1452,13 @@ body.view-superadmin .command-palette-hints kbd {
   gap: 0.375rem;
 }
 
-/* Main Content Area */
+
 main {
   padding-top: 2rem;
   padding-bottom: 3rem;
 }
 
-/* Cards */
+
 .card {
   background-color: #ffffff;
   border: 1px solid rgba(226, 232, 240, 0.85);
@@ -1488,7 +1488,7 @@ main {
   letter-spacing: -0.015em;
 }
 
-/* Hero Section */
+
 .hero-card {
   border-radius: var(--radius-xl);
   background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
@@ -1548,7 +1548,7 @@ main {
   box-shadow: var(--shadow-md);
 }
 
-/* Feature steps */
+
 .steps-grid {
   display: grid;
   gap: 1rem;
@@ -1609,7 +1609,7 @@ main {
   line-height: 1.5;
 }
 
-/* KPI Metrics Grid */
+
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -1670,7 +1670,7 @@ main {
   color: #be123c;
 }
 
-/* Tabs */
+
 .tabs-nav {
   display: flex;
   gap: 0.375rem;
@@ -1731,7 +1731,7 @@ main {
   color: #ffffff;
 }
 
-/* Status Badges with Subtle Glow */
+
 .badge {
   display: inline-flex;
   align-items: center;
@@ -1783,7 +1783,7 @@ main {
   border: 1px solid var(--slate-200);
 }
 
-/* Forms & Inputs */
+
 .form-group {
   margin-bottom: 1rem;
 }
@@ -1827,7 +1827,7 @@ main {
   margin-top: 0.25rem;
 }
 
-/* Buttons */
+
 .btn {
   display: inline-flex;
   align-items: center;
@@ -1917,7 +1917,7 @@ main {
   cursor: not-allowed;
 }
 
-/* Alerts */
+
 .alert {
   display: flex;
   align-items: flex-start;
@@ -1952,7 +1952,7 @@ main {
   border: 1px solid var(--sky-200);
 }
 
-/* Tables */
+
 .table-responsive {
   width: 100%;
   overflow-x: auto;
@@ -1999,7 +1999,7 @@ main {
   border-top: 2px solid var(--slate-200);
 }
 
-/* Modals */
+
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -2069,7 +2069,7 @@ main {
   background-color: var(--slate-50);
 }
 
-/* Live Pulse Indicator */
+
 .pulse-indicator {
   display: inline-flex;
   align-items: center;
@@ -2102,7 +2102,7 @@ main {
   }
 }
 
-/* Receipt Paper Styles */
+
 .receipt-paper {
   background-color: #ffffff;
   padding: 1.5rem;
@@ -2171,7 +2171,7 @@ main {
   text-align: right;
 }
 
-/* Toast Notifications */
+
 .toast-container {
   position: fixed;
   bottom: 1.5rem;
@@ -2216,7 +2216,7 @@ main {
   }
 }
 
-/* Mock Phone Frame for STK Push */
+
 .phone-mock {
   background-color: #0f172a;
   border-radius: 2rem;
@@ -2247,7 +2247,7 @@ main {
   font-size: 0.8125rem;
 }
 
-/* Print Styles */
+
 @media print {
   body * {
     visibility: hidden;
@@ -2270,7 +2270,7 @@ main {
   }
 }
 
-/* 3-Tier Portal Entrances */
+
 .entrance-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -2359,7 +2359,7 @@ main {
   color: #475569;
 }
 
-/* Super Admin Navigation Inspector Bar & Switcher */
+
 .super-admin-inspector-bar {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -2393,7 +2393,7 @@ main {
   box-shadow: 0 6px 15px -3px rgba(0, 0, 0, 0.3);
 }
 
-/* Cryptographic Security Seal Badge */
+
 .security-seal-badge {
   display: inline-flex;
   align-items: center;
@@ -2429,9 +2429,7 @@ main {
   pointer-events: none;
 }
 
-/* ========================================================
-   LUXURY HERO BANNER WITH REAL ESTATE IMAGERY
-   ======================================================== */
+
 .hero-card-with-bg {
   position: relative;
   border-radius: 1.75rem;
@@ -2549,9 +2547,7 @@ main {
   letter-spacing: 0.02em;
 }
 
-/* ========================================================
-   FEATURED PROPERTIES SHOWCASE GRID
-   ======================================================== */
+
 .properties-showcase-section {
   margin-bottom: 3rem;
 }
@@ -2720,9 +2716,7 @@ main {
   color: var(--emerald-700);
 }
 
-/* ========================================================
-   ANTI-FRAUD ARCHITECTURE SHOWCASE
-   ======================================================== */
+
 .anti-fraud-banner {
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
   border: 1px solid var(--slate-200);
@@ -2787,9 +2781,7 @@ main {
   line-height: 1.5;
 }
 
-/* ========================================================
-   DESKTOP SPLIT-PANEL AUTHENTICATION
-   ======================================================== */
+
 .auth-split-layout {
   display: flex;
   flex-direction: column;
@@ -2986,7 +2978,7 @@ main {
   border-radius: 0;
 }
 
-/* Demo Accounts Helper Bar */
+
 .auth-demo-helpers {
   background: var(--slate-50);
   border: 1px dashed var(--slate-300);
@@ -3036,9 +3028,7 @@ main {
   box-shadow: 0 3px 8px rgba(5, 150, 105, 0.15);
 }
 
-/* ========================================================
-   OVERVIEW VIEW COMPONENT DARK LUXURY STYLES
-   ======================================================== */
+
 body.view-overview .section-main-title {
   color: #ffffff;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
@@ -3085,7 +3075,7 @@ body.view-overview .property-till-num {
   text-shadow: 0 0 10px rgba(52, 211, 153, 0.3);
 }
 
-/* Entrance Cards Dark Luxury Overrides */
+
 body.view-overview .entrance-card {
   background: rgba(15, 23, 42, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -3195,7 +3185,7 @@ body.view-overview .notice-sky {
   border-color: #0369a1 !important;
 }
 
-/* Anti-Fraud Banner Dark Overrides */
+
 body.view-overview .anti-fraud-banner {
   background: linear-gradient(135deg, rgba(15, 23, 42, 0.94) 0%, rgba(6, 78, 59, 0.65) 50%, rgba(15, 23, 42, 0.96) 100%);
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -3253,9 +3243,7 @@ body.view-overview .anti-fraud-text {
   color: #94a3b8;
 }
 
-/* ========================================================
-   PORTAL PROPERTY THUMBNAILS
-   ======================================================== */
+
 .portal-property-thumb {
   width: 72px;
   height: 72px;
@@ -3287,9 +3275,7 @@ body.view-overview .anti-fraud-text {
   border: 1px solid var(--slate-200);
 }
 
-/* ========================================================
-   ENTERPRISE HEADER LIVE BADGE & ANIMATIONS
-   ======================================================== */
+
 .header-live-badge {
   display: inline-flex;
   align-items: center;
@@ -3336,7 +3322,7 @@ body.view-overview .header-live-badge {
   }
 }
 
-/* Elevate Showcase Property Images */
+
 .property-card-img {
   width: 100%;
   height: 200px;
@@ -3348,7 +3334,7 @@ body.view-overview .header-live-badge {
   transform: scale(1.05);
 }
 
-/* Glassmorphism Accents */
+
 .hero-card-with-bg::before {
   content: '';
   position: absolute;
@@ -3359,9 +3345,7 @@ body.view-overview .header-live-badge {
   background: linear-gradient(90deg, transparent, rgba(52, 211, 153, 0.8), rgba(96, 165, 250, 0.8), transparent);
 }
 
-/* ==========================================================================
-   Interactive AI Agent (Tenant Concierge & Landlord Copilot) Styles
-   ========================================================================== */
+
 .ai-launcher-btn {
   transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease;
 }

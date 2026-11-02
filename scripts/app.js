@@ -1,6 +1,3 @@
-// app.js - Master Controller for Rent Portal
-// Master Administration: Approves all Landlords & Tenants, Monitors Platform Operations
-// Strict Portal Separation: Tenants only see Tenant Portal, Landlords only see Landlord Portal, Super Admin views all
 
 import { store, SUPER_ADMIN_EMAIL, formatKES, formatDate, formatDateTime, formatMonth, formatPhone, getCurrentMonth } from './store.js';
 import { generateReceiptPDF, generateStatementPDF } from './pdf.js';
@@ -42,10 +39,8 @@ class RentPortalApp {
   }
 
   init() {
-    // Mount AI Agent Assistant
     this.aiAgent.mount();
 
-    // Check invite query params if present
     const urlParams = new URLSearchParams(window.location.search);
     const inviteCode = urlParams.get('invite');
     if (inviteCode) {
@@ -85,7 +80,6 @@ class RentPortalApp {
       }
     });
 
-    // Check if there is an unprocessed Google auth event stored in localStorage
     try {
       const storedEvent = localStorage.getItem('google_auth_event');
       if (storedEvent) {
@@ -187,7 +181,6 @@ class RentPortalApp {
 
   setupGlobalEvents() {
     document.addEventListener('keydown', (e) => {
-      // Toggle Spotlight Command Palette with Ctrl+K or Cmd+K
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         this.toggleCommandPalette();
@@ -209,7 +202,6 @@ class RentPortalApp {
         }
       }
 
-      // Keyboard navigation inside Command Palette
       if (this.isCommandPaletteOpen) {
         if (e.key === 'ArrowDown') {
           e.preventDefault();
@@ -224,7 +216,6 @@ class RentPortalApp {
       }
     });
 
-    // Close notifications dropdown when clicking outside
     document.addEventListener('click', (e) => {
       if (this.isNotifOpen && !e.target.closest('#btn-header-notifs') && !e.target.closest('#notif-flyout')) {
         this.closeNotifications();
@@ -301,7 +292,6 @@ class RentPortalApp {
     const user = store.getCurrentUser();
     const items = [];
 
-    // 1. Portal & Tab Navigation
     const navItems = [
       {
         title: 'Super Admin HQ - Approvals Queue',
@@ -442,7 +432,6 @@ class RentPortalApp {
       }
     });
 
-    // 2. Tenants Search
     store.state.tenants.forEach(t => {
       const match = !q || 
         t.name.toLowerCase().includes(q) || 
@@ -462,7 +451,6 @@ class RentPortalApp {
       }
     });
 
-    // 3. Landlords & Properties Search
     store.state.landlords.forEach(l => {
       const match = !q || 
         l.propertyName.toLowerCase().includes(q) || 
@@ -482,7 +470,6 @@ class RentPortalApp {
       }
     });
 
-    // 4. Payments Search
     store.state.payments.slice(0, 15).forEach(p => {
       const match = !q || 
         (p.mpesaReceipt && p.mpesaReceipt.toLowerCase().includes(q)) || 
@@ -502,7 +489,6 @@ class RentPortalApp {
       }
     });
 
-    // 5. Power Tools & Actions
     const actionTools = [
       {
         title: 'Print A4 Building Notice Board Flyer',
@@ -566,7 +552,6 @@ class RentPortalApp {
       return;
     }
 
-    // Group items
     const grouped = {};
     items.forEach((item, index) => {
       if (!grouped[item.group]) grouped[item.group] = [];
@@ -656,7 +641,6 @@ class RentPortalApp {
     if (modalRoot) modalRoot.innerHTML = '';
   }
 
-  // --- Main Rendering ---
   render() {
     const user = store.getCurrentUser();
     this.renderHeader(user);
@@ -724,7 +708,6 @@ class RentPortalApp {
     const totalNotifs = pendingLandlordsCount + pendingTenantsCount + pendingPaymentsCount;
 
     userDisplay.innerHTML = `
-      <!-- Global Spotlight Search Button -->
       <button class="header-search-btn" id="btn-header-search" title="Search anything or jump to... (Ctrl + K)">
         <i data-lucide="search" style="width: 0.9375rem; height: 0.9375rem; color: #10b981;"></i>
         <span class="search-placeholder">Search or jump...</span>
@@ -732,7 +715,6 @@ class RentPortalApp {
       </button>
 
       ${user ? `
-        <!-- Live Activity Notifications -->
         <div style="position: relative;">
           <button class="header-icon-btn" id="btn-header-notifs" title="Live Platform Activity">
             <i data-lucide="bell" style="width: 1.0625rem; height: 1.0625rem;"></i>
@@ -804,7 +786,6 @@ class RentPortalApp {
     }
   }
 
-  // --- Dynamic Breadcrumb Navigation ---
   renderBreadcrumbs(user) {
     const el = document.getElementById('header-breadcrumbs');
     if (!el) return;
@@ -879,7 +860,6 @@ class RentPortalApp {
     }
   }
 
-  // --- Live Activity Notifications Dropdown Flyout ---
   toggleNotifications() {
     this.isNotifOpen = !this.isNotifOpen;
     const container = document.getElementById('notif-flyout-container');
@@ -956,7 +936,6 @@ class RentPortalApp {
     if (container) container.innerHTML = '';
   }
 
-  // --- Mobile Bottom Navigation Bar ---
   renderMobileNav(user) {
     const el = document.getElementById('mobile-nav-bar');
     if (!el) return;
@@ -1061,7 +1040,6 @@ class RentPortalApp {
     }
   }
 
-  // --- Floating Quick Actions Power Dock ---
   renderFloatingDock(user) {
     const el = document.getElementById('floating-quick-dock');
     if (!el) return;
@@ -1084,12 +1062,10 @@ class RentPortalApp {
     `;
   }
 
-  // --- Quick Role Switcher Menu (STRICTLY ONLY AVAILABLE TO SUPER ADMIN, HIDDEN FROM ALL OTHERS) ---
   renderDemoBar(user) {
     const demoBar = document.getElementById('demo-role-bar');
     if (!demoBar) return;
 
-    // Strict security rule: Only visible if active user is Super Admin or impersonated by Super Admin
     const isSuperAdminAuthorized = user && (user.role === 'superadmin' || Boolean(user.impersonatedBy) || user.email === SUPER_ADMIN_EMAIL || user.email === 'admin@rentmaster.co.ke');
     if (!isSuperAdminAuthorized) {
       demoBar.classList.remove('visible-for-admin');
@@ -1154,13 +1130,11 @@ class RentPortalApp {
     }
   }
 
-  // --- Dedicated Log In / Sign In Page ---
   renderLoginPageView() {
     const isSignIn = this.authTab === 'signin';
     const isLandlordReg = this.authTab === 'landlord_reg';
     const isTenantReg = this.authTab === 'tenant_reg';
 
-    // Approved properties for tenant registration dropdown
     const approvedLandlords = store.state.landlords.filter((l) => l.status === 'approved');
 
     let alertHtml = '';
@@ -1180,7 +1154,6 @@ class RentPortalApp {
     return `
       <div class="auth-page-wrapper">
         <div class="auth-split-layout">
-          <!-- Left Visual Panel with Real Estate Imagery -->
           <div class="auth-visual-panel">
             <div>
               <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
@@ -1201,7 +1174,6 @@ class RentPortalApp {
                 Tenants pay directly to landlord Safaricom Buy Goods Tills. Enjoy instant automated receipting, tamper-proof audit trails, and zero intermediary disputes.
               </p>
 
-              <!-- Panel Live Trust Strip -->
               <div class="auth-panel-stats-strip">
                 <div class="auth-panel-stat">
                   <span class="auth-panel-stat-num">4,200+</span>
@@ -1260,12 +1232,10 @@ class RentPortalApp {
             </div>
           </div>
 
-          <!-- Right Column: Interactive Auth Form -->
           <div class="auth-card-column">
             <div class="auth-card">
               <div class="auth-card-topbar"></div>
 
-              <!-- Header -->
               <div class="auth-header">
                 <div class="auth-logo-badge">
                   <i data-lucide="building-2" style="width: 1.75rem; height: 1.75rem;"></i>
@@ -1282,7 +1252,6 @@ class RentPortalApp {
                 </p>
               </div>
 
-              <!-- Tabs -->
               <div class="auth-tabs">
                 <button class="auth-tab-btn ${isSignIn ? 'active' : ''}" id="tab-btn-signin">
                   Sign In
@@ -1295,12 +1264,10 @@ class RentPortalApp {
                 </button>
               </div>
 
-          <!-- Form Area -->
           <div class="auth-form-body">
             ${alertHtml}
 
             ${isSignIn ? `
-              <!-- Continue with Google Button -->
               <button type="button" class="btn-google-signin" id="btn-google-signin">
                 ${GOOGLE_ICON_SVG}
                 <span>Continue with Google</span>
@@ -1310,7 +1277,6 @@ class RentPortalApp {
                 <span>or continue with email</span>
               </div>
 
-              <!-- Quick Demo Accounts Helper -->
               <div class="auth-demo-helpers">
                 <div style="display: flex; align-items: center; justify-content: space-between;">
                   <span class="auth-demo-label">Quick Demo Access</span>
@@ -1329,7 +1295,6 @@ class RentPortalApp {
                 </div>
               </div>
 
-              <!-- Sign In Form -->
               <form id="form-auth-signin" style="display: flex; flex-direction: column; gap: 1.125rem;">
                 <div class="form-group">
                   <label class="form-label" for="auth-email">Email Address</label>
@@ -1384,7 +1349,6 @@ class RentPortalApp {
             ` : ''}
 
             ${isLandlordReg ? `
-              <!-- Landlord Registration Form -->
               <form id="form-auth-landlord" style="display: flex; flex-direction: column; gap: 1rem;">
                 <button type="button" class="btn-google-signin" id="btn-google-prefill-landlord" style="margin-bottom: 0.25rem;">
                   ${GOOGLE_ICON_SVG}
@@ -1459,7 +1423,6 @@ class RentPortalApp {
             ` : ''}
 
             ${isTenantReg ? `
-              <!-- Tenant Request Form -->
               <form id="form-auth-tenant" style="display: flex; flex-direction: column; gap: 1rem;">
                 ${(() => {
                   const invitedLl = approvedLandlords.find(ll => ll.inviteCode === this.prefilledInviteCode || ll.id === this.selectedPropertyId);
@@ -1553,7 +1516,6 @@ class RentPortalApp {
               </form>
             ` : ''}
 
-            <!-- Switcher links below card -->
             <div class="auth-footer">
               ${isSignIn ? `
                 <span>Don't have an account?</span>
@@ -1568,7 +1530,6 @@ class RentPortalApp {
           </div>
         </div>
 
-            <!-- Security / Compliance Strip -->
             <div class="auth-security-strip" style="border-top: 1px solid var(--slate-100); padding: 1.125rem 1.5rem; margin-top: 0;">
               <div class="auth-security-item">
                 <i data-lucide="shield-check" style="width: 0.875rem; height: 0.875rem; color: var(--emerald-600);"></i>
@@ -1590,7 +1551,6 @@ class RentPortalApp {
   }
 
   attachLoginPageEvents() {
-    // Tab switching
     document.getElementById('tab-btn-signin')?.addEventListener('click', () => {
       this.authTab = 'signin';
       this.authAlert = null;
@@ -1607,7 +1567,6 @@ class RentPortalApp {
       this.render();
     });
 
-    // Footer link switching
     document.getElementById('link-switch-landlord')?.addEventListener('click', () => {
       this.authTab = 'landlord_reg';
       this.authAlert = null;
@@ -1624,7 +1583,6 @@ class RentPortalApp {
       this.render();
     });
 
-    // Demo quick fill buttons
     document.querySelectorAll('.btn-demo-fill').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         const email = e.currentTarget.getAttribute('data-email');
@@ -1642,7 +1600,6 @@ class RentPortalApp {
       });
     });
 
-    // Password visibility toggle
     document.getElementById('btn-toggle-pw')?.addEventListener('click', () => {
       const pwInput = document.getElementById('auth-password');
       const pwIcon = document.getElementById('icon-toggle-pw');
@@ -1657,12 +1614,10 @@ class RentPortalApp {
       if (window.lucide) window.lucide.createIcons();
     });
 
-    // Forgot password alert helper
     document.getElementById('link-forgot-pw')?.addEventListener('click', () => {
       alert('For password resets or account assistance, please contact your property manager or system administrator.');
     });
 
-    // Real-time email role detection preview
     const emailInput = document.getElementById('auth-email');
     const previewContainer = document.getElementById('auth-role-preview');
     if (emailInput && previewContainer) {
@@ -1707,7 +1662,6 @@ class RentPortalApp {
       });
     }
 
-    // Sign In Submission
     document.getElementById('form-auth-signin')?.addEventListener('submit', (e) => {
       e.preventDefault();
       const email = document.getElementById('auth-email').value;
@@ -1753,7 +1707,6 @@ class RentPortalApp {
       }
     });
 
-    // Landlord Registration Submission
     document.getElementById('form-auth-landlord')?.addEventListener('submit', (e) => {
       e.preventDefault();
       const name = document.getElementById('reg-ll-name').value;
@@ -1786,7 +1739,6 @@ class RentPortalApp {
         password
       });
 
-      // Reset to signin with notification
       store.setCurrentUser(null);
       this.authTab = 'signin';
       this.authAlert = {
@@ -1798,7 +1750,6 @@ class RentPortalApp {
       this.render();
     });
 
-    // Tenant Request Submission
     document.getElementById('form-auth-tenant')?.addEventListener('submit', (e) => {
       e.preventDefault();
       const name = document.getElementById('reg-t-name').value;
@@ -1829,7 +1780,6 @@ class RentPortalApp {
         password
       });
 
-      // Reset to signin with notification
       store.setCurrentUser(null);
       this.authTab = 'signin';
       this.authAlert = {
@@ -1841,7 +1791,6 @@ class RentPortalApp {
       this.render();
     });
 
-    // Google Sign-In handlers (Opens authentic Google popup window, matching Antigravity flow)
     document.getElementById('btn-google-signin')?.addEventListener('click', () => {
       this.openGoogleAuthPopup('signin');
     });
@@ -1868,7 +1817,6 @@ class RentPortalApp {
       );
 
       if (!popup || popup.closed || typeof popup.closed === 'undefined') {
-        // In case browser popup blocker blocks window.open, fallback to in-page Google modal
         this.showGoogleAuthModal(targetTab);
         return;
       }
@@ -1882,7 +1830,6 @@ class RentPortalApp {
     const modalRoot = document.getElementById('modal-root');
     if (!modalRoot) return;
 
-    // Clean up any legacy mock super admin profile
     try {
       const legacy = localStorage.getItem('google_web_profile');
       if (legacy && (legacy.includes('sammyharrison58@gmail.com') || legacy.includes('Sammy Harrison'))) {
@@ -1909,7 +1856,6 @@ class RentPortalApp {
     modalRoot.innerHTML = `
       <div class="modal-backdrop" id="google-modal-backdrop" style="position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 1rem; animation: fadeIn 0.2s ease;">
         <div class="google-modal-card" style="max-width: 27rem; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.25);">
-          <!-- Top loader bar -->
           <div id="modalGoogleLoader" style="display: none; height: 3px; width: 100%; background-color: #e0e0e0; overflow: hidden;">
             <div style="width: 100%; height: 100%; background: linear-gradient(90deg, #4285F4, #34A853, #FBBC05, #EA4335); animation: googleLoading 1s infinite linear;"></div>
           </div>
@@ -1930,10 +1876,8 @@ class RentPortalApp {
           </div>
 
           <div style="padding: 0 1.75rem 1.75rem 1.75rem;">
-            <!-- View 1: Authentic Google Account Selector View (Only shown if user has a previously entered session) -->
             <div id="modalAccountChooserView" style="display: ${hasActiveAccount ? 'block' : 'none'};">
               <div style="border: 1px solid #dadce0; border-radius: 8px; overflow: hidden; margin-bottom: 1.25rem;">
-                <!-- Detected Account -->
                 <button type="button" id="btnModalSelectActive" style="display: flex; align-items: center; gap: 0.875rem; padding: 0.875rem 1rem; width: 100%; border: none; background: #ffffff; text-align: left; cursor: pointer; transition: background 0.15s ease; border-bottom: 1px solid #f1f3f4;">
                   <div style="width: 38px; height: 38px; border-radius: 50%; background: #1a73e8; color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 1.125rem; flex-shrink: 0;">
                     ${activeName ? activeName.charAt(0).toUpperCase() : 'U'}
@@ -1945,7 +1889,6 @@ class RentPortalApp {
                   <span style="font-size: 0.6875rem; color: #137333; background: #e6f4ea; padding: 0.125rem 0.5rem; border-radius: 9999px; font-weight: 600;">Signed in</span>
                 </button>
 
-                <!-- Use another account -->
                 <button type="button" id="btnModalShowCustom" style="display: flex; align-items: center; gap: 0.875rem; padding: 0.875rem 1rem; width: 100%; border: none; background: #ffffff; text-align: left; cursor: pointer; transition: background 0.15s ease; color: #202124; font-size: 0.875rem; font-weight: 500;">
                   <div style="width: 38px; height: 38px; border-radius: 50%; background: #f1f3f4; color: #5f6368; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1958,7 +1901,6 @@ class RentPortalApp {
               </div>
             </div>
 
-            <!-- View 2: Custom Email View -->
             <div id="modalCustomEmailView" style="display: ${hasActiveAccount ? 'none' : 'block'}; margin-bottom: 1.25rem;">
               <form id="form-modal-google-custom">
                 <label for="modalCustomEmailInput" style="display: block; font-size: 0.8125rem; color: #5f6368; margin-bottom: 0.375rem; font-weight: 500;">
@@ -2035,12 +1977,10 @@ class RentPortalApp {
       }, 350);
     };
 
-    // 1-Click select active account
     document.getElementById('btnModalSelectActive')?.addEventListener('click', () => {
       triggerLogin(activeEmail, activeName);
     });
 
-    // Show custom input
     document.getElementById('btnModalShowCustom')?.addEventListener('click', () => {
       document.getElementById('modalAccountChooserView').style.display = 'none';
       document.getElementById('modalCustomEmailView').style.display = 'block';
@@ -2048,13 +1988,11 @@ class RentPortalApp {
       document.getElementById('modalCustomEmailInput')?.focus();
     });
 
-    // Back to chooser
     document.getElementById('btnModalBackChooser')?.addEventListener('click', () => {
       document.getElementById('modalAccountChooserView').style.display = 'block';
       document.getElementById('modalCustomEmailView').style.display = 'none';
     });
 
-    // Submit custom email
     document.getElementById('form-modal-google-custom')?.addEventListener('submit', (e) => {
       e.preventDefault();
       const email = document.getElementById('modalCustomEmailInput').value.trim();
@@ -2075,7 +2013,6 @@ class RentPortalApp {
   executeGoogleLogin(email, name, targetTab = 'signin') {
     const res = store.loginWithGoogle({ email, name });
 
-    // Existing account: Log them in directly!
     if (res.success) {
       this.authAlert = null;
       if (res.role === 'superadmin') {
@@ -2111,7 +2048,6 @@ class RentPortalApp {
       return;
     }
 
-    // New Google User: Give them the option of Landlord or Tenant!
     if (res.isNewGoogleUser) {
       if (targetTab === 'landlord_reg') {
         this.authTab = 'landlord_reg';
@@ -2147,7 +2083,6 @@ class RentPortalApp {
         return;
       }
 
-      // If clicked from main Sign In: present the choice of Landlord or Tenant
       this.showGoogleRoleSelectionModal(email, name);
     }
   }
@@ -2173,7 +2108,6 @@ class RentPortalApp {
           </div>
 
           <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem;">
-            <!-- Landlord Option -->
             <div class="google-role-card" id="btn-choose-landlord">
               <div class="google-role-icon" style="background-color: var(--emerald-50); color: var(--emerald-600);">
                 <i data-lucide="building" style="width: 1.5rem; height: 1.5rem;"></i>
@@ -2189,7 +2123,6 @@ class RentPortalApp {
               </div>
             </div>
 
-            <!-- Tenant Option -->
             <div class="google-role-card tenant-role" id="btn-choose-tenant">
               <div class="google-role-icon" style="background-color: var(--sky-50); color: #0284c7;">
                 <i data-lucide="key" style="width: 1.5rem; height: 1.5rem;"></i>
@@ -2261,10 +2194,8 @@ class RentPortalApp {
     });
   }
 
-  // --- Landing View (Platform Overview) ---
   renderLandingView() {
     return `
-      <!-- Luxury Hero Banner with Real Estate Imagery -->
       <div class="hero-card-with-bg">
         <div class="hero-pill-badge">
           <i data-lucide="shield-check" style="width: 1rem; height: 1rem; color: #34d399;"></i>
@@ -2279,7 +2210,6 @@ class RentPortalApp {
           Tenants pay rent directly to their landlord's verified Safaricom Buy Goods Till. No middlemen, no delays, automatic SMS device verification, and tamper-proof digital receipts.
         </p>
 
-        <!-- Feature Highlights Chips -->
         <div class="hero-chips-wrap">
           <span class="hero-chip"><i data-lucide="zap" style="width: 0.875rem; height: 0.875rem; color: #34d399;"></i> Instant M-Pesa STK Push</span>
           <span class="hero-chip"><i data-lucide="shield-check" style="width: 0.875rem; height: 0.875rem; color: #60a5fa;"></i> Verified Safaricom Tills</span>
@@ -2304,7 +2234,6 @@ class RentPortalApp {
           </a>
         </div>
 
-        <!-- Trust Statistics Bar -->
         <div class="hero-stats-strip">
           <div class="hero-stat-item">
             <div class="hero-stat-value">4,200+</div>
@@ -2325,7 +2254,6 @@ class RentPortalApp {
         </div>
       </div>
 
-      <!-- Featured Verified Properties Showcase Across Kenya -->
       <section class="properties-showcase-section" id="featured-properties">
         <div class="section-header-wrap">
           <span class="section-tag">Direct Till Settlement</span>
@@ -2336,7 +2264,6 @@ class RentPortalApp {
         </div>
 
         <div class="property-showcase-grid">
-          <!-- Card 1: Omwoyo Apartments -->
           <div class="property-card">
             <div class="property-card-media">
               <img src="/images/property_omwoyo.jpg" alt="Omwoyo Apartments" class="property-card-img" loading="lazy" decoding="async" />
@@ -2366,7 +2293,6 @@ class RentPortalApp {
             </div>
           </div>
 
-          <!-- Card 2: Sunrise Heights -->
           <div class="property-card">
             <div class="property-card-media">
               <img src="/images/property_sunrise.jpg" alt="Sunrise Heights" class="property-card-img" loading="lazy" decoding="async" />
@@ -2396,7 +2322,6 @@ class RentPortalApp {
             </div>
           </div>
 
-          <!-- Card 3: Greenwood Courts -->
           <div class="property-card">
             <div class="property-card-media">
               <img src="/images/property_greenwood.jpg" alt="Greenwood Courts" class="property-card-img" loading="lazy" decoding="async" />
@@ -2428,7 +2353,6 @@ class RentPortalApp {
         </div>
       </section>
 
-      <!-- Modern Living Spaces Feature Banner -->
       <div style="position: relative; border-radius: 1.5rem; overflow: hidden; margin-bottom: 3rem; box-shadow: 0 16px 36px -10px rgba(15, 23, 42, 0.2); border: 1px solid var(--slate-200);">
         <img src="/images/luxury_interior.jpg" alt="Luxury Kenyan Modern Apartment Interior" style="width: 100%; height: 380px; object-fit: cover; display: block;" loading="lazy" decoding="async" />
         <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15, 23, 42, 0.1) 0%, rgba(15, 23, 42, 0.88) 100%); display: flex; flex-direction: column; justify-content: flex-end; padding: 2.25rem 2rem; color: #ffffff;">
@@ -2445,9 +2369,7 @@ class RentPortalApp {
         </div>
       </div>
 
-      <!-- Dual Entrance Cards with Real Photography -->
       <div class="entrance-grid">
-        <!-- Landlord Portal Entrance -->
         <div class="entrance-card landlord-card">
           <div class="entrance-card-media">
             <img src="/images/landlord_profile.jpg" alt="Professional Landlord" class="entrance-card-img" style="object-position: center 25%;" loading="lazy" decoding="async" />
@@ -2479,7 +2401,6 @@ class RentPortalApp {
           </div>
         </div>
 
-        <!-- Tenant Portal Entrance -->
         <div class="entrance-card tenant-card">
           <div class="entrance-card-media">
             <img src="/images/tenant_lifestyle.jpg" alt="Happy Tenant" class="entrance-card-img" style="object-position: center 20%;" loading="lazy" decoding="async" />
@@ -2512,7 +2433,6 @@ class RentPortalApp {
         </div>
       </div>
 
-      <!-- Anti-Fraud & Scam Guarantee Architecture -->
       <div class="anti-fraud-banner">
         <div style="text-align: center; max-width: 38rem; margin: 0 auto;">
           <span class="anti-fraud-pill-tag">
@@ -2603,7 +2523,6 @@ class RentPortalApp {
       this.render();
     });
 
-    // Property card direct actions
     document.querySelectorAll('.btn-property-select').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         const landlordId = e.currentTarget.getAttribute('data-landlord');
@@ -2615,7 +2534,6 @@ class RentPortalApp {
     });
   }
 
-  // --- Dedicated Log In Modal ---
   showLoginMenuModal(prefilledEmail = '') {
     const html = `
       <div class="modal-header">
@@ -2678,7 +2596,6 @@ class RentPortalApp {
     this.showToast(`Logged in with ${email}!`);
   }
 
-  // --- Tier 1: SUPER ADMIN CONTROL CENTER ---
   renderSuperAdminView(user) {
     const landlords = store.state.landlords;
     const tenants = store.state.tenants;
@@ -2719,7 +2636,6 @@ class RentPortalApp {
         </div>
       </div>
 
-      <!-- Platform Gateway Health & Client Readiness Bar -->
       <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: var(--radius-lg); padding: 0.75rem 1.25rem; margin-bottom: 1.5rem; backdrop-filter: blur(12px);">
         <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap; font-size: 0.8125rem;">
           <div style="display: flex; align-items: center; gap: 0.4rem;">
@@ -2743,7 +2659,6 @@ class RentPortalApp {
         </div>
       </div>
 
-      <!-- KPI Metrics -->
       <div class="kpi-grid">
         <div class="kpi-card">
           <p class="kpi-label">Pending Approvals</p>
@@ -2765,7 +2680,6 @@ class RentPortalApp {
         </div>
       </div>
 
-      <!-- Super Admin Role Switcher & Live Portal Inspector -->
       <div class="card super-admin-quick-jump-card" style="margin-bottom: 1.5rem; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #fff; border: 1px solid rgba(148, 163, 184, 0.2); box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.25); border-radius: var(--radius-xl); padding: 1.25rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
           <div style="display: flex; align-items: center; gap: 0.75rem;">
@@ -2782,7 +2696,6 @@ class RentPortalApp {
           </div>
         </div>
 
-        <!-- 1-Click Role Switcher Quick Actions -->
         <div style="margin-top: 0.875rem; margin-bottom: 1rem;">
           <div style="font-size: 0.75rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem; letter-spacing: 0.04em;">
             Quick Role Switcher (Switch role with 1-click):
@@ -2811,7 +2724,6 @@ class RentPortalApp {
           </div>
         </div>
 
-        <!-- Fast Jump Dropdowns (Any Landlord & Any Tenant) -->
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 1rem;">
           <div>
             <label for="superadmin-hq-landlord-select" style="display: block; font-size: 0.8125rem; color: #38bdf8; font-weight: 700; margin-bottom: 0.35rem;">
@@ -2838,7 +2750,6 @@ class RentPortalApp {
           </div>
         </div>
 
-        <!-- Landlords Quick Chips -->
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.75rem; margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 0.875rem;">
           ${landlords.map(l => {
             const count = store.getTenantsForLandlord(l.id).length;
@@ -2861,7 +2772,6 @@ class RentPortalApp {
         </div>
       </div>
 
-      <!-- Tabs Navigation -->
       <div class="tabs-nav" role="tablist">
         <button class="tab-btn ${this.adminTab === 'approvals' ? 'active' : ''}" data-superadmin-tab="approvals">
           <i data-lucide="shield-alert" style="width: 1.125rem; height: 1.125rem;"></i>
@@ -2899,7 +2809,6 @@ class RentPortalApp {
   renderSuperAdminApprovalsQueue(pendingLandlords, pendingTenants) {
     return `
       <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-        <!-- Approvals Sub-Tabs -->
         <div style="display: flex; gap: 0.5rem; border-bottom: 2px solid var(--slate-200); padding-bottom: 0.5rem;">
           <button class="btn ${this.approvalSubTab === 'landlords' ? 'btn-primary' : 'btn-secondary'}" id="btn-sub-landlords">
             Landlord Registrations (${pendingLandlords.length})
@@ -2910,7 +2819,6 @@ class RentPortalApp {
         </div>
 
         ${this.approvalSubTab === 'landlords' ? `
-          <!-- Landlords Awaiting Approval -->
           <div class="card">
             <div class="card-header">
               <div>
@@ -2963,7 +2871,6 @@ class RentPortalApp {
             `}
           </div>
         ` : `
-          <!-- Tenants Awaiting Approval -->
           <div class="card">
             <div class="card-header">
               <div>
@@ -3257,7 +3164,6 @@ class RentPortalApp {
       this.render();
     });
 
-    // Fast Jump Select Landlord in Super Admin HQ
     document.getElementById('superadmin-hq-landlord-select')?.addEventListener('change', (e) => {
       const targetId = e.target.value;
       if (targetId) {
@@ -3265,7 +3171,6 @@ class RentPortalApp {
       }
     });
 
-    // Fast Jump Select Tenant in Super Admin HQ
     document.getElementById('superadmin-hq-tenant-select')?.addEventListener('change', (e) => {
       const targetId = e.target.value;
       if (targetId) {
@@ -3273,7 +3178,6 @@ class RentPortalApp {
       }
     });
 
-    // Role Switcher 1-click buttons inside Super Admin view
     document.querySelectorAll('[data-admin-switch-role]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const role = btn.getAttribute('data-admin-switch-role');
@@ -3403,7 +3307,6 @@ class RentPortalApp {
         unitsCount
       });
 
-      // Immediately activate the landlord for client-readiness
       store.approveLandlord(newLandlord.id);
 
       this.closeModal();
@@ -3479,13 +3382,11 @@ class RentPortalApp {
     this.openModal(html);
   }
 
-  // --- Tier 2: LANDLORD PORTAL ---
   renderLandlordView(user) {
     const landlord = store.getLandlordForUser(user) || store.state.landlords[0];
 
     const isImpersonating = Boolean(user?.impersonatedBy);
     const landlordInspectorBar = isImpersonating ? `
-      <!-- Sticky Super Admin Inspector & Quick Landlord Switcher Bar -->
       <div class="card super-admin-inspector-bar" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); color: #fff; border-radius: var(--radius-xl); padding: 1rem 1.25rem; margin-bottom: 1.5rem; border: 1px solid rgba(165, 180, 252, 0.35); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35); position: sticky; top: 4.5rem; z-index: 35;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
           <div style="display: flex; align-items: center; gap: 0.875rem;">
@@ -3522,7 +3423,6 @@ class RentPortalApp {
       </div>
     ` : '';
 
-    // If Landlord is awaiting Super Admin approval
     if (landlord.status === 'pending') {
       return `
         ${landlordInspectorBar}
@@ -3574,7 +3474,6 @@ class RentPortalApp {
       `;
     }
 
-    // Approved Landlord Dashboard: Scoped to this property
     const landlordId = landlord.id;
     const isOwner = user.role === 'owner';
     const currentMonth = getCurrentMonth();
@@ -3600,7 +3499,6 @@ class RentPortalApp {
     return `
       ${landlordInspectorBar}
 
-      <!-- Landlord Header & Invite Link Share Button -->
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.25rem; margin-bottom: 1.5rem; background: #ffffff; padding: 1.25rem; border-radius: var(--radius-xl); border: 1px solid var(--slate-200); box-shadow: var(--shadow-sm);">
         <div style="display: flex; align-items: center; gap: 1rem;">
           <img src="${landlord.image || '/images/hero_apartments.jpg'}" alt="${landlord.propertyName}" class="portal-property-thumb" loading="lazy" decoding="async" />
@@ -3641,7 +3539,6 @@ class RentPortalApp {
         </div>
       </div>
 
-      <!-- KPI Metrics -->
       <div class="kpi-grid">
         <div class="kpi-card">
           <p class="kpi-label">Collected ${formatMonth(currentMonth)}</p>
@@ -3666,7 +3563,6 @@ class RentPortalApp {
         </div>
       </div>
 
-      <!-- Landlord Tabs Navigation (NO SUPER ADMIN TAB) -->
       <div class="tabs-nav" role="tablist">
         <button class="tab-btn ${this.landlordTab === 'payments' ? 'active' : ''}" data-landlord-tab="payments">
           <i data-lucide="receipt" style="width: 1.125rem; height: 1.125rem;"></i>
@@ -3707,7 +3603,6 @@ class RentPortalApp {
     `;
   }
 
-  // Landlord: Approve payments as Paid or Not Paid
   renderLandlordPaymentsTab(payments) {
     const pending = payments.filter((p) => p.status === 'pending');
     const filtered = this.paymentFilter === 'all'
@@ -3718,7 +3613,6 @@ class RentPortalApp {
 
     return `
       <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-        <!-- Payments Awaiting Approval -->
         ${pending.length > 0 ? `
           <div class="card" style="border: 2px solid #f59e0b; background-color: #ffffff; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.1);">
             <div style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); padding: 1.25rem; border-top-left-radius: var(--radius-xl); border-top-right-radius: var(--radius-xl); border-bottom: 1px solid #fde68a; margin: -1.25rem -1.25rem 1.25rem -1.25rem;">
@@ -3816,7 +3710,6 @@ class RentPortalApp {
                     </div>
                   </div>
 
-                  <!-- Quoted Message from Tenant -->
                   <div style="background-color: #ffffff; border-left: 4px solid var(--primary); padding: 0.75rem 1rem; border-radius: var(--radius-md); border-top: 1px solid #f1f5f9; border-right: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; font-family: monospace; font-size: 0.8125rem; color: #1e293b; word-break: break-word;">
                     <div style="display: flex; align-items: center; gap: 0.375rem; font-weight: 700; color: var(--primary); margin-bottom: 0.25rem; font-size: 0.75rem; text-transform: uppercase;">
                       <i data-lucide="message-square" style="width: 0.875rem; height: 0.875rem;"></i>
@@ -3830,7 +3723,6 @@ class RentPortalApp {
           </div>
         ` : ''}
 
-        <!-- All Payments Log -->
         <div class="card">
           <div class="card-header">
             <h2 class="card-title">Payment History</h2>
@@ -4017,7 +3909,6 @@ class RentPortalApp {
 
     return `
       <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-        <!-- Card 0: Live Safaricom Daraja API Gateway (Supermarket Real Handset STK Push) -->
         <div class="card" style="border-left: 4px solid #10b981; background: #ffffff;">
           <div class="card-header">
             <div>
@@ -4089,7 +3980,6 @@ class RentPortalApp {
             </div>
           </form>
 
-          <!-- Step by Step Registration Guide -->
           <div id="daraja-guide-box" style="display: none; background-color: #f8fafc; border: 1px solid var(--slate-200); border-radius: var(--radius-lg); padding: 1.25rem; margin-top: 1rem; font-size: 0.8125rem; color: var(--slate-700);">
             <h4 style="font-weight: 800; color: #047857; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
               <i data-lucide="book-open" style="width: 1.125rem; height: 1.125rem;"></i>
@@ -4104,7 +3994,6 @@ class RentPortalApp {
             </ol>
           </div>
 
-          <!-- Real Phone Test Box -->
           <div style="background-color: #ecfdf5; border: 1px solid #a7f3d0; border-radius: var(--radius-lg); padding: 1.25rem; margin-top: 1.25rem;">
             <h4 style="font-size: 0.875rem; font-weight: 800; color: #065f46; display: flex; align-items: center; gap: 0.5rem;">
               <i data-lucide="smartphone" style="width: 1.125rem; height: 1.125rem;"></i>
@@ -4125,7 +4014,6 @@ class RentPortalApp {
           </div>
         </div>
 
-        <!-- Card 1: Till Settings -->
         <div class="card">
           <div class="card-header">
             <div>
@@ -4163,7 +4051,6 @@ class RentPortalApp {
           </form>
         </div>
 
-        <!-- Card 2: Read Message from Tenant's Phone -->
         <div class="card" style="border-left: 4px solid var(--primary); background: #ffffff;">
           <div class="card-header">
             <div>
@@ -4209,12 +4096,10 @@ class RentPortalApp {
               </button>
             </div>
 
-            <!-- Dynamic Parsed Feedback Box -->
             <div id="sms-parse-feedback" style="display: none;"></div>
           </div>
         </div>
 
-        <!-- Card 3: Android SMS Forwarder Webhook Integration -->
         <div class="card">
           <div class="card-header">
             <div>
@@ -4275,7 +4160,6 @@ class RentPortalApp {
   }
 
   attachLandlordEvents(user) {
-    // Super Admin Inspector Switcher & Return to HQ Handlers
     document.getElementById('inspector-switch-landlord-select')?.addEventListener('change', (e) => {
       const targetId = e.target.value;
       if (targetId) {
@@ -4315,7 +4199,6 @@ class RentPortalApp {
       this.showBuildingNoticeModal(landlordId);
     });
 
-    // Daraja Settings & Real Phone Handset Test
     document.getElementById('btn-toggle-daraja-guide')?.addEventListener('click', () => {
       const guideBox = document.getElementById('daraja-guide-box');
       if (guideBox) {
@@ -4438,7 +4321,6 @@ class RentPortalApp {
       this.showToast('Till number updated successfully!');
     });
 
-    // M-Pesa Message Reader from Tenant's Phone
     const landlord = store.getLandlordForUser(user);
     const smsInput = document.getElementById('sms-phone-message');
     const feedbackBox = document.getElementById('sms-parse-feedback');
@@ -4574,7 +4456,6 @@ class RentPortalApp {
     });
   }
 
-  // --- Tier 3: TENANT PORTAL ---
   renderTenantView(user) {
     const tenant = user.tenant || store.state.tenants.find((t) => t.userId === user.userId);
 
@@ -4594,7 +4475,6 @@ class RentPortalApp {
     const isImpersonating = Boolean(user?.impersonatedBy);
 
     const tenantInspectorBar = isImpersonating ? `
-      <!-- Sticky Super Admin Inspector & Quick Tenant Switcher Bar -->
       <div class="card super-admin-inspector-bar" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); color: #fff; border-radius: var(--radius-xl); padding: 1rem 1.25rem; margin-bottom: 1.5rem; border: 1px solid rgba(165, 180, 252, 0.35); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35); position: sticky; top: 4.5rem; z-index: 35;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
           <div style="display: flex; align-items: center; gap: 0.875rem;">
@@ -4633,7 +4513,6 @@ class RentPortalApp {
 
     return `
       ${tenantInspectorBar}
-      <!-- Tenant Property Banner with Real Estate Photo -->
       <div class="tenant-property-banner">
         <img src="${propertyImage}" alt="${tenant.propertyName || 'Apartments'}" class="tenant-property-banner-img" loading="lazy" decoding="async" />
         <div style="flex: 1;">
@@ -4650,7 +4529,6 @@ class RentPortalApp {
         </div>
       </div>
 
-      <!-- KPI Cards -->
       <div class="kpi-grid">
         <div class="kpi-card">
           <p class="kpi-label">${balance < 0 ? 'In credit' : 'Total amount owed'}</p>
@@ -4672,7 +4550,6 @@ class RentPortalApp {
         </div>
       </div>
 
-      <!-- Client Onboarding & Fast M-Pesa Payment Guide -->
       <div class="card" style="margin-bottom: 1.5rem; background: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(240, 253, 244, 0.90) 100%); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: var(--radius-xl); padding: 1.25rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem;">
           <div style="display: flex; align-items: center; gap: 0.6rem;">
@@ -4747,7 +4624,6 @@ class RentPortalApp {
         </div>
       </div>
 
-      <!-- Tabs Navigation (NO LANDLORD OR SUPER ADMIN TABS) -->
       <div class="tabs-nav" role="tablist">
         <button class="tab-btn ${this.tenantTab === 'pay' ? 'active' : ''}" data-tenant-tab="pay">
           <i data-lucide="message-square-plus" style="width: 1.125rem; height: 1.125rem;"></i>
@@ -4782,7 +4658,6 @@ class RentPortalApp {
     const tillNumber = tenant.tillNumber || '582190';
 
     const tenantInspectorBar = isImpersonating ? `
-      <!-- Sticky Super Admin Inspector & Quick Tenant Switcher Bar -->
       <div class="card super-admin-inspector-bar" style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); color: #fff; border-radius: var(--radius-xl); padding: 1rem 1.25rem; margin-bottom: 1.5rem; border: 1px solid rgba(165, 180, 252, 0.35); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.35); position: sticky; top: 4.5rem; z-index: 35;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
           <div style="display: flex; align-items: center; gap: 0.875rem;">
@@ -4832,7 +4707,6 @@ class RentPortalApp {
           Your request for unit <strong>${tenant.unit}</strong> has been received and is awaiting approval by your landlord and the Super Admin. Once approved, you can pay rent directly to Till ${tenant.tillNumber || '582190'}.
         </p>
 
-        <!-- Onboarding Progress Stepper -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin: 1.5rem 0 1rem 0; position: relative;">
           <div style="position: absolute; top: 35%; left: 15%; right: 15%; height: 2px; background: #e2e8f0; z-index: 1;"></div>
           
@@ -4896,7 +4770,6 @@ class RentPortalApp {
 
     return `
       <div style="max-width: 42rem; margin: 0 auto; display: flex; flex-direction: column; gap: 1.5rem;">
-        <!-- Card 1: Outstanding Status & Till Reference -->
         <div class="card" style="background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border: 1px solid #10b981;">
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
             <div>
@@ -4927,7 +4800,6 @@ class RentPortalApp {
           </div>
         </div>
 
-        <!-- Visual 3-Step Guide Banner with Safaricom M-Pesa Till Badge -->
         <div class="card" style="background: #ffffff; border: 1px solid var(--slate-200); padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; border-radius: var(--radius-xl);">
           <div style="display: flex; align-items: center; gap: 0.875rem;">
             <div style="width: 2.75rem; height: 2.75rem; border-radius: 10px; background: linear-gradient(135deg, #16a34a, #15803d); color: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 1.125rem; font-weight: 900; box-shadow: 0 4px 10px rgba(22, 163, 74, 0.25);">
@@ -4954,7 +4826,6 @@ class RentPortalApp {
           </div>
         </div>
 
-        <!-- Card 2: Pending Messages Tracker (Awaiting Landlord Confirmation) -->
         ${myPending.length > 0 ? `
           <div class="card" style="border: 2px solid #f59e0b; background: #fffdf5; box-shadow: 0 4px 14px rgba(245, 158, 11, 0.15);">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap;">
@@ -4996,7 +4867,6 @@ class RentPortalApp {
                     </span>
                   </div>
 
-                  <!-- Quoted Message -->
                   <div style="font-family: monospace; font-size: 0.8125rem; color: #1e293b; background: #fffbeb; padding: 0.75rem; border-radius: 4px; border-left: 3px solid #f59e0b; word-break: break-word;">
                     <strong style="color: #b45309; display: flex; align-items: center; gap: 0.25rem; font-size: 0.6875rem; text-transform: uppercase; margin-bottom: 0.25rem;">
                       <i data-lucide="message-square" style="width: 0.875rem; height: 0.875rem;"></i>
@@ -5018,7 +4888,6 @@ class RentPortalApp {
           </div>
         ` : ''}
 
-        <!-- Card 3: Main Action Form (Post M-Pesa Till Payment Message) -->
         <div class="card" style="box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);">
           <div class="card-header" style="border-bottom: 1px solid var(--slate-100); padding-bottom: 1rem;">
             <div>
@@ -5032,7 +4901,6 @@ class RentPortalApp {
             </div>
           </div>
 
-          <!-- M-Pesa Payment Instructions Card -->
           <div style="background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%); border: 1.5px solid #a7f3d0; border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
             <div>
               <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #047857; font-weight: 800;">Official Landlord Buy Goods Till</div>
@@ -5051,10 +4919,8 @@ class RentPortalApp {
             </div>
           </div>
 
-          <!-- Form: Post M-Pesa Message Form with Device Reading & Till Verification -->
           <form id="form-tenant-post-message" style="display: flex; flex-direction: column; gap: 1rem;">
             
-            <!-- Device Reading & Auto-Detection Toolbar -->
             <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
               <button type="button" class="btn btn-secondary" id="btn-device-paste-sms" style="flex: 1; min-width: 170px; font-size: 0.8125rem; padding: 0.5rem 0.75rem; display: flex; align-items: center; justify-content: center; gap: 0.375rem; background: #ffffff; border: 1.5px solid #10b981; color: #047857; font-weight: 700; border-radius: var(--radius-md);">
                 <i data-lucide="clipboard" style="width: 1rem; height: 1rem;"></i>
@@ -5071,7 +4937,6 @@ class RentPortalApp {
               <input type="file" id="input-sms-screenshot" accept="image/*" capture="environment" style="display: none;" />
             </div>
 
-            <!-- Screenshot Preview Container (if user attaches image) -->
             <div id="screenshot-preview-container" style="display: none; align-items: center; gap: 0.75rem; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: var(--radius-md); padding: 0.5rem 0.75rem;">
               <img id="screenshot-preview-img" src="" alt="SMS screenshot preview" style="width: 44px; height: 44px; object-fit: cover; border-radius: 4px; border: 1px solid #94a3b8; cursor: pointer;" />
               <div style="flex: 1; font-size: 0.75rem; color: #475569;">
@@ -5097,7 +4962,6 @@ class RentPortalApp {
               ></textarea>
             </div>
 
-            <!-- Real-Time Verification Status Alert (Clean, non-revealing to tenant) -->
             <div id="tenant-sms-status-box" style="display: block; background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: var(--radius-md); padding: 0.75rem 1rem; font-size: 0.8125rem; transition: all 0.2s ease; margin-bottom: 0.5rem;">
               <div style="display: flex; align-items: center; gap: 0.5rem; color: #475569;">
                 <i data-lucide="info" style="width: 1rem; height: 1rem; color: #0284c7; flex-shrink: 0;"></i>
@@ -5266,7 +5130,6 @@ class RentPortalApp {
   }
 
   attachTenantEvents(user) {
-    // Super Admin Inspector Switcher & Return to HQ Handlers (when inspecting tenant)
     document.getElementById('inspector-switch-tenant-select')?.addEventListener('change', (e) => {
       const targetId = e.target.value;
       if (targetId) {
@@ -5290,7 +5153,6 @@ class RentPortalApp {
     const landlord = tenant ? store.state.landlords.find((l) => l.id === tenant.landlordId) : null;
     const tillNumber = landlord ? landlord.tillNumber : tenant.tillNumber || '582190';
 
-    // 1. Real-time Safaricom M-Pesa SMS Auto-Parser & Strict Verification Engine
     const postSmsText = document.getElementById('post-sms-text');
     const codeInput = document.getElementById('post-mpesa-code');
     const amtInput = document.getElementById('post-amount');
@@ -5324,11 +5186,9 @@ class RentPortalApp {
         return;
       }
 
-      // Run store verification engine: checks Till, date (today), freshness (<= 10 mins), format
       const res = store.parseAndVerifyMpesaSms(text, tillNumber);
 
       if (res.isValid) {
-        // Successful verification: Populate read-only fields
         if (codeInput) codeInput.value = res.code;
         if (amtInput) amtInput.value = Math.round(res.amount);
         if (phoneInput) phoneInput.value = res.phone || tenant.phone;
@@ -5352,7 +5212,6 @@ class RentPortalApp {
           submitBtn.style.cursor = 'pointer';
         }
       } else {
-        // Conditions not met: Clear read-only fields and show clean error without exposing internal check details
         if (codeInput) codeInput.value = '';
         if (amtInput) amtInput.value = '';
         if (phoneInput) phoneInput.value = tenant.phone || '';
@@ -5380,7 +5239,6 @@ class RentPortalApp {
       if (window.lucide) window.lucide.createIcons();
     };
 
-    // Physically seal read-only fields against keyboard, paste, drop, or touch tampering
     ['post-mpesa-code', 'post-amount', 'post-phone'].forEach((id) => {
       const el = document.getElementById(id);
       if (el) {
@@ -5396,7 +5254,6 @@ class RentPortalApp {
       postSmsText.addEventListener('paste', () => setTimeout(autoParseAndVerify, 50));
     }
 
-    // 2. Read / Paste M-Pesa SMS from Device Clipboard
     document.getElementById('btn-device-paste-sms')?.addEventListener('click', async () => {
       try {
         if (!navigator.clipboard?.readText) {
@@ -5420,12 +5277,10 @@ class RentPortalApp {
       }
     });
 
-    // 3. Auto-Detect Live M-Pesa Payment Status
     document.getElementById('btn-auto-detect-payment')?.addEventListener('click', async () => {
       await this.checkLivePaymentDetection(tenant, tillNumber, true);
     });
 
-    // 4. Attach SMS Screenshot / Receipt Photo from Device
     const fileInput = document.getElementById('input-sms-screenshot');
     document.getElementById('btn-trigger-screenshot')?.addEventListener('click', () => {
       fileInput?.click();
@@ -5460,7 +5315,6 @@ class RentPortalApp {
       if (this.currentSmsScreenshot) this.showImageModal(this.currentSmsScreenshot);
     });
 
-    // 5. Handle Tenant Posting M-Pesa Payment Message to Landlord (Debounced & Replay-Protected)
     const postMsgForm = document.getElementById('form-tenant-post-message');
     let isSubmittingMessage = false;
 
@@ -5481,7 +5335,6 @@ class RentPortalApp {
           return;
         }
 
-        // Validate Till number, date, and 10-minute freshness strictly
         const verification = store.parseAndVerifyMpesaSms(smsText, tillNumber);
         if (!verification.isValid) {
           alert('⚠️ Payment verification failed: The payment message is invalid, not sent to this property\'s Till, or was completed more than 10 minutes ago. Please make a fresh payment and submit promptly.');
@@ -5530,7 +5383,6 @@ class RentPortalApp {
       });
     }
 
-    // 6. Start Live Background Payment and Device Detection Watcher
     this.startTenantLivePaymentWatcher(tenant, tillNumber);
 
     document.getElementById('btn-tenant-statement')?.addEventListener('click', () => {
@@ -5541,7 +5393,6 @@ class RentPortalApp {
   async checkLivePaymentDetection(tenant, tillNumber, isUserInitiated = false) {
     if (!tenant) return;
 
-    // Check if any payment for this tenant is confirmed in store state
     const confirmedPayment = store.state.payments.find(
       (p) => p.tenantId === tenant.userId && p.status === 'confirmed'
     );
@@ -5550,7 +5401,6 @@ class RentPortalApp {
       (p) => p.tenantId === tenant.userId && p.status === 'pending'
     );
 
-    // If there is a server sync available, fetch latest
     try {
       const syncRes = await fetch('/api/sync').then(r => r.json()).catch(() => null);
       if (syncRes && syncRes.state && Array.isArray(syncRes.state.payments)) {
@@ -5587,13 +5437,11 @@ class RentPortalApp {
   }
 
   startTenantLivePaymentWatcher(tenant, tillNumber) {
-    // Clear any previous watcher timer to avoid memory leaks
     if (this._tenantWatcherTimer) {
       clearInterval(this._tenantWatcherTimer);
       this._tenantWatcherTimer = null;
     }
 
-    // 1. Periodic background poller (every 4 seconds)
     this._tenantWatcherTimer = setInterval(() => {
       const current = store.getCurrentUser();
       if (!current || current.role !== 'tenant') {
@@ -5604,7 +5452,6 @@ class RentPortalApp {
       this.checkLivePaymentDetection(tenant, tillNumber, false);
     }, 4000);
 
-    // 2. Window focus & visibilitychange listener: detect clipboard SMS or confirmed status when tenant returns
     if (!this._hasAttachedVisibilityWatcher) {
       this._hasAttachedVisibilityWatcher = true;
 
@@ -5614,10 +5461,8 @@ class RentPortalApp {
         const curTenant = curUser.tenant || store.state.tenants.find(t => t.userId === curUser.userId);
         if (!curTenant) return;
 
-        // Check if payment was confirmed while user was in SMS / M-Pesa app
         await this.checkLivePaymentDetection(curTenant, tillNumber, false);
 
-        // Check if user copied an M-Pesa SMS to device clipboard
         try {
           if (document.hasFocus() && navigator.clipboard?.readText) {
             const clip = await navigator.clipboard.readText();
@@ -5640,7 +5485,6 @@ class RentPortalApp {
     }
   }
 
-  // --- Registration Modals ---
   showLandlordRegistrationModal() {
     const html = `
       <div class="modal-header">
@@ -5776,7 +5620,6 @@ class RentPortalApp {
     });
   }
 
-  // --- Actions & Shared Modals ---
   approvePayment(paymentId) {
     const sel = document.getElementById(`select-tenant-${paymentId}`);
     const override = sel ? sel.value : null;
@@ -6130,7 +5973,6 @@ class RentPortalApp {
     const propName = landlord ? landlord.propertyName : payment.payerName ? `${payment.payerName}'s Building` : 'Omwoyo Apartments';
     const daraja = store.getDarajaConfig();
 
-    // Helper for subtle Web Audio confirmation chime
     const playChime = (isSuccess) => {
       try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -6164,7 +6006,6 @@ class RentPortalApp {
           osc.stop(ctx.currentTime + 0.3);
         }
       } catch (e) {
-        // AudioContext disabled or not allowed, fallback silently
       }
     };
 
@@ -6285,7 +6126,6 @@ class RentPortalApp {
           </div>
         </div>
 
-        <!-- Simulated Mobile STK Dialog -->
         <div class="phone-mock" style="max-width: 320px; margin: 0 auto; box-shadow: 0 12px 30px rgba(0,0,0,0.15); border: 3px solid #1e293b; border-radius: 2rem; overflow: hidden; background: #0f172a; padding: 0.75rem 0.75rem 1.25rem 0.75rem;">
           <div style="display: flex; justify-content: space-between; font-size: 0.625rem; color: #94a3b8; padding: 0 0.5rem 0.5rem 0.5rem;">
             <span>SAFARICOM</span>
@@ -6387,7 +6227,6 @@ class RentPortalApp {
             The money has been deposited directly to Landlord Till <strong>${tillNumber}</strong> (${propName}).
           </p>
 
-          <!-- Transaction Summary Card -->
           <div style="background-color: #f8fafc; border: 1px solid var(--slate-200); border-radius: var(--radius-lg); padding: 1rem; margin-top: 1.25rem; text-align: left; font-size: 0.8125rem;">
             <div style="display: flex; justify-content: space-between; padding: 0.25rem 0;">
               <span style="color: var(--slate-500);">M-Pesa Receipt:</span>
@@ -6407,7 +6246,6 @@ class RentPortalApp {
             </div>
           </div>
 
-          <!-- SMS Notification Snippet -->
           <div style="background-color: #f1f5f9; border-radius: var(--radius-md); padding: 0.75rem; margin-top: 1rem; text-align: left; font-family: monospace; font-size: 0.75rem; color: #334155; line-height: 1.4;">
             <span style="font-weight: 700; color: #047857; display: block; margin-bottom: 0.25rem;">📱 Safaricom SMS Received on Phone:</span>
             "${mpesaSms}"
@@ -6471,7 +6309,6 @@ class RentPortalApp {
       </div>
     `;
 
-    // Step 1: Show Connecting State and Send to API
     this.openModal(renderConnectingView());
 
     try {
@@ -6501,7 +6338,6 @@ class RentPortalApp {
         message: 'Endpoint offline. Using interactive simulator.'
       }));
 
-      // If Real Daraja was triggered
       if (res && res.isRealDaraja && res.success) {
         this.openModal(renderLiveHandsetView(res));
         this.showToast(`Prompt pushed to handset +${res.phone}! Check your screen.`, 'success');
@@ -6564,7 +6400,6 @@ class RentPortalApp {
               this.openModal(renderFailureView(queryRes.ResultDesc || 'Safaricom declined the transaction.'));
             }
           } catch (e) {
-            // Wait for next poll
           }
         }, 2500);
 
@@ -6589,7 +6424,6 @@ class RentPortalApp {
         return;
       }
 
-      // Fallback: Real Daraja keys not yet configured or sandbox fallback
       this.openModal(renderSimulatedPromptView());
 
       document.getElementById('btn-stk-confirm')?.addEventListener('click', () => {
@@ -6630,5 +6464,4 @@ class RentPortalApp {
   }
 }
 
-// Instantiate and expose globally
 window.app = new RentPortalApp();

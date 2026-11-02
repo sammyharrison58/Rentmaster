@@ -6,36 +6,30 @@
   <title>Rentmaster - Verified Rent Payment & Property Management</title>
   <meta name="description" content="Kenya's verified rent payment portal. Tenants pay directly to landlord M-Pesa Tills, verify SMS codes, and get instant tamper-proof receipts." />
 
-  <!-- Custom Brand Favicon (replaces browser default globe icon) -->
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="apple-touch-icon" href="/favicon.svg" />
   <link rel="shortcut icon" href="/favicon.svg" />
 
-  <!-- Resource Hints & CDN Preconnections for Ultra-Fast Loading -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
   <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
   <link rel="dns-prefetch" href="https://accounts.google.com" />
 
-  <!-- Optimized Asynchronous Google Fonts with Instant System Fallback -->
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
   <noscript>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet" />
   </noscript>
 
-  <!-- Master Stylesheet -->
   <link rel="stylesheet" href="./styles/main.css" />
 
-  <!-- External CDN Libraries (Non-blocking with defer to eliminate render stalls) -->
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
-  <!-- Header -->
   <header>
     <div class="container header-inner">
       <div class="header-left">
@@ -49,49 +43,30 @@
           </div>
         </div>
 
-        <!-- Dynamic Contextual Breadcrumbs -->
         <nav class="header-breadcrumbs" id="header-breadcrumbs" aria-label="Breadcrumbs">
-          <!-- Injected dynamically by app.js -->
         </nav>
       </div>
 
       <div class="header-actions" id="header-user-area">
-        <!-- Injected dynamically by app.js -->
       </div>
     </div>
   </header>
 
-  <!-- Interactive Demo Switcher Bar -->
   <div class="demo-bar" id="demo-role-bar">
-    <!-- Injected dynamically by app.js -->
   </div>
 
-  <!-- Main Container -->
   <main>
     <div class="container" id="app-main">
-      <!-- Injected dynamically by app.js -->
     </div>
   </main>
 
-  <!-- Modal Container Root -->
   <div id="modal-root"></div>
-
-  <!-- Global Command Palette Spotlight Search Root -->
   <div id="command-palette-root"></div>
-
-  <!-- Mobile Bottom App Navigation Bar -->
   <nav class="mobile-nav-bar" id="mobile-nav-bar"></nav>
-
-  <!-- Floating Quick Actions Power Dock -->
   <div class="floating-quick-dock" id="floating-quick-dock"></div>
-
-  <!-- Toast Notifications Root -->
   <div class="toast-container" id="toast-container"></div>
-
-  <!-- AI Agent Assistant Root -->
   <div id="ai-agent-root"></div>
 
-  <!-- Application Logic -->
   <script type="module" src="./scripts/app.js"></script>
 </body>
 </html>

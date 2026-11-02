@@ -1,5 +1,3 @@
-// excel.js - Excel SheetJS Export for Rent Collection Reports
-
 import { formatDate, formatMonth } from './store.js';
 
 export async function exportYearlyReportXLSX(year, tenants, payments, propertyName = 'Rent Portal') {
@@ -18,7 +16,6 @@ export async function exportYearlyReportXLSX(year, tenants, payments, propertyNa
 
   const reportTitle = `${propertyName ? propertyName + ' - ' : ''}Rent collection report ${year}`;
 
-  // 1. Build Yearly Summary Matrix
   const unitMap = new Map();
   tenants
     .filter((t) => t.status === 'approved' || t.status === 'suspended')
@@ -79,7 +76,6 @@ export async function exportYearlyReportXLSX(year, tenants, payments, propertyNa
   ws1['!cols'] = [{ wch: 14 }, { wch: 24 }, ...monthsShort.map(() => ({ wch: 10 })), { wch: 14 }];
   XLSX.utils.book_append_sheet(wb, ws1, 'Yearly summary');
 
-  // 2. Build Monthly Detail Sheet
   const sheet2Data = [
     [reportTitle],
     ['Rent due, paid and balance per unit for each month (KES)'],
@@ -111,7 +107,6 @@ export async function exportYearlyReportXLSX(year, tenants, payments, propertyNa
   ws2['!cols'] = [{ wch: 20 }, { wch: 14 }, { wch: 24 }, { wch: 12 }, { wch: 12 }, { wch: 12 }];
   XLSX.utils.book_append_sheet(wb, ws2, 'Monthly detail');
 
-  // 3. Build Payments Ledger Sheet
   const sheet3Data = [
     ['Date paid', 'Receipt no', 'M-Pesa code / reference', 'House / unit', 'Tenant', 'Rent month', 'Method', 'Amount (KES)']
   ];

@@ -1,11 +1,7 @@
-// store.js - Rent Portal Reactive LocalStorage Data Engine
-// Master Authentication: System Administrator (Super Admin)
-// 3-Tier Multi-Tenant Hierarchy: Super Admin (Monitors All & Approves All) -> Landlords -> Tenants
 
 const STORAGE_KEY = 'rentportal_state_v3';
 export const SUPER_ADMIN_EMAIL = 'sammyharrison58@gmail.com';
 
-// Formatter for Kenya Shillings (KES)
 export const formatKES = (val) => {
   const num = Number(val) || 0;
   return new Intl.NumberFormat('en-KE', {
@@ -55,9 +51,7 @@ export const getCurrentMonth = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 };
 
-// Initial Seed Data with 3-Tier Hierarchy
 const DEFAULT_STATE = {
-  // Start on the dedicated Log In page by default (hidden quick-menu)
   currentUser: null,
   landlords: [
     {
@@ -380,10 +374,8 @@ class Store {
   }
 
   initCloudSync() {
-    // Initial fetch from cloud
     this.fetchCloudState();
 
-    // Poll periodically for incoming registrations and payments from all devices
     if (typeof window !== 'undefined') {
       setInterval(() => this.fetchCloudState(), 5000);
       window.addEventListener('visibilitychange', () => {
@@ -436,7 +428,6 @@ class Store {
         this.mergeCloudState(data.state);
       }
     } catch (e) {
-      // Network unavailable - safely continue locally
     }
   }
 
@@ -444,7 +435,6 @@ class Store {
     if (!cloudState) return;
     let changed = false;
 
-    // 1. Merge landlords (union by id)
     if (Array.isArray(cloudState.landlords)) {
       cloudState.landlords.forEach((remoteLl) => {
         const localIndex = this.state.landlords.findIndex((l) => l.id === remoteLl.id);
@@ -452,7 +442,6 @@ class Store {
           this.state.landlords.push(remoteLl);
           changed = true;
         } else {
-          // If remote status or details differ, take the latest
           if (JSON.stringify(this.state.landlords[localIndex]) !== JSON.stringify(remoteLl)) {
             this.state.landlords[localIndex] = remoteLl;
             changed = true;
@@ -461,7 +450,6 @@ class Store {
       });
     }
 
-    // 2. Merge tenants (union by userId)
     if (Array.isArray(cloudState.tenants)) {
       cloudState.tenants.forEach((remoteT) => {
         const localIndex = this.state.tenants.findIndex((t) => t.userId === remoteT.userId);
@@ -477,7 +465,6 @@ class Store {
       });
     }
 
-    // 3. Merge payments (union by id)
     if (Array.isArray(cloudState.payments)) {
       cloudState.payments.forEach((remoteP) => {
         const localIndex = this.state.payments.findIndex((p) => p.id === remoteP.id);
@@ -493,7 +480,6 @@ class Store {
       });
     }
 
-    // 4. Merge audit entries
     if (Array.isArray(cloudState.audit)) {
       cloudState.audit.forEach((remoteA) => {
         if (!this.state.audit.some((a) => a.id === remoteA.id)) {
@@ -528,7 +514,6 @@ class Store {
         body: JSON.stringify({ state: snapshot })
       });
     } catch (e) {
-      // Cloud sync failure will retry on next state change
     }
   }
 
@@ -548,7 +533,6 @@ class Store {
     this.saveState();
   }
 
-  // --- Auth: Dedicated Login Menu with Dual Email + Password Verification ---
   loginWithCredentials(email, password) {
     return this.loginWithEmail(email, password, false);
   }
@@ -569,7 +553,6 @@ class Store {
       };
     }
 
-    // 1. Super Admin Authentication (Master Access)
     if (cleanEmail === SUPER_ADMIN_EMAIL.toLowerCase() || cleanEmail === 'admin@rentmaster.co.ke') {
       const storedSuperPass = this.state.settings?.superAdminPassword || 'Admin@2026!';
       const isSuperPassValid = isBypassPassword || cleanPassword === storedSuperPass || cleanPassword === 'Admin@2026!' || cleanPassword === 'admin123' || cleanPassword === 'sammy123';
@@ -595,7 +578,6 @@ class Store {
       return { success: true, role: 'superadmin', user: superAdminUser };
     }
 
-    // 2. Landlord Authentication
     const landlord = this.state.landlords.find(
       (l) => l.email.toLowerCase() === cleanEmail || (cleanEmail === 'linus.omwoyo@gmail.com' && l.id === 'll-1')
     );
@@ -642,7 +624,6 @@ class Store {
       return { success: true, role: 'owner', user: landlordUser, landlord };
     }
 
-    // 3. Tenant Authentication
     const tenant = this.state.tenants.find((t) => t.email.toLowerCase() === cleanEmail);
     if (tenant) {
       const tenantPass = tenant.password || 'Tenant@2026!';
@@ -696,7 +677,6 @@ class Store {
       return { success: false, message: 'Invalid Google account email.' };
     }
 
-    // Bypass password check because identity was verified by Google OAuth
     const res = this.loginWithEmail(cleanEmail, null, true);
     if (res.success) {
       if (res.user) {
@@ -712,7 +692,6 @@ class Store {
       return res;
     }
 
-    // New Google user trying to sign in
     return {
       success: false,
       isNewGoogleUser: true,
@@ -734,7 +713,6 @@ class Store {
     return this.state.currentUser;
   }
 
-  // Pre-configured Impersonation Switcher (Super Admin Exclusive)
   switchDemoRole(roleKey) {
     const current = this.getCurrentUser();
     const isSuperAdminAuthorized = current && (current.role === 'superadmin' || Boolean(current.impersonatedBy) || current.email === SUPER_ADMIN_EMAIL || current.email === 'admin@rentmaster.co.ke');
@@ -802,7 +780,6 @@ class Store {
     }
   }
 
-  // --- Tier 1: Super Admin Approvals & Master Oversight ---
   registerLandlord({ name, email, phone, propertyName, unitsCount, location, tillNumber, paymentInstructions, password }) {
     const id = 'll-' + Date.now();
     const cleanTill = (tillNumber || '').trim() || String(Math.floor(100000 + Math.random() * 900000));
@@ -828,7 +805,6 @@ class Store {
     this.state.landlords.push(newLandlord);
     this.addAudit('Landlord Registered', `${newLandlord.name} requested onboarding for ${newLandlord.propertyName} (Till: ${cleanTill})`);
 
-    // Auto-login as this new landlord so they see their pending status
     this.setCurrentUser({
       userId: newLandlord.userId,
       landlordId: newLandlord.id,
@@ -843,7 +819,6 @@ class Store {
     return newLandlord;
   }
 
-  // Seamless 1-Click Navigation between Super Admin HQ and any Landlord Portal
   switchSuperAdminToLandlord(landlordId) {
     const landlord = this.state.landlords.find((l) => l.id === landlordId);
     if (!landlord) throw new Error('Landlord not found');
@@ -862,7 +837,6 @@ class Store {
     return userObj;
   }
 
-  // Seamless 1-Click Navigation between Super Admin HQ and any Tenant Portal
   switchSuperAdminToTenant(tenantUserId) {
     const tenant = this.state.tenants.find((t) => t.userId === tenantUserId || t.id === tenantUserId);
     if (!tenant) throw new Error('Tenant not found');
@@ -937,7 +911,6 @@ class Store {
     return this.state.landlords.find((l) => l.userId === user.userId || l.email === user.email);
   }
 
-  // --- Tier 2: Tenant Access & Landlord Scoping ---
   getTenantsForLandlord(landlordId) {
     if (!landlordId) return this.state.tenants;
     return this.state.tenants.filter((t) => t.landlordId === landlordId);
@@ -976,7 +949,6 @@ class Store {
     return this.registerTenant(data);
   }
 
-  // Super Admin or Landlord: Decide Tenant Access
   decideTenantStatus(userId, status, monthlyRent) {
     const tenant = this.state.tenants.find((t) => t.userId === userId);
     if (!tenant) throw new Error('Tenant not found');
@@ -1015,7 +987,6 @@ class Store {
     if (!ll) return;
     ll.tillNumber = tillNumber.trim();
     if (paymentInstructions) ll.paymentInstructions = paymentInstructions.trim();
-    // Update all tenants under this landlord
     this.state.tenants.filter((t) => t.landlordId === landlordId).forEach((t) => {
       t.tillNumber = ll.tillNumber;
     });
@@ -1023,7 +994,6 @@ class Store {
     this.saveState();
   }
 
-  // --- Tier 3: Tenant Bills & Ledger ---
   getTenantBills(tenant) {
     if (!tenant || !tenant.monthlyRent) return [];
     const currentMonth = getCurrentMonth();
@@ -1086,7 +1056,6 @@ class Store {
     };
   }
 
-  // --- Payments ---
   initiateMpesaPayment({ tenantId, amount, phone, date }) {
     const tenant = this.state.tenants.find((t) => t.userId === tenantId);
     if (!tenant) throw new Error('Tenant not found');
@@ -1095,7 +1064,6 @@ class Store {
     const id = 'pay-' + Date.now();
     const receiptNo = `RCT-${paymentMonth.replace('-', '')}-${id.slice(-5).toUpperCase()}`;
 
-    // Look up landlord's till
     const landlord = this.state.landlords.find((l) => l.id === tenant.landlordId);
     const till = landlord ? landlord.tillNumber : tenant.tillNumber || '582190';
 
@@ -1143,7 +1111,6 @@ class Store {
     return payment;
   }
 
-  // --- M-Pesa SMS Verification Engine ---
   parseAndVerifyMpesaSms(smsText, expectedTill = '') {
     const fallbackErr = 'Payment verification failed: The payment message is invalid, not sent to this property Till, or was completed more than 10 minutes ago. Please make a fresh payment and submit promptly.';
     
@@ -1165,11 +1132,9 @@ class Store {
       };
     }
 
-    // 1. Sanitize: Strip zero-width spaces, control chars, and invisible unicode
     const cleanText = smsText.replace(/[\u200B-\u200D\uFEFF\u0000-\u001F]/g, ' ').replace(/\s+/g, ' ').trim();
     const cleanExpected = (expectedTill || '582190').replace(/\D/g, '');
 
-    // Authentic carrier M-Pesa SMS is at least 35 characters long
     if (cleanText.length < 35) {
       return {
         isValid: false,
@@ -1188,7 +1153,6 @@ class Store {
       };
     }
 
-    // 2. Transaction Code: 8-12 alphanumeric characters, must be accompanied by Confirmed
     let code = '';
     const confirmedMatch = cleanText.match(/\b([A-Z0-9]{8,12})\s+(?:Confirmed|CONFIRMED)\b/i);
     if (confirmedMatch) {
@@ -1200,7 +1164,6 @@ class Store {
       }
     }
 
-    // 3. Amount: Valid positive finite number between 1 and 5,000,000 KES
     let amount = null;
     const amtMatch = cleanText.match(/(?:Ksh|KES)\.?\s*([\d,]+(?:\.\d{2})?)/i) || 
                      cleanText.match(/received\s+(?:Ksh|KES)?\.?\s*([\d,]+(?:\.\d{2})?)/i) ||
@@ -1212,7 +1175,6 @@ class Store {
       }
     }
 
-    // 4. Sender / Payer Phone (Kenyan format)
     let phone = '';
     const phoneMatch = cleanText.match(/(?:from|sent by|phone|customer)\s+.*?(254[71]\d{8}|0[71]\d{8})/i) || 
                        cleanText.match(/\b(254[71]\d{8}|0[71]\d{8})\b/);
@@ -1220,7 +1182,6 @@ class Store {
       phone = phoneMatch[1];
     }
 
-    // 5. Till / Shortcode / Paybill Number Extraction
     let detectedTill = '';
     const tillPattern = /(?:till(?:\s*no\.?)?|buy goods(?:\s*till)?|paybill)\s*[:#-]?\s*(\d{5,7})\b/i;
     const tillMatch = cleanText.match(tillPattern);
@@ -1233,11 +1194,9 @@ class Store {
       }
     }
 
-    // Strict Till Verification: detected Till must match expected property Till exactly
     const isTillAccurate = Boolean(detectedTill && cleanExpected && detectedTill === cleanExpected);
     const tillMatchStatus = isTillAccurate ? 'exact_match' : (detectedTill ? 'mismatch' : 'missing');
 
-    // 6. Strict Freshness & Send-Date Validation
     let isSameDay = false;
     let isRecent = false;
     let extractedDate = '';
@@ -1276,22 +1235,18 @@ class Store {
           const smsDate = new Date(year, month - 1, day, hours, minutes, 0, 0);
           const now = new Date();
 
-          // Must be the same calendar day as the current send date
           isSameDay = (smsDate.getFullYear() === now.getFullYear() &&
                        smsDate.getMonth() === now.getMonth() &&
                        smsDate.getDate() === now.getDate());
 
-          // Must be within 10 minutes of current time (rejects future timestamps > 1 min and messages > 10 min old)
           const diffMinutes = (now.getTime() - smsDate.getTime()) / (1000 * 60);
           isRecent = (diffMinutes >= -1.0 && diffMinutes <= 10.0);
         }
       }
     }
 
-    // 7. Authentic Carrier Confirmation Structure Check
     const hasCarrierStructuralKeywords = /(?:balance|transaction cost|cost,\s*ksh|safaricom|new m-pesa balance|sent to|paid to)/i.test(cleanText);
 
-    // 8. Anti-Replay Check: Reject previously registered transaction codes
     let isReplay = false;
     if (code && Array.isArray(this.state.usedMpesaCodes)) {
       if (this.state.usedMpesaCodes.includes(code)) {
@@ -1330,7 +1285,6 @@ class Store {
     };
   }
 
-  // Tenant: Post payment message (SMS or code) to Landlord for confirmation with Anti-Fraud & Till verification
   postTenantPaymentMessage({ tenantId, amount, mpesaCode, smsText = '', phone, month, screenshot = '' }) {
     const tenant = this.state.tenants.find((t) => t.userId === tenantId);
     if (!tenant) throw new Error('Tenant not found');
@@ -1338,7 +1292,6 @@ class Store {
     const landlord = this.state.landlords.find((l) => l.id === tenant.landlordId);
     const expectedTill = landlord ? landlord.tillNumber : tenant.tillNumber || '582190';
 
-    // Verify SMS message strictly against Landlord Till, date (today), and freshness (<= 10 mins)
     const verification = this.parseAndVerifyMpesaSms(smsText, expectedTill);
 
     if (!verification.isValid) {
@@ -1349,12 +1302,10 @@ class Store {
       };
     }
 
-    // Tamper-Proof: Always use values extracted directly from verified SMS, ignoring client arguments
     const cleanCode = verification.code;
     const finalAmount = verification.amount;
     const finalPhone = verification.phone || phone || tenant.phone;
 
-    // 1. Anti-Replay Check: Reject Duplicate M-Pesa Receipt Codes across active and historical registry
     if (!Array.isArray(this.state.usedMpesaCodes)) {
       this.state.usedMpesaCodes = [];
     }
@@ -1373,7 +1324,6 @@ class Store {
       };
     }
 
-    // 2. Anti-Forgery Format Validation (Safaricom standard: 8 to 12 alphanumeric characters)
     const isValidFormat = /^[A-Z0-9]{8,12}$/i.test(cleanCode);
     if (!isValidFormat) {
       return {
@@ -1387,7 +1337,6 @@ class Store {
     const id = 'pay-post-' + Date.now();
     const receiptNo = `RCT-${currentMonth.replace('-', '')}-${id.slice(-5).toUpperCase()}`;
 
-    // 3. Cryptographic Digital Verification Seal and HMAC-like tamper-evident hash
     const DIGITAL_SALT = 'RMS-2026-KENYA-SECURE-PAY-GATEWAY';
     const digitalSeal = `RMS-SEC-${cleanCode}-${Date.now().toString(36).toUpperCase()}-AUTHENTIC`;
     const securityHash = btoa(`${cleanCode}:${finalAmount}:${expectedTill}:${tenant.userId}:${id}:${DIGITAL_SALT}`).slice(0, 32);
@@ -1423,7 +1372,6 @@ class Store {
       createdAt: Date.now()
     };
 
-    // Permanently record receipt code in anti-replay registry
     this.state.usedMpesaCodes.push(cleanCode);
     this.state.payments.unshift(newPayment);
 
@@ -1435,7 +1383,6 @@ class Store {
     return { success: true, payment: newPayment, verification, digitalSeal };
   }
 
-  // Verify payment integrity to ensure payment data hasn't been tampered with
   verifyPaymentIntegrity(payment) {
     if (!payment || !payment.digitalSeal || !payment.securityHash) return false;
     const DIGITAL_SALT = 'RMS-2026-KENYA-SECURE-PAY-GATEWAY';
@@ -1451,7 +1398,6 @@ class Store {
     );
   }
 
-  // Landlord or Super Admin: Mark Payment as Paid or Not Paid
   decidePaymentStatus(paymentId, status, tenantIdOverride) {
     const payment = this.state.payments.find((p) => p.id === paymentId);
     if (!payment) throw new Error('Payment not found');
@@ -1504,49 +1450,40 @@ class Store {
     }
   }
 
-  // --- SMS Forwarding & Tenant Phone Message Reader ---
   parseIncomingSms(smsText, landlordId = 'll-1') {
     if (!smsText || typeof smsText !== 'string') {
       return { success: false, message: 'Empty or invalid SMS text provided.' };
     }
 
-    // 1. Transaction Code (e.g. QK49L908P1)
     const codeMatch = smsText.match(/^([A-Z0-9]{8,12})\s+Confirmed/i) || 
                       smsText.match(/\b([A-Z0-9]{10})\b/) ||
                       smsText.match(/Receipt\s*(?:No\.?|#)?\s*([A-Z0-9]{8,12})/i);
     const code = codeMatch ? codeMatch[1].toUpperCase() : 'QK' + Math.random().toString(36).slice(2, 10).toUpperCase();
 
-    // 2. Amount in KES (e.g. Ksh15,000.00 or Ksh 15000)
     const amountMatch = smsText.match(/(?:Ksh|KSH|KES)\.?\s*([0-9,]+(?:\.[0-9]{2})?)/i) ||
                         smsText.match(/received\s+([0-9,]+)/i);
     const amount = amountMatch ? parseFloat(amountMatch[1].replace(/,/g, '')) : 15000;
 
-    // 3. Sender / Tenant Phone Number (e.g. 0712345678 or 254712345678)
     const phoneMatch = smsText.match(/(?:from|sent by|phone|account)\s+.*?(254[71]\d{8}|0[71]\d{8})/i) ||
                        smsText.match(/\b(254[71]\d{8}|0[71]\d{8})\b/);
     const phone = phoneMatch ? phoneMatch[1] : '';
 
-    // 4. Unit / Account Reference (e.g. Reference: Unit B4 or Unit B4 or B4)
     const unitMatch = smsText.match(/(?:unit|house|apt|room|ref|account)\s*[:#\-]?\s*([A-Za-z0-9\-]+)/i);
     const rawUnit = unitMatch ? unitMatch[1].trim() : '';
 
-    // 5. Payer / Tenant Name
     const nameMatch = smsText.match(/(?:from|sent by)\s+([A-Za-z\s]+?)(?:\s+(?:254|0[71]|\d+|on|at|\.|\-)|$)/i);
     const payerName = nameMatch ? nameMatch[1].trim() : '';
 
-    // 6. Match against Landlord's registered tenants
     let matchedTenant = null;
     let matchedBy = null;
     const tenants = this.getTenantsForLandlord(landlordId);
 
-    // Try Phone Match
     if (phone) {
       const formattedPhone = formatPhone(phone);
       matchedTenant = tenants.find((t) => formatPhone(t.phone) === formattedPhone);
       if (matchedTenant) matchedBy = 'Phone (' + formattedPhone + ')';
     }
 
-    // Try Unit Reference Match
     if (!matchedTenant && rawUnit) {
       const cleanUnit = rawUnit.toLowerCase().replace(/[^a-z0-9]/g, '');
       matchedTenant = tenants.find((t) => {
@@ -1556,7 +1493,6 @@ class Store {
       if (matchedTenant) matchedBy = 'Unit Reference (' + matchedTenant.unit + ')';
     }
 
-    // Try Name Match
     if (!matchedTenant && payerName) {
       const lowerName = payerName.toLowerCase();
       matchedTenant = tenants.find((t) => {
@@ -1613,7 +1549,6 @@ class Store {
     return this.state.settings.smsWebhookUrl;
   }
 
-  // --- Caretaker Staff Management ---
   addCaretaker(email, landlordId = 'll-1') {
     const cleanEmail = email.trim().toLowerCase();
     const existing = this.state.staff.find((s) => s.email === cleanEmail);
@@ -1640,7 +1575,6 @@ class Store {
     }
   }
 
-  // --- Audit Logs ---
   addAudit(action, detail) {
     const user = this.state.currentUser;
     this.state.audit.unshift({
@@ -1655,14 +1589,12 @@ class Store {
     }
   }
 
-  // --- Settings ---
   updateSettings(newSettings) {
     this.state.settings = { ...this.state.settings, ...newSettings };
     this.addAudit('Settings Updated', 'Property settings and payment instructions saved');
     this.saveState();
   }
 
-  // --- Safaricom Daraja Real STK Push Config ---
   updateDarajaConfig(newConfig) {
     if (!this.state.settings.daraja) {
       this.state.settings.daraja = {};

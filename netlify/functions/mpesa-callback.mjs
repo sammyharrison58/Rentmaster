@@ -1,5 +1,5 @@
-// Netlify Serverless Function: /api/webhook/mpesa-callback
-// Receives asynchronous payment callbacks from Safaricom M-Pesa
+
+
 
 export default async (req, context) => {
   if (req.method === 'POST') {

@@ -1,6 +1,3 @@
-// Rentmaster AI Agent - High-Cognition Resident Concierge, Landlord Copilot & Super Admin Executive Console
-// Features: Semantic Intent Analysis, Role-Isolated Personas (Tenant / Landlord / Super Admin),
-// Kenyan Tenancy Law (Cap 296/293), Bank-Grade M-Pesa Security Explanations, Live Mathematical Ledger Deduction, and Swahili/Sheng NLP.
 
 export class AIAgent {
   constructor(store, app) {
@@ -12,7 +9,6 @@ export class AIAgent {
     this.hasGreeted = false;
   }
 
-  // Set the current authenticated user (tenant, landlord, caretaker, superadmin)
   setUser(user) {
     const previousUser = this.currentUser;
     this.currentUser = user;
@@ -29,7 +25,6 @@ export class AIAgent {
     this.renderLauncher();
   }
 
-  // --- Live Super Admin Context (Sammy Harrison / Platform Principal) ---
   getSuperAdminContext(user) {
     if (!user) return null;
     const landlords = this.store.state.landlords || [];
@@ -57,7 +52,6 @@ export class AIAgent {
     };
   }
 
-  // --- Live Context Extraction Engine for Tenants ---
   getTenantContext(user) {
     if (!user) return null;
     const tenant = user.tenant || (this.store.state.tenants && this.store.state.tenants.find((t) => t.userId === user.userId));
@@ -68,7 +62,6 @@ export class AIAgent {
     const propertyName = landlord ? landlord.propertyName : (tenant.propertyName || 'Residential Living');
     const landlordName = landlord ? landlord.name : 'Property Management';
 
-    // Calculate live ledger and balance
     const bills = this.store.getTenantBills ? this.store.getTenantBills(tenant) : [];
     const totalOutstanding = bills.reduce((sum, b) => sum + (b.outstanding || 0), 0);
     const payments = (this.store.state.payments || []).filter((p) => p.tenantId === tenant.userId);
@@ -101,7 +94,6 @@ export class AIAgent {
     };
   }
 
-  // --- Live Context Extraction Engine for Landlords & Caretakers ---
   getLandlordContext(user) {
     if (!user) return null;
     const landlord = user.landlord || 
@@ -120,7 +112,6 @@ export class AIAgent {
     const totalCollected = confirmedPayments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
     const expectedMonthly = approvedTenants.reduce((sum, t) => sum + (Number(t.monthlyRent) || 0), 0);
 
-    // Identify unpaid tenants for current month
     const currentMonth = new Date().toISOString().slice(0, 7);
     const paidTenantIds = new Set(
       confirmedPayments.filter((p) => p.month === currentMonth).map((p) => p.tenantId)
@@ -145,13 +136,11 @@ export class AIAgent {
     };
   }
 
-  // --- Natural Language Knowledge & High-Cognition Reasoner ---
   generateResponse(query) {
     const rawQ = (query || '').trim();
     const q = rawQ.toLowerCase();
     const user = this.currentUser;
 
-    // Strict role segmentation: Super Admin is isolated from Landlords and Tenants
     const isSuperAdmin = user && (user.role === 'superadmin' || user.email === 'sammyharrison58@gmail.com' || (user.impersonatedBy && !user.role));
     const isTenant = !isSuperAdmin && user && user.role === 'tenant';
     const isLandlord = !isSuperAdmin && user && (user.role === 'owner' || user.role === 'landlord' || user.role === 'caretaker');
@@ -160,7 +149,6 @@ export class AIAgent {
     const tCtx = isTenant ? this.getTenantContext(user) : null;
     const lCtx = isLandlord ? this.getLandlordContext(user) : null;
 
-    // Helper currency and formatting functions
     const kes = (num) => `KES ${Number(num || 0).toLocaleString()}`;
     const extractNumbers = (str) => {
       const matches = str.match(/\d+[\d,]*/g);
@@ -169,21 +157,15 @@ export class AIAgent {
 
     const hasAny = (keywords) => keywords.some(k => q.includes(k));
 
-    // -------------------------------------------------------------
-    // SUPER ADMIN EXCLUSIVE INTELLIGENCE & RESPONSES (SAMMY HARRISON)
-    // -------------------------------------------------------------
     if (sCtx) {
-      // 1. Greetings for Super Admin
       if (/^(hi|hello|hey|habari|jambo|mambo|sasa|niaje|good (morning|afternoon|evening)|vipi|kazi gani)/i.test(q) && q.split(' ').length <= 4) {
         return `> 🧠 **AI Executive Intelligence:** Authenticated session for Super Administrator **${sCtx.name}**\n\nGreetings **${sCtx.name}**! 🛡️ Welcome to your **Rentmaster Super Admin Executive Intelligence Console**.\n\n**Enterprise System Health:**\n- 🌐 **Managed Landlord Portfolios:** ${sCtx.totalLandlords} Client Account(s)\n- 🏢 **Total Units Under System:** ${sCtx.totalUnits} Units Across Kenya\n- 👥 **Total Registered Tenants:** ${sCtx.totalTenants} Active Residents\n- 💰 **System-Wide Processed Volume:** **${kes(sCtx.totalVolume)}** (${sCtx.totalPaymentsCount} Confirmed Records)\n- ⏳ **Pending Inflows Under Review:** ${sCtx.pendingPaymentsCount} Transaction(s)\n- 🔒 **Tamper-Evident Audit Logs:** ${sCtx.auditLogsCount} System Audit Entries\n\nHow would you like to direct platform operations today? You can audit registered landlords, review gross payment volumes, or inspect cryptographic security integrity.`;
       }
 
-      // 2. Platform Overview & System Statistics
       if (hasAny(['overview', 'system', 'platform', 'stats', 'how many', 'summary', 'total', 'health', 'metrics', 'analytics'])) {
         return `> 🧠 **System Telemetry:** Platform Core Performance Report\n\n### 🌐 Rentmaster Enterprise Telemetry Overview\n\n- **Principal Administrator:** **${sCtx.name}** (${sCtx.email})\n- **Active Landlord Client Accounts:** **${sCtx.totalLandlords}** Properties Registered\n- **Total Managed Inventory:** **${sCtx.totalUnits} Units**\n- **Total Active Residents:** **${sCtx.totalTenants} Tenants**\n- **Gross Transaction Volume (GMV):** **${kes(sCtx.totalVolume)}**\n- **Confirmed System Receipts:** **${sCtx.totalPaymentsCount}** verified cryptographic receipts\n- **Inflow Queue:** **${sCtx.pendingPaymentsCount}** pending landlord sign-offs\n- **Security Ledger Status:** All cryptographic signatures, anti-replay registries, and carrier timestamps operating with **100% integrity**.\n\n*Tip: Use the top Super Admin Role Switcher bar to preview the platform as any specific landlord or tenant account with full impersonation rights.*`;
       }
 
-      // 3. Landlords Directory & Accounts
       if (hasAny(['landlord', 'landlords', 'owners', 'properties', 'portfolio', 'clients', 'buildings'])) {
         const listStr = sCtx.landlordsList.length > 0 
           ? sCtx.landlordsList.map((l, i) => `${i + 1}. **${l.name}** — *${l.propertyName}* (${l.unitsCount || 0} Units) · Till: \`${l.tillNumber || 'N/A'}\` · Location: ${l.location || 'Nairobi'}`).join('\n')
@@ -192,30 +174,23 @@ export class AIAgent {
         return `> 🧠 **Client Management Desk:** Managed Landlord Accounts\n\n### 🏢 Registered Landlord Portfolio Accounts (${sCtx.totalLandlords})\n\n${listStr}\n\n**Super Admin Privileges:**\n- You can onboard new landlords from the **Landlords Directory** tab.\n- You can assign custom Till numbers, manage unit limits, or impersonate their view via the **Role Switcher** bar at the top of the screen.`;
       }
 
-      // 4. Gross Transaction Revenue & Payments Roll
       if (hasAny(['revenue', 'volume', 'pesa', 'collection', 'financial', 'income', 'money', 'gmv', 'transactions', 'gross'])) {
         return `> 🧠 **Platform Financial Intelligence:** Gross Volume Analytics\n\n### 💰 System-Wide Financial Roll & Transaction Volume\n\n- **Cumulative Processed Volume:** **${kes(sCtx.totalVolume)}**\n- **Total Confirmed Transactions:** **${sCtx.totalPaymentsCount}**\n- **Pending Inflow Approvals:** **${sCtx.pendingPaymentsCount}** transaction(s)\n- **M-Pesa Routing Protocols:** Safaricom Buy Goods (Till) with direct 10-minute carrier verification\n- **Settlement Architecture:** Direct-to-merchant ledger with automated receipt generation and zero custodial leakage.`;
       }
 
-      // 5. Security Architecture, Tamper Prevention & Audit Logs
       if (hasAny(['audit', 'security', 'seal', 'tamper', 'fraud', 'hash', 'integrity', 'loophole', 'carrier', 'sha-256', 'protection'])) {
         return `> 🧠 **Cryptographic Security Core:** Bank-Grade Zero-Trust Audit\n\n### 🔒 Rentmaster Security & Tamper-Proof Infrastructure\n\nAs Super Administrator **${sCtx.name}**, your platform runs the following perimeter security protocols:\n\n1. **Anti-Replay Registry (\`usedMpesaCodes\`):** Eliminates double-submission or recycled SMS receipts permanently across the entire network.\n2. **10-Minute Freshness Perimeter:** Strictly enforces that tenant payment SMS must be generated and submitted within 10 minutes of real time.\n3. **Event-Locked Read-Only Fields:** Transaction Codes and Amounts are parsed directly from Safaricom signatures and locked to prevent client-side DOM tampering.\n4. **Cryptographic SHA-256 Receipts:** Every confirmed payment is stamped with an immutable digital seal (\`RMS-SEC-...\`) admissible in Kenyan courts and banks.\n5. **Audit Trail Entries:** Recorded **${sCtx.auditLogsCount}** immutable security events capturing logins, role transitions, and payment approvals.`;
       }
 
-      // 6. Role Switcher & Impersonation
       if (hasAny(['switch', 'impersonat', 'demo bar', 'role bar', 'how to switch', 'preview'])) {
         return `> 🧠 **Executive Privilege:** Super Admin Impersonation Control\n\n### ⚙️ Super Admin Role Switcher Guide\n\n- **Location:** The dark top bar labeled **"Super Admin Role Switcher"** is exclusively visible to you (**${sCtx.email}**).\n- **Instant Preview:** Click **"Landlord Mode"** or **"Tenant Mode"** to experience any user's exact workflow without requiring their passwords.\n- **Return to Super Admin:** Click the **"Back to Super Admin"** badge on the top banner at any time to restore your root administrative session.`;
       }
 
-      // 7. Emergency & Support Desk
       if (hasAny(['caretaker', 'sammy', 'emergency', 'phone', 'contact', 'hotline', '0748'])) {
         return `> 🧠 **Central Support Dispatch:** Lead Executive Contact\n\n### 🚨 Central Emergency & Operations Desk\n\n- **Platform Principal & Lead Caretaker:** **Sammy Harrison**\n- **Direct Cellular:** [0748 082 906](tel:0748082906)\n- **WhatsApp Escalation:** [Chat on WhatsApp](https://wa.me/254748082906)\n- **Status:** All dispatch, maintenance, and emergency escalations route directly to your central operations line.`;
       }
     }
 
-    // -------------------------------------------------------------
-    // GREETINGS FOR TENANT & LANDLORD
-    // -------------------------------------------------------------
     if (/^(hi|hello|hey|habari|jambo|mambo|sasa|niaje|good (morning|afternoon|evening)|vipi|kazi gani)/i.test(q) && q.split(' ').length <= 4) {
       if (tCtx) {
         return `> 🧠 **AI Resident Assistant:** Initialized session for **${tCtx.name}** · Unit **${tCtx.unit}**\n\nHello **${tCtx.name}**! 👋 Welcome to your **Rentmaster AI Concierge** for **${tCtx.propertyName}**.\n\nI am equipped with high-level knowledge of your property ledger, Safaricom M-Pesa protocols, building operations, and Kenyan tenancy rights. How can I assist you today?\n\n- 💳 **M-Pesa Rent Payments** (Till: \`${tCtx.tillNumber}\`)\n- 🧾 **Real-Time Account Balance** (${tCtx.totalOutstanding > 0 ? `Current arrears: ${kes(tCtx.totalOutstanding)}` : 'Zero balance 🎉'})\n- ⏰ **10-Minute SMS Verification & Security Seal Rules**\n- 🔧 **Emergency & Maintenance Desk** (Caretaker Sammy Harrison: \`0748 082 906\`)\n- ⚖️ **Kenyan Tenancy Law & Eviction Protections**`;
@@ -227,21 +202,15 @@ export class AIAgent {
       return `Hello! 👋 I am the **Rentmaster Intelligent Property Assistant**. Please sign in as a resident tenant or property manager to access tailored real-time property intelligence.`;
     }
 
-    // -------------------------------------------------------------
-    // TENANT INTENTS & SPECIALIZED KNOWLEDGE
-    // -------------------------------------------------------------
     if (tCtx) {
-      // Intent: How to Pay / Till Number / Lipa na M-Pesa
       if (hasAny(['till', 'how to pay', 'kulipa', 'lipa', 'pay rent', 'paybill', 'buy goods', 'lipa na mpesa', 'payment instructions', 'procedure ya kulipa'])) {
         return `> 🧠 **Cognitive Guidance:** Generating authenticated payment instructions for **Unit ${tCtx.unit}**\n\n### 💳 Official M-Pesa Payment Procedure for ${tCtx.propertyName}\n\nRentmaster uses **Safaricom Buy Goods and Services (Till)** for direct, real-time automated ledger reconciliation.\n\n#### Step-by-Step Payment Instructions:\n1. Open your Safaricom SIM Toolkit or M-Pesa App on your phone.\n2. Select **Lipa na M-PESA** ➜ **Buy Goods and Services**.\n3. Enter Official Property Till: **\`${tCtx.tillNumber}\`** (*Registered to ${tCtx.propertyName}*).\n4. Enter Amount: **${kes(tCtx.monthlyRent)}** (or your agreed installment/balance).\n5. Enter your M-Pesa Secret PIN and confirm transaction.\n6. **Immediately copy the full Safaricom confirmation SMS** upon arrival.\n7. Go to your portal's **"Post Payment Message"** tab, paste the SMS, and click **"Verify & Submit"**.\n\n> 🛡️ **Zero-Fraud Anti-Tampering Notice:**\n> Ensure you submit within **10 minutes** of payment. The system validates the timestamp, verifies Till \`${tCtx.tillNumber}\`, locks fields to prevent tampering, and records an immutable cryptographic audit seal.`;
       }
 
-      // Intent: Anti-Fraud 10-Minute Rule & Read-Only Logic
       if (hasAny(['10 min', '10-minute', 'ten min', 'late', 'read only', 'readonly', 'why locked', 'cannot edit', 'fraud', 'security check', 'failed check', 'tamper', 'sms rule', 'kwanini'])) {
         return `> 🧠 **Security Architecture Briefing:** Rentmaster Zero-Trust Verification Engine\n\n### 🔒 Why Rentmaster Enforces the 10-Minute SMS Rule & Read-Only Fields\n\nRentmaster implements a bank-grade verification protocol to eliminate fraudulent payment claims, recycled SMS receipts, and accounting disputes between tenants and landlords.\n\n#### 1. The 10-Minute Freshness Window\n- **Preventing Replay Attacks:** In traditional setups, dishonest parties reuse old M-Pesa messages or forward friends' messages. By restricting verification to **within 10 minutes** of the Safaricom network timestamp, we mathematically guarantee the payment was initiated right now for this unit.\n- **Calendar Date Synchronization:** The transaction date in the SMS must match today's date in Kenya time (EAT UTC+3).\n\n#### 2. Read-Only Transaction Code & Amount\n- **Zero-Trust Field Locking:** Once your SMS is parsed by the regex engine, the **Transaction Code** (e.g. \`TG49...\`) and **Amount** are strictly locked to **Read-Only**.\n- **Anti-Tampering:** Tenants cannot manually type, inflate, or fabricate transaction numbers or amounts. The values are extracted directly from Safaricom's cryptographic carrier signature.\n\n#### 3. Single-Use Replay Protection\n- Each transaction code is stored in the tamper-proof ledger. Once registered, it cannot ever be used again by any tenant on any property in the system.`;
       }
 
-      // Intent: Current Balance, Ledger & Partial Rent Math
       if (hasAny(['balance', 'owe', 'deni', 'how much', 'baki', 'arrears', 'debt', 'rent amount', 'bill', 'ledger', 'hesabu'])) {
         const nums = extractNumbers(q);
         let partialCalculation = '';
@@ -258,42 +227,32 @@ export class AIAgent {
         return `> 🧠 **Ledger Calculation:** Auditing resident account for **${tCtx.name} (${tCtx.unit})**\n\n### 🧾 Resident Rent Ledger Summary\n\n- **Resident:** ${tCtx.name}\n- **Assigned Unit:** Unit ${tCtx.unit} · ${tCtx.propertyName}\n- **Agreed Monthly Rent:** ${kes(tCtx.monthlyRent)}\n- **Status:** ${statusPill}${partialCalculation}\n- **Confirmed Payments on Record:** ${tCtx.confirmedPaymentsCount} transaction(s) totaling **${kes(tCtx.totalPaid)}**\n${tCtx.pendingPaymentsCount > 0 ? `- ⏳ **Pending Landlord Confirmation:** ${tCtx.pendingPaymentsCount} transaction(s) under review.\n` : ''}\n\n**Payment Policy:** Rent is payable on or before the **5th day of every calendar month** via Till **\`${tCtx.tillNumber}\`**.`;
       }
 
-      // Intent: Partial Payments & Installment Rules
       if (hasAny(['partial', 'installment', 'half', 'kidogo', 'lipa nusu', 'kulipa nusu', 'can i pay part', 'pay in two', 'advance', 'lipa mapema'])) {
         return `> 🧠 **Financial Policy Analysis:** Partial rent & installment compliance\n\n### 💵 Policy on Partial Payments & Installments\n\nUnder standard Kenyan residential tenancy practices and Rentmaster guidelines:\n\n1. **Permitted with Communication:** You can pay your rent in installments via Till **\`${tCtx.tillNumber}\`**. Each payment SMS should be posted to your portal separately to receive an individual confirmed receipt.\n2. **Grace Period:** Standard rent agreements allow a grace period up to the **5th of the month**. If paying balance after the 5th, notify Landlord **${tCtx.landlordName}** or Caretaker **Sammy Harrison** (\`0748 082 906\`).\n3. **Automatic Ledger Deduction:** Rentmaster automatically credits every confirmed payment against your oldest outstanding bill first, updating your net arrears in real-time.\n4. **Advance Payments:** Overpayments or advance rent payments will reflect as a positive ledger credit against next month's invoice.`;
       }
 
-      // Intent: Official Receipts & Statements
       if (hasAny(['receipt', 'statement', 'download', 'pdf', 'proof', 'stakabadhi', 'evidence', 'ushahidi'])) {
         return `> 🧠 **Document Audit Desk:** Receipt & Financial Statement Retrieval\n\n### 📄 Official Receipts & Cryptographic Statements\n\nRentmaster generates tamper-evident, court-admissible digital receipts for every payment confirmed on your ledger:\n\n- **Where to Access:** Navigate to your **"Payments & History"** tab.\n- **Download Full PDF Statement:** Click the **"📥 Download Statement"** button to export your complete multi-month ledger. This document includes property tax stamps, unit details, and timestamped transaction logs suitable for bank loans, employer rent allowances, and visa applications.\n- **Cryptographic Security Seal:** Every receipt contains an immutable verification hash (e.g. \`RMS-SEC-...\`) generated via SHA-256 that proves the payment was verified without alteration.`;
       }
 
-      // Intent: Caretaker / Emergencies / Repairs / Facilities
       if (hasAny(['caretaker', 'repair', 'maintenance', 'water', 'leak', 'pipe', 'plumber', 'stima', 'electricity', 'power', 'blackout', 'lights', 'garbage', 'takataka', 'emergency', 'lock', 'fungua', 'maji', 'sammy'])) {
         return `> 🧠 **Facility Management Desk:** Operational Protocol for ${tCtx.propertyName}\n\n### 🔧 Resident Caretaker & On-Site Emergency Desk\n\nFor maintenance, repairs, water utility inquiries, and urgent building emergencies:\n\n- **Resident Caretaker:** **Sammy Harrison**\n- **Direct Cellular:** [0748 082 906](tel:0748082906)\n- **WhatsApp Hotline:** [Message Sammy on WhatsApp](https://wa.me/254748082906?text=Hello%20Sammy,%20I%20am%20in%20Unit%20${encodeURIComponent(tCtx.unit)}%20at%20${encodeURIComponent(tCtx.propertyName)}%20and%20need%20assistance)\n- **Operating Hours:** 7:00 AM – 7:30 PM (Daily). **Emergency line is available 24/7** for burst water mains, sewer blockages, electrical sparking, or lockouts.\n\n> 💡 **Maintenance Policy Tip:** Landlords are legally required under Kenyan law to maintain the structural integrity, exterior, and essential utilities of the premises. Tenants are responsible for internal fittings damaged through negligence.`;
       }
 
-      // Intent: Security Deposit & Vacating Notice
       if (hasAny(['deposit', 'move out', 'vacate', 'refund', 'leaving', 'kuhama', 'notisi ya kuhama', 'dhamana', 'security deposit', 'notice'])) {
         return `> 🧠 **Legal & Statutory Knowledge:** Security Deposit & Vacating Protocols\n\n### 📦 Security Deposit Refund & Notice to Vacate Regulations\n\nUnder Kenyan Tenancy Law and standard lease covenants:\n\n#### 1. Written Notice to Vacate\n- You must provide **one full calendar month's formal written notice** before vacating (e.g., to vacate at the end of April, serve written notice on or before March 31st).\n- Notice must be delivered in writing via letter, email, or formal WhatsApp message to Landlord **${tCtx.landlordName}**.\n\n#### 2. Joint Move-Out Inspection\n- Schedule a walk-through inspection with Caretaker **Sammy Harrison** on or before your last day.\n- An inspection checklist comparing the initial check-in inventory will be signed by both parties.\n\n#### 3. Deposit Refund Timeline\n- By standard practice, deposits are refunded within **14 to 30 days** post-vacation.\n- **Permitted Deductions:** Unpaid utility bills (water, KPLC tokens) and physical repairs for damage exceeding ordinary wear and tear.\n- ⚖️ **Important Legal Rule:** Security deposits are held in escrow for repair indemnification and **cannot be converted into rent for your final month** unless agreed upon in writing by the landlord.`;
       }
 
-      // Intent: Illegal Evictions & Tenant Legal Rights
       if (hasAny(['evict', 'lock out', 'locked', 'padlock', 'cut water', 'cut power', 'disconnect', 'tupa vitu', 'fukuzwa', 'haki', 'rights', 'police', 'tribunal', 'rrt'])) {
         return `> 🧠 **Kenyan Legal Rights Protection:** Cap 296 & Landlord-Tenant Statutory Protections\n\n### ⚖️ Your Legal Rights as a Tenant in Kenya\n\nUnder the **Rent Restriction Act (Cap 296)**, the **Landlord and Tenant Act**, and Kenyan Constitutional Property Protections:\n\n1. **Arbitrary Lockouts are Illegal:** A landlord or caretaker **CANNOT** lock your door with padlocks, remove doors or iron sheets, or physically eject you without a valid eviction order issued by the **Rent Restriction Tribunal (RRT)** or a court of law.\n2. **Disconnection of Utilities is a Criminal Offense:** Disconnecting water, electricity, or essential amenities to coerce rent payment is strictly prohibited under **Section 15 of Cap 296** and carries criminal penalties.\n3. **Seizure of Household Goods:** Landlords cannot casually confiscate your personal belongings. The **Distress for Rent Act (Cap 293)** requires a licensed court auctioneer/bailiff with a valid proclamation warrant. Essential personal items (bedding, tools of trade) are legally exempt from distress.\n4. **Dispute Resolution:** In case of unlawful harassment, report to the nearest police station to obtain an OB number and lodge a complaint with the **Rent Restriction Tribunal (RRT)** located at the Housing / Law Courts.`;
       }
 
-      // Intent: M-Pesa Reversal / Sent to Wrong Till
       if (hasAny(['wrong till', 'reversal', 'reversed', 'wrong number', 'nimekosea', 'rudisha', 'reverse'])) {
         return `> 🧠 **Transaction Recovery Protocol:** Safaricom M-Pesa Reversal\n\n### 🔄 What to Do If You Sent Money to the Wrong Till or Paybill\n\n1. **Act Within 2 Hours:** Immediately forward the Safaricom M-Pesa confirmation SMS to **\`456\`** via SMS, or dial **\`*234#\`** ➜ **M-Pesa Reversal**.\n2. **Contact Safaricom Customer Support:** Call **234** (Toll-Free) or **+254 722 000 000** and quote your transaction ID.\n3. **Notify Property Desk:** Inform Caretaker **Sammy Harrison** at **0748 082 906** so management is aware that your payment was delayed or pending re-transfer.\n4. **Do Not Post Failed Messages:** Never submit a reversed or cancelled SMS into Rentmaster — our verification engine cross-references carrier timestamps and will flag the attempt.`;
       }
     }
 
-    // -------------------------------------------------------------
-    // LANDLORD & CARETAKER INTENTS & SPECIALIZED KNOWLEDGE
-    // -------------------------------------------------------------
     if (lCtx) {
-      // Intent: Collections & Financial Yield
       if (hasAny(['collection', 'total collected', 'income', 'revenue', 'how much collected', 'financial', 'pesa ngapi', 'mapato', 'rent roll', 'yield'])) {
         const rate = lCtx.expectedMonthly > 0 ? Math.round((lCtx.totalCollected / lCtx.expectedMonthly) * 100) : 0;
         const remaining = Math.max(0, lCtx.expectedMonthly - lCtx.totalCollected);
@@ -301,7 +260,6 @@ export class AIAgent {
         return `> 🧠 **Financial Yield Analytics:** Performance Report for **${lCtx.propertyName}**\n\n### 📊 Financial Collections Performance (${lCtx.currentMonth})\n\n- **Gross Collections Recorded:** **${kes(lCtx.totalCollected)}**\n- **Projected Target Rent Roll:** ${kes(lCtx.expectedMonthly)}\n- **Realization Efficiency:** **${rate}%**\n- **Outstanding Monthly Gap:** **${kes(remaining)}**\n- **Occupancy & Units:** ${lCtx.approvedTenantsCount} approved active tenants across ${lCtx.unitsCount} total units\n- **Pending Inflow:** ${lCtx.pendingPaymentsCount} transaction(s) in review queue\n\n💡 **Executive Tip:** Export your audit-ready spreadsheet by clicking **"Download Excel / CSV Statement"** on your dashboard.`;
       }
 
-      // Intent: Unpaid Tenants / Defaulters
       if (hasAny(['who has not', 'unpaid', 'who owes', 'defaulter', 'pending rent', 'arrears', 'not paid', 'hawajalipa', 'madeni'])) {
         if (lCtx.unpaidTenants.length === 0) {
           return `> 🧠 **Compliance Roll Audit:** Perfect 100% Collection\n\n### 🎉 Outstanding Performance!\n\nAll **${lCtx.approvedTenantsCount} active tenants** in **${lCtx.propertyName}** have settled rent for cycle **${lCtx.currentMonth}**! Zero unit arrears recorded.`;
@@ -316,45 +274,33 @@ export class AIAgent {
         return `> 🧠 **Compliance Roll Audit:** Found ${lCtx.unpaidTenants.length} unit(s) pending for cycle ${lCtx.currentMonth}\n\n### ⚠️ Pending Rent Defaulters (${lCtx.unpaidTenants.length} Units)\n\n**Total Cycle Arrears Exposed:** **${kes(totalArrears)}**\n\n${tenantItems}\n\n#### Recommended Next Steps:\n- **WhatsApp 1-Click Reminder:** Go to the **Tenants tab** and click the green WhatsApp icon to dispatch a polite, pre-formatted rent reminder.\n- **Statutory Reminder Notice:** Issue formal notices for accounts exceeding 15 days past due before considering formal distress procedures.`;
       }
 
-      // Intent: Payment Verification, Approvals & Security Seals
       if (hasAny(['approve', 'confirm', 'seal', 'verify', 'fraud', 'counterfeit', 'fake sms', 'how to verify', 'security seal'])) {
         return `> 🧠 **Payment Security Architecture:** Audit & Reconciliation Protocol\n\n### 🔒 Payment Verification & Approval Protocols\n\nWhen a tenant submits their M-Pesa SMS, Rentmaster's cryptographic engine runs three automated perimeter checks:\n\n1. **Freshness & Till Assertion:** Confirms the message timestamp is within 10 minutes of submission and belongs to Till **\`${lCtx.tillNumber}\`**.\n2. **Tamper-Evident SHA-256 Seal:** A unique cryptographic digest is stamped to the record. Look for the green badge: **\`Secured SMS (Verified Till & Freshness)\`**.\n3. **Landlord Final Sign-off:**\n   - Review the M-Pesa code against your Safaricom Merchant statement or Till phone.\n   - Click **"Confirm & Approve (Paid)"** to instantly commit the funds to the ledger, clear the tenant's bill, and generate an official receipt.\n   - Click **"Decline"** if the transaction did not reflect in your merchant cash balance.`;
       }
 
-      // Intent: Onboarding, WhatsApp Invites & Signage Flyers
       if (hasAny(['invite', 'onboard', 'flyer', 'poster', 'notice board', 'add tenant', 'signage', 'qr code', 'welcome tenant'])) {
         return `> 🧠 **Tenant Lifecycle Automation:** Resident Onboarding Tools\n\n### 📲 Seamless Tenant Onboarding & Building Signage\n\nRentmaster provides three integrated channels to onboard residents without paperwork:\n\n1. **1-Click WhatsApp Onboarding Link:**\n   - Open the **Tenants tab**.\n   - Click **"📱 WhatsApp Invite"** next to any tenant.\n   - A pre-filled onboarding link with their assigned unit is dispatched directly to their phone.\n2. **Printable A4 Notice Board Flyer:**\n   - Click **"🖨️ Print Notice Board Flyer"** on your dashboard.\n   - Generates a branded, full-color A4 building poster complete with your Till **\`${lCtx.tillNumber}\`**, resident portal URL, and payment rules to mount at gates and elevator lobbies.\n3. **Direct Resident Registration:**\n   - New tenants can self-register using your property invite code, routing them to your approval queue.`;
       }
 
-      // Intent: Kenyan Tenancy Law (Cap 296, Notice, Eviction & Distress)
       if (hasAny(['law', 'evict', 'eviction', 'tribunal', 'notice period', 'increase rent', 'legal', 'distress', 'auctioneer', 'cap 296', 'cap 293', 'court'])) {
         return `> 🧠 **Statutory Legal Compliance Desk:** Kenyan Tenancy Framework\n\n### ⚖️ Kenyan Landlord Legal Compliance Guide (Cap 296 & Cap 293)\n\nTo protect your property investments and avoid costly criminal civil liabilities, adhere to Kenya's statutory tenancy procedures:\n\n#### 1. Lawful Eviction Procedure\n- **Never Self-Help:** Locking gates, padlocking doors, dismantling roofs, or cutting off electricity/water is **strictly illegal under Section 15 of Cap 296** and exposes landlords to criminal assault/trespass charges and hefty civil damages.\n- **Formal Notice to Quit:** Must provide **at least 30 to 90 days' written notice** specifying ground of termination.\n- **Court/Tribunal Order:** If tenant fails to vacate, file an application at the **Rent Restriction Tribunal (RRT)** or Environment & Land Court to obtain a formal decree.\n\n#### 2. Distress for Rent (Cap 293)\n- Levying distress for rent requires a **licensed, certified court broker/auctioneer** acting under a valid warrant.\n- An auctioneer must issue a **proclamation inventory** giving the tenant 14 days to settle before any public auction.\n- Tools of trade, bedding, and wear apparel are exempt from seizure.\n\n#### 3. Rent Increases\n- Permitted with **minimum 30 days written notice** and must be justifiable based on inflation or capital improvements.`;
       }
 
-      // Intent: KRA Rental Income Tax (MRI 7.5%)
       if (hasAny(['kra', 'tax', 'mri', 'rental tax', 'ecitizen', 'itax', '7.5', 'withholding', 'ushuru'])) {
         const estTax = Math.round(lCtx.totalCollected * 0.075);
         return `> 🧠 **Tax Compliance Desk:** KRA Monthly Rental Income (MRI) Tax\n\n### 🏛️ Kenyan Tax Compliance: Monthly Rental Income (MRI) Tax\n\nUnder the Kenyan Finance Act administered by the **Kenya Revenue Authority (KRA)**:\n\n1. **Applicable Rate:** Residential rental income is subject to a flat **7.5% Monthly Rental Income (MRI) Tax** on gross collections.\n2. **Estimated MRI for ${lCtx.currentMonth}:**\n   - Gross Collections: **${kes(lCtx.totalCollected)}**\n   - Estimated Tax Due (7.5%): **${kes(estTax)}**\n3. **Filing Due Date:** Due on or before the **20th day of the subsequent month** (e.g. October rent tax is due by November 20th).\n4. **Filing Method:** Log into **KRA iTax** (or eCitizen KRA portal), navigate to **Payments ➜ Payment Registration ➜ Tax Head: Income Tax ➜ Sub-head: Monthly Rental Income (MRI)**, generate an e-slip PRN, and pay via M-Pesa Paybill **572572**.\n5. **Penalty for Late Filing:** KRA levies a penalty of KES 2,000 per month for late returns plus 1% interest per month on unpaid tax.`;
       }
     }
 
-    // -------------------------------------------------------------
-    // GENERAL / CROSS-ROLE COMMON QUERIES
-    // -------------------------------------------------------------
 
-    // General: Emergency Contacts
     if (hasAny(['emergency', 'dharura', 'contact', 'namba', 'phone number', 'hotline', 'help desk', 'sammy'])) {
       return `> 🧠 **Emergency Response Directory:** Central Dispatch\n\n### 🚨 Emergency Contacts & Support Directory\n\n- **Resident Caretaker & Emergency Desk:** **Sammy Harrison**\n  - Phone: [0748 082 906](tel:0748082906)\n  - WhatsApp: [Chat on WhatsApp](https://wa.me/254748082906)\n  - Available 24/7 for plumbing leaks, blackouts, or structural hazards.\n- **National Police Service:** 999 / 112\n- **Kenya Power Emergency Hotline:** 97771 / 0703 070 707\n- **Nairobi Water / Sewerage Emergency:** 0703 080 598`;
     }
 
-    // General: What is Rentmaster
     if (hasAny(['what is rentmaster', 'about', 'how does this work', 'mfumo huu', 'rentmaster'])) {
       return `> 🧠 **System Architecture:** About Rentmaster Enterprise Property Cloud\n\n### 🏢 About Rentmaster Enterprise Property Cloud\n\nRentmaster is Kenya's premier automated property management operating system, engineering trust between landlords, caretakers, and tenants:\n\n- **Automated M-Pesa Buy Goods Integration** with instant 10-minute anti-fraud validation\n- **Tamper-Evident SHA-256 Cryptographic Receipts**\n- **Real-Time Resident Ledgers & PDF Statements**\n- **Kenyan Tenancy Law (Cap 296 & 293) Compliance Advisory**\n- **Resident Maintenance Desk** powered by Caretaker Sammy Harrison (\`0748 082 906\`)`;
     }
 
-    // -------------------------------------------------------------
-    // HIGH-COGNITION CONTEXTUAL FALLBACK
-    // -------------------------------------------------------------
     const userRoleStr = isSuperAdmin ? `Super Admin (${sCtx.name})` : isTenant ? `Resident Tenant (${tCtx.unit})` : isLandlord ? `Property Manager (${lCtx.propertyName})` : 'Guest User';
     const tillDisplay = (tCtx && tCtx.tillNumber) || (lCtx && lCtx.tillNumber) || '582190';
 
@@ -378,7 +324,6 @@ export class AIAgent {
 \n*You can also click any of the quick-action chips above or ask a more specific question regarding payments, legal rules, or maintenance.*`;
   }
 
-  // --- UI Component Rendering ---
   mount() {
     let root = document.getElementById('ai-agent-root');
     if (!root) {
@@ -388,7 +333,7 @@ export class AIAgent {
     }
 
     root.innerHTML = `
-      <!-- Floating AI Launcher Pill -->
+      
       <div id="ai-agent-launcher" class="ai-launcher-container" style="position: fixed; bottom: 5.75rem; right: 1.5rem; z-index: 990; transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);">
         <button id="btn-toggle-ai-agent" type="button" class="ai-launcher-btn" style="display: flex; align-items: center; gap: 0.625rem; padding: 0.625rem 1.125rem; border-radius: 9999px; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; border: 1.5px solid rgba(255, 255, 255, 0.15); box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.35), 0 0 15px rgba(16, 185, 129, 0.2); cursor: pointer; font-family: inherit; font-size: 0.875rem; font-weight: 700;">
           <span style="display: inline-flex; align-items: center; justify-content: center; width: 1.75rem; height: 1.75rem; border-radius: 50%; background: linear-gradient(135deg, #10b981 0%, #065f46 100%); color: #ffffff; font-size: 0.875rem; box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);">
@@ -399,10 +344,10 @@ export class AIAgent {
         </button>
       </div>
 
-      <!-- Slide-Up AI Chat Window -->
+      
       <div id="ai-agent-panel" class="ai-chat-panel" style="display: none; position: fixed; bottom: 5.5rem; right: 1.5rem; width: min(440px, calc(100vw - 2rem)); height: 600px; max-height: calc(100vh - 7rem); background: #ffffff; border: 1.5px solid var(--slate-200, #e2e8f0); border-radius: 1.25rem; box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25), 0 0 25px rgba(15, 23, 42, 0.08); z-index: 1000; flex-direction: column; overflow: hidden; font-family: inherit;">
         
-        <!-- Header -->
+        
         <div style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); color: #ffffff; padding: 1rem 1.25rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
           <div style="display: flex; align-items: center; gap: 0.75rem;">
             <div style="position: relative; width: 2.25rem; height: 2.25rem; border-radius: 50%; background: linear-gradient(135deg, #10b981 0%, #047857 100%); display: flex; align-items: center; justify-content: center; font-size: 1.125rem; box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);">
@@ -427,17 +372,17 @@ export class AIAgent {
           </div>
         </div>
 
-        <!-- Quick Action Prompt Chips Bar -->
+        
         <div id="ai-quick-prompts-bar" style="background: #f8fafc; border-bottom: 1px solid #e2e8f0; padding: 0.625rem 0.75rem; display: flex; gap: 0.5rem; overflow-x: auto; white-space: nowrap; scrollbar-width: none;">
-          <!-- Injected dynamically -->
+          
         </div>
 
-        <!-- Conversation History Stream -->
+        
         <div id="ai-messages-stream" style="flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.875rem; background: #ffffff;">
-          <!-- Message bubbles will be injected here -->
+          
         </div>
 
-        <!-- Input Bar -->
+        
         <div style="padding: 0.75rem 1rem; border-top: 1px solid #e2e8f0; background: #ffffff; display: flex; align-items: center; gap: 0.5rem;">
           <input 
             type="text" 
@@ -495,7 +440,6 @@ export class AIAgent {
       }
     });
 
-    // Visual focus ring
     input?.addEventListener('focus', () => {
       input.style.borderColor = '#10b981';
       input.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.15)';
@@ -548,7 +492,6 @@ export class AIAgent {
     if (!launcher || !btn || !textEl) return;
 
     const user = this.currentUser;
-    // Only show for Tenants, Landlords, Caretakers, and Super Admin
     if (!user || (user.role !== 'tenant' && user.role !== 'owner' && user.role !== 'caretaker' && user.role !== 'landlord' && user.role !== 'superadmin')) {
       launcher.style.display = 'none';
       return;
@@ -690,7 +633,6 @@ export class AIAgent {
   handleUserQuery(queryText) {
     if (!queryText) return;
 
-    // 1. Append user message
     this.messages.push({
       sender: 'user',
       text: queryText,
@@ -698,10 +640,8 @@ export class AIAgent {
     });
     this.renderMessages();
 
-    // 2. Show typing indicator
     this.showTypingIndicator();
 
-    // 3. Compute response with realistic cognitive delay
     setTimeout(() => {
       this.removeTypingIndicator();
       const aiResponseText = this.generateResponse(queryText);

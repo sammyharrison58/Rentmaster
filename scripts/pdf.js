@@ -1,10 +1,8 @@
-// pdf.js - PDF Receipt and Tenant Statement Generator using jsPDF
 
 import { formatKES, formatDate, formatMonth, formatPhone } from './store.js';
 
 export async function generateReceiptPDF(payment, propertyName = 'Rent Portal') {
   if (typeof window.jspdf === 'undefined') {
-    // If jsPDF CDN not yet loaded, trigger print
     window.print();
     return;
   }
@@ -14,23 +12,20 @@ export async function generateReceiptPDF(payment, propertyName = 'Rent Portal') 
   const startX = 14;
   const endX = 134;
 
-  // Header
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(16);
-  doc.setTextColor(15, 23, 42); // slate-900
+  doc.setTextColor(15, 23, 42); 
   doc.text(propertyName || 'Rent Portal', startX, 20);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(10);
-  doc.setTextColor(100, 116, 139); // slate-500
+  doc.setTextColor(100, 116, 139); 
   doc.text('Official rent payment receipt', startX, 26);
 
-  // Emerald Divider line
   doc.setDrawColor(5, 150, 105);
   doc.setLineWidth(0.6);
   doc.line(startX, 31, endX, 31);
 
-  // Amount Paid Section
   doc.setFontSize(10);
   doc.setTextColor(100, 116, 139);
   doc.text('Amount paid', startX, 41);
@@ -44,7 +39,6 @@ export async function generateReceiptPDF(payment, propertyName = 'Rent Portal') 
   doc.setTextColor(5, 150, 105);
   doc.text('PAID', endX, 50, { align: 'right' });
 
-  // Fields
   let currentY = 63;
   const fields = [
     ['Receipt number', payment.receiptNo || `RCT-${payment.month.replace('-', '')}-${payment.id.slice(-5).toUpperCase()}`],
@@ -74,7 +68,6 @@ export async function generateReceiptPDF(payment, propertyName = 'Rent Portal') 
     currentY += 8;
   });
 
-  // Footer divider
   doc.setDrawColor(226, 232, 240);
   doc.setLineWidth(0.3);
   doc.line(startX, currentY, endX, currentY);
@@ -101,7 +94,6 @@ export async function generateStatementPDF(tenant, statementData, startMonth, en
   const endX = 196;
   let currentY = 18;
 
-  // Header
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(16);
   doc.setTextColor(15, 23, 42);
@@ -119,7 +111,6 @@ export async function generateStatementPDF(tenant, statementData, startMonth, en
   doc.line(startX, currentY, endX, currentY);
   currentY += 8;
 
-  // Tenant Details
   doc.setFontSize(10);
   const details = [
     ['Tenant', tenant.name],
@@ -139,7 +130,6 @@ export async function generateStatementPDF(tenant, statementData, startMonth, en
   });
   currentY += 4;
 
-  // 4 Summary Boxes
   const formatBalance = (bal) => (bal < 0 ? `${formatKES(-bal)} CR` : formatKES(bal));
   const summaryBoxes = [
     ['Opening balance', formatBalance(statementData.opening)],
@@ -163,7 +153,6 @@ export async function generateStatementPDF(tenant, statementData, startMonth, en
   });
   currentY += 16;
 
-  // Table Header
   const renderTableHeader = () => {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
@@ -200,10 +189,8 @@ export async function generateStatementPDF(tenant, statementData, startMonth, en
     currentY += 6;
   };
 
-  // Opening Balance Line
   printRow(formatDate(new Date(startMonth + '-01')), 'Opening balance', '', '', statementData.opening);
 
-  // Line items
   statementData.lines.forEach((line) => {
     printRow(line.date, line.description, line.charged, line.paid, line.balance);
   });

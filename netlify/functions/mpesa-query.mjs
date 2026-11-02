@@ -1,5 +1,5 @@
-// Netlify Serverless Function: /api/mpesa/query
-// Polls Safaricom Daraja STK Query to verify if tenant completed PIN authorization on phone
+
+
 
 export default async (req, context) => {
   if (req.method !== 'POST') {
@@ -18,7 +18,7 @@ export default async (req, context) => {
         ? 'https://api.safaricom.co.ke'
         : 'https://sandbox.safaricom.co.ke';
 
-      // 1. Get OAuth Bearer Token
+      
       const authHeader = Buffer.from(`${consumerKey}:${consumerSecret}`).toString('base64');
       const tokenRes = await fetch(`${baseUrl}/oauth/v1/generate?grant_type=client_credentials`, {
         headers: { 'Authorization': `Basic ${authHeader}` }
@@ -52,7 +52,7 @@ export default async (req, context) => {
       });
     }
 
-    // Fallback simulation
+    
     return new Response(JSON.stringify({ ResultCode: 0, ResultDesc: 'Simulated success' }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }

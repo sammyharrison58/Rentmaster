@@ -1,10 +1,10 @@
-// netlify/functions/sync.mjs
-// Global Cloud State Sync for Rentmaster via Netlify Blobs
-// Enables cross-device real-time sync for landlords, tenants, and super admin
+
+
+
 
 import { getStore } from "@netlify/blobs";
 
-// In-process fallback cache
+
 let memoryState = null;
 
 export default async (req, context) => {
@@ -26,7 +26,7 @@ export default async (req, context) => {
     console.warn("Netlify Blobs init notice:", err.message);
   }
 
-  // --- GET: Fetch global platform state ---
+  
   if (req.method === "GET") {
     try {
       if (store) {
@@ -48,7 +48,7 @@ export default async (req, context) => {
     });
   }
 
-  // --- POST: Save global platform state ---
+  
   if (req.method === "POST") {
     try {
       const body = await req.json();
