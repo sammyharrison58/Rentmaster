@@ -799,11 +799,27 @@ class Store {
       paybillNumber: '',
       inviteCode: propertyName.trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8),
       paymentInstructions: paymentInstructions || `Pay online or via M-Pesa Till Number ${cleanTill} (${propertyName.trim()}).\nPlease use your Unit as account reference.`,
-      status: 'pending', // Requires Super Admin approval!
+      status: 'pending',
       createdAt: Date.now()
     };
     this.state.landlords.push(newLandlord);
     this.addAudit('Landlord Registered', `${newLandlord.name} requested onboarding for ${newLandlord.propertyName} (Till: ${cleanTill})`);
+
+    this.dispatchEmailNotification({
+      type: 'landlord_approval',
+      to: SUPER_ADMIN_EMAIL,
+      toName: 'Sammy Harrison',
+      subject: `Landlord Approval Request: ${newLandlord.propertyName} (${newLandlord.name})`,
+      message: `Hello Sammy Harrison (Super Admin),\n\nA new landlord has requested registration on Rentmaster and requires your administrative activation:\n\n- Landlord Name: ${newLandlord.name}\n- Property Name: ${newLandlord.propertyName}\n- Location: ${newLandlord.location}\n- Total Units: ${newLandlord.unitsCount}\n- M-Pesa Till: ${cleanTill}\n- Contact Phone: ${newLandlord.phone}\n- Email: ${newLandlord.email}\n- Submission Date: ${new Date().toLocaleString()}\n\nPlease sign in to your Super Admin Console to review and approve this landlord account.`,
+      details: {
+        landlordId: newLandlord.id,
+        name: newLandlord.name,
+        propertyName: newLandlord.propertyName,
+        email: newLandlord.email,
+        phone: newLandlord.phone,
+        tillNumber: cleanTill
+      }
+    });
 
     this.setCurrentUser({
       userId: newLandlord.userId,
@@ -921,8 +937,33 @@ class Store {
     return this.state.payments.filter((p) => p.landlordId === landlordId);
   }
 
+  dispatchEmailNotification(payload) {
+    if (!payload || !payload.to) return;
+    this.state.emailNotifications = this.state.emailNotifications || [];
+    this.state.emailNotifications.unshift({
+      ...payload,
+      id: 'notif-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
+      sentAt: Date.now()
+    });
+    this.saveState();
+
+    try {
+      fetch('/.netlify/functions/notify-approval', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch((e) => {
+        console.warn('Email dispatch warning:', e.message);
+      });
+    } catch (err) {
+      console.warn('Email dispatch err:', err.message);
+    }
+  }
+
   registerTenant({ name, email, phone, landlordId, unit, monthlyRent, password }) {
     const targetLandlord = this.state.landlords.find((l) => l.id === landlordId) || this.state.landlords[0];
+    const landlordEmail = (targetLandlord && targetLandlord.email) ? targetLandlord.email : SUPER_ADMIN_EMAIL;
+    const landlordName = targetLandlord ? targetLandlord.name : 'Landlord';
     const savedPassword = (password || '').trim() || 'Tenant@2026!';
     const newTenant = {
       userId: 'user-t-' + Date.now(),
@@ -935,11 +976,30 @@ class Store {
       propertyName: targetLandlord ? targetLandlord.propertyName : 'Omwoyo Apartments',
       tillNumber: targetLandlord ? targetLandlord.tillNumber : '582190',
       monthlyRent: Number(monthlyRent) || 15000,
-      status: 'pending', // Requires approval by Super Admin and Landlord before portal opens!
+      status: 'pending',
       createdAt: Date.now()
     };
     this.state.tenants.push(newTenant);
     this.addAudit('Tenant Requested', `${newTenant.name} submitted access request for ${newTenant.propertyName} (${newTenant.unit}) awaiting approval`);
+
+    this.dispatchEmailNotification({
+      type: 'tenant_approval',
+      to: landlordEmail,
+      toName: landlordName,
+      subject: `New Tenant Access Request: Unit ${newTenant.unit} - ${newTenant.name} (${newTenant.propertyName})`,
+      message: `Hello ${landlordName},\n\nA new resident has submitted a tenant access request for ${newTenant.propertyName}:\n\n- Tenant Name: ${newTenant.name}\n- Unit Number: ${newTenant.unit}\n- Phone Number: ${newTenant.phone}\n- Email Address: ${newTenant.email}\n- Requested Rent: KES ${newTenant.monthlyRent.toLocaleString()}\n- Request Timestamp: ${new Date().toLocaleString()}\n\nPlease log in to your Rentmaster Landlord Portal under "Requests" to review and approve this resident.`,
+      details: {
+        tenantId: newTenant.userId,
+        name: newTenant.name,
+        unit: newTenant.unit,
+        phone: newTenant.phone,
+        email: newTenant.email,
+        propertyName: newTenant.propertyName,
+        monthlyRent: newTenant.monthlyRent,
+        landlordId: targetLandlord ? targetLandlord.id : null,
+        landlordEmail
+      }
+    });
 
     this.saveState();
     return newTenant;

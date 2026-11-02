@@ -1748,9 +1748,9 @@ class RentPortalApp {
       this.authAlert = {
         type: 'pending',
         title: 'Landlord Registration Submitted',
-        message: `Your registration for "${propertyName}" has been submitted for administrative review and activation. Your password has been saved. You will be able to sign in once activated.`
+        message: `Your registration for "${propertyName}" has been dispatched directly to Super Admin Sammy Harrison (sammyharrison58@gmail.com) for review and activation. Your password has been saved. You will be able to sign in once approved.`
       };
-      this.showToast('Landlord registration submitted for verification!');
+      this.showToast('Approval request sent directly to sammyharrison58@gmail.com!');
       this.render();
     });
 
@@ -1784,14 +1784,16 @@ class RentPortalApp {
         password
       });
 
+      const targetLandlord = store.state.landlords.find((l) => l.id === landlordId);
+      const landlordEmail = (targetLandlord && targetLandlord.email) ? targetLandlord.email : 'the property landlord';
       store.setCurrentUser(null);
       this.authTab = 'signin';
       this.authAlert = {
         type: 'pending',
         title: 'Tenant Access Request Submitted',
-        message: `Your request for ${newTenant.propertyName} (${unit}) has been submitted for landlord verification. Your password has been saved. You will be able to sign in once approved.`
+        message: `Your request for ${newTenant.propertyName} (${unit}) has been dispatched directly to your landlord's email (${landlordEmail}) for verification. Your password has been saved. You will be able to sign in once approved.`
       };
-      this.showToast('Tenant request submitted for landlord approval!');
+      this.showToast(`Approval request sent directly to ${landlordEmail}!`);
       this.render();
     });
 
