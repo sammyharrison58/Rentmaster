@@ -419,15 +419,75 @@ class Store {
   }
 
   async fetchCloudState() {
-    if (typeof fetch === 'undefined') return;
+    if (typeof fetch === 'undefined') return false;
     try {
       const res = await fetch('/api/sync', { cache: 'no-store' });
-      if (!res.ok) return;
+      if (!res.ok) return false;
       const data = await res.json();
       if (data && data.success && data.state) {
         this.mergeCloudState(data.state);
+        return true;
       }
     } catch (e) {
+    }
+    return false;
+  }
+
+  async extractPrivateUserData(user) {
+    if (!user || !user.email) return;
+    try {
+      const res = await fetch(`/api/sync?email=${encodeURIComponent(user.email.trim().toLowerCase())}`, { cache: 'no-store' });
+      if (!res.ok) return;
+      const json = await res.json();
+      if (!json || !json.success) return;
+
+      if (json.scope === 'superadmin' && json.state) {
+        this.mergeCloudState(json.state);
+      } else if (json.scope === 'landlord' && json.data) {
+        const { landlord, tenants, payments } = json.data;
+        if (landlord) {
+          const idx = this.state.landlords.findIndex((l) => l.id === landlord.id);
+          if (idx !== -1) this.state.landlords[idx] = { ...this.state.landlords[idx], ...landlord };
+          else this.state.landlords.push(landlord);
+        }
+        if (Array.isArray(tenants)) {
+          tenants.forEach((t) => {
+            const tIdx = this.state.tenants.findIndex((item) => item.userId === t.userId);
+            if (tIdx !== -1) this.state.tenants[tIdx] = { ...this.state.tenants[tIdx], ...t };
+            else this.state.tenants.push(t);
+          });
+        }
+        if (Array.isArray(payments)) {
+          payments.forEach((p) => {
+            const pIdx = this.state.payments.findIndex((item) => item.id === p.id);
+            if (pIdx !== -1) this.state.payments[pIdx] = { ...this.state.payments[pIdx], ...p };
+            else this.state.payments.push(p);
+          });
+        }
+        this.saveState();
+      } else if (json.scope === 'tenant' && json.data) {
+        const { tenant, landlord, payments } = json.data;
+        if (tenant) {
+          const tIdx = this.state.tenants.findIndex((item) => item.userId === tenant.userId);
+          if (tIdx !== -1) this.state.tenants[tIdx] = { ...this.state.tenants[tIdx], ...tenant };
+          else this.state.tenants.push(tenant);
+        }
+        if (landlord) {
+          const lIdx = this.state.landlords.findIndex((item) => item.id === landlord.id);
+          if (lIdx !== -1) this.state.landlords[lIdx] = { ...this.state.landlords[lIdx], ...landlord };
+          else this.state.landlords.push(landlord);
+        }
+        if (Array.isArray(payments)) {
+          payments.forEach((p) => {
+            const pIdx = this.state.payments.findIndex((item) => item.id === p.id);
+            if (pIdx !== -1) this.state.payments[pIdx] = { ...this.state.payments[pIdx], ...p };
+            else this.state.payments.push(p);
+          });
+        }
+        this.saveState();
+      }
+    } catch (e) {
+      console.warn('Private data extraction notice:', e.message);
     }
   }
 

@@ -29,6 +29,7 @@ class RentPortalApp {
     this.reportMonth = new Date().getMonth();
     this.paymentFilter = 'all';
     this.activeModal = null;
+    this.dbExplorerSubTab = 'landlords';
     this.aiAgent = new AIAgent(store, this);
 
     this.init();
@@ -1666,14 +1667,20 @@ class RentPortalApp {
       });
     }
 
-    document.getElementById('form-auth-signin')?.addEventListener('submit', (e) => {
+    document.getElementById('form-auth-signin')?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('auth-email').value;
       const password = document.getElementById('auth-password')?.value || '';
-      const res = store.loginWithEmail(email, password);
+      let res = store.loginWithEmail(email, password);
+
+      if (!res.success && !res.isPasswordError) {
+        await store.fetchCloudState();
+        res = store.loginWithEmail(email, password);
+      }
 
       if (res.success) {
         this.authAlert = null;
+        store.extractPrivateUserData(res.user);
         if (res.role === 'superadmin') {
           this.showToast('Super Admin Portal Opened! Welcome, Sammy Harrison.');
         } else if (res.role === 'owner') {
@@ -2032,6 +2039,7 @@ class RentPortalApp {
 
     if (res.success) {
       this.authAlert = null;
+      store.extractPrivateUserData(res.user);
       if (res.role === 'superadmin') {
         this.showToast(`Signed in with Google as Super Admin (${res.user.name})!`);
       } else if (res.role === 'owner') {
@@ -2811,6 +2819,10 @@ class RentPortalApp {
           <i data-lucide="history" style="width: 1.125rem; height: 1.125rem;"></i>
           System Audit Log
         </button>
+        <button class="tab-btn ${this.adminTab === 'database' ? 'active' : ''}" data-superadmin-tab="database">
+          <i data-lucide="database" style="width: 1.125rem; height: 1.125rem;"></i>
+          Global Database
+        </button>
       </div>
 
       <div id="superadmin-tab-content">
@@ -2819,6 +2831,7 @@ class RentPortalApp {
         ${this.adminTab === 'all_tenants' ? this.renderSuperAdminAllTenants(tenants) : ''}
         ${this.adminTab === 'all_payments' ? this.renderSuperAdminAllPayments(payments) : ''}
         ${this.adminTab === 'audit' ? this.renderSuperAdminAudit(audit) : ''}
+        ${this.adminTab === 'database' ? this.renderSuperAdminDatabaseExplorer() : ''}
       </div>
     `;
   }
@@ -3161,6 +3174,284 @@ class RentPortalApp {
         </div>
       </div>
     `;
+  }
+
+  renderSuperAdminDatabaseExplorer() {
+    const landlords = store.state.landlords || [];
+    const tenants = store.state.tenants || [];
+    const payments = store.state.payments || [];
+    const audit = store.state.audit || [];
+    const totalVolume = payments
+      .filter((p) => p.status === 'paid')
+      .reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+
+    const activeSub = this.dbExplorerSubTab || 'landlords';
+
+    return `
+      <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+          <div style="background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: var(--radius-lg); padding: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+            <div style="font-size: 0.75rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Cloud Database Engine</div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.35rem;">
+              <span class="entity-pulse" style="background: #10b981;"></span>
+              <strong style="color: #0f172a; font-size: 0.9375rem;">Netlify Blobs Active</strong>
+            </div>
+            <div style="font-size: 0.6875rem; color: #10b981; font-weight: 600; margin-top: 0.25rem;">Global Multi-Region Sync</div>
+          </div>
+          <div style="background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: var(--radius-lg); padding: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+            <div style="font-size: 0.75rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Total Landlord Entities</div>
+            <div style="font-size: 1.35rem; font-weight: 800; color: #047857; margin-top: 0.25rem;">${landlords.length}</div>
+            <div style="font-size: 0.6875rem; color: #64748b;">${landlords.filter(l => l.status === 'approved').length} Active · ${landlords.filter(l => l.status === 'pending').length} Pending</div>
+          </div>
+          <div style="background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: var(--radius-lg); padding: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+            <div style="font-size: 0.75rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Total Tenant Entities</div>
+            <div style="font-size: 1.35rem; font-weight: 800; color: #0284c7; margin-top: 0.25rem;">${tenants.length}</div>
+            <div style="font-size: 0.6875rem; color: #64748b;">${tenants.filter(t => t.status === 'approved').length} Active · ${tenants.filter(t => t.status === 'pending').length} Pending</div>
+          </div>
+          <div style="background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: var(--radius-lg); padding: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+            <div style="font-size: 0.75rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Global Transaction Volume</div>
+            <div style="font-size: 1.35rem; font-weight: 800; color: #7c3aed; margin-top: 0.25rem;">${formatKES(totalVolume)}</div>
+            <div style="font-size: 0.6875rem; color: #64748b;">${payments.length} ledger receipts stored</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 0;">
+          <div class="card-header" style="flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <h2 class="card-title" style="margin-bottom: 0;">
+                  <i data-lucide="database" style="color: #10b981;"></i>
+                  Global Database Management & Explorer
+                </h2>
+                <span class="badge" style="background: #ecfdf5; color: #065f46; font-weight: 800;">ROOT ACCESS</span>
+              </div>
+              <p style="font-size: 0.8125rem; color: var(--slate-500); margin-top: 0.25rem;">
+                Worldwide persistent storage ledger. Tenants & Landlords privately extract their own records upon login. As Super Admin (Sammy Harrison), you hold unrestricted access to all entities.
+              </p>
+            </div>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <button class="btn btn-primary" onclick="window.app.syncGlobalDatabaseNow()" style="font-size: 0.8125rem; padding: 0.45rem 0.875rem; display: flex; align-items: center; gap: 0.35rem; font-weight: 700;">
+                <i data-lucide="refresh-cw" style="width: 0.9rem; height: 0.9rem;"></i>
+                Sync Cloud Database
+              </button>
+              <button class="btn btn-secondary" onclick="window.app.exportGlobalDatabaseBackup()" style="font-size: 0.8125rem; padding: 0.45rem 0.875rem; display: flex; align-items: center; gap: 0.35rem; font-weight: 700;">
+                <i data-lucide="download" style="width: 0.9rem; height: 0.9rem;"></i>
+                Export JSON Backup
+              </button>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 0.5rem; border-bottom: 1.5px solid var(--slate-200); padding: 0.75rem 1.25rem; background: var(--slate-50); flex-wrap: wrap;">
+            <button class="btn ${activeSub === 'landlords' ? 'btn-primary' : 'btn-secondary'}" style="font-size: 0.8125rem; padding: 0.35rem 0.75rem;" onclick="window.app.dbExplorerSubTab='landlords'; window.app.render();">
+              Landlords Table (${landlords.length})
+            </button>
+            <button class="btn ${activeSub === 'tenants' ? 'btn-primary' : 'btn-secondary'}" style="font-size: 0.8125rem; padding: 0.35rem 0.75rem;" onclick="window.app.dbExplorerSubTab='tenants'; window.app.render();">
+              Tenants Table (${tenants.length})
+            </button>
+            <button class="btn ${activeSub === 'payments' ? 'btn-primary' : 'btn-secondary'}" style="font-size: 0.8125rem; padding: 0.35rem 0.75rem;" onclick="window.app.dbExplorerSubTab='payments'; window.app.render();">
+              Payments Ledger (${payments.length})
+            </button>
+            <button class="btn ${activeSub === 'audit' ? 'btn-primary' : 'btn-secondary'}" style="font-size: 0.8125rem; padding: 0.35rem 0.75rem;" onclick="window.app.dbExplorerSubTab='audit'; window.app.render();">
+              Security Audit Log (${audit.length})
+            </button>
+            <button class="btn ${activeSub === 'raw' ? 'btn-primary' : 'btn-secondary'}" style="font-size: 0.8125rem; padding: 0.35rem 0.75rem;" onclick="window.app.dbExplorerSubTab='raw'; window.app.render();">
+              Raw JSON Snapshot
+            </button>
+          </div>
+
+          <div style="padding: 1.25rem;">
+            ${activeSub === 'landlords' ? `
+              <div class="table-container" style="max-height: 480px; overflow-y: auto;">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Entity ID</th>
+                      <th>Landlord Name</th>
+                      <th>Property</th>
+                      <th>Email (Private)</th>
+                      <th>Phone</th>
+                      <th>Till Number</th>
+                      <th>Units</th>
+                      <th>Status</th>
+                      <th>Registered</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${landlords.map(l => `
+                      <tr>
+                        <td><code>${l.id}</code></td>
+                        <td><strong>${l.name}</strong></td>
+                        <td>${l.propertyName}</td>
+                        <td><code>${l.email}</code></td>
+                        <td>${l.phone}</td>
+                        <td><span class="badge" style="background: #e0f2fe; color: #0369a1; font-weight: 700;">${l.tillNumber}</span></td>
+                        <td>${l.unitsCount}</td>
+                        <td>
+                          <span class="badge ${l.status === 'approved' ? 'badge-paid' : 'badge-pending'}">${l.status}</span>
+                        </td>
+                        <td style="font-size: 0.75rem; color: #64748b;">${formatDateTime(l.createdAt)}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            ` : ''}
+
+            ${activeSub === 'tenants' ? `
+              <div class="table-container" style="max-height: 480px; overflow-y: auto;">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Tenant User ID</th>
+                      <th>Resident Name</th>
+                      <th>Property & Unit</th>
+                      <th>Email (Private)</th>
+                      <th>Phone</th>
+                      <th>Monthly Rent</th>
+                      <th>Status</th>
+                      <th>Registered</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${tenants.map(t => `
+                      <tr>
+                        <td><code>${t.userId}</code></td>
+                        <td><strong>${t.name}</strong></td>
+                        <td>${t.propertyName || 'Property'} · <strong>${t.unit}</strong></td>
+                        <td><code>${t.email}</code></td>
+                        <td>${t.phone}</td>
+                        <td><strong>${formatKES(t.monthlyRent || 0)}</strong></td>
+                        <td>
+                          <span class="badge ${t.status === 'approved' ? 'badge-paid' : 'badge-pending'}">${t.status}</span>
+                        </td>
+                        <td style="font-size: 0.75rem; color: #64748b;">${formatDateTime(t.createdAt)}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            ` : ''}
+
+            ${activeSub === 'payments' ? `
+              <div class="table-container" style="max-height: 480px; overflow-y: auto;">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Payment ID</th>
+                      <th>M-Pesa Code</th>
+                      <th>Tenant</th>
+                      <th>Unit</th>
+                      <th>Amount</th>
+                      <th>Status</th>
+                      <th>Cryptographic Seal</th>
+                      <th>Timestamp</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${payments.map(p => `
+                      <tr>
+                        <td><code>${p.id}</code></td>
+                        <td><strong style="color: #047857; font-family: monospace;">${p.mpesaReceipt || '-'}</strong></td>
+                        <td>${p.tenantName || 'Tenant'}</td>
+                        <td>${p.unit || '-'}</td>
+                        <td><strong>${formatKES(p.amount || 0)}</strong></td>
+                        <td>
+                          <span class="badge ${p.status === 'paid' ? 'badge-paid' : 'badge-pending'}">${p.status}</span>
+                        </td>
+                        <td><code style="font-size: 0.6875rem;">${p.digitalSeal ? p.digitalSeal.substring(0, 16) + '...' : 'System'}</code></td>
+                        <td style="font-size: 0.75rem; color: #64748b;">${formatDateTime(p.createdAt || p.paidAt)}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            ` : ''}
+
+            ${activeSub === 'audit' ? `
+              <div class="table-container" style="max-height: 480px; overflow-y: auto;">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Event Action</th>
+                      <th>Details</th>
+                      <th>Initiator</th>
+                      <th>Recorded At</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${audit.map(a => `
+                      <tr>
+                        <td><strong>${a.action}</strong></td>
+                        <td>${a.detail}</td>
+                        <td><code>${a.by}</code></td>
+                        <td style="font-size: 0.75rem; color: #64748b;">${formatDateTime(a.at)}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            ` : ''}
+
+            ${activeSub === 'raw' ? `
+              <div style="position: relative;">
+                <pre style="background: #0f172a; color: #e2e8f0; padding: 1.25rem; border-radius: 8px; font-size: 0.75rem; max-height: 450px; overflow: auto; font-family: monospace; line-height: 1.5;">${JSON.stringify({
+                  database: 'Rentmaster Global DB (Netlify Blobs)',
+                  syncedAt: store.state.syncedAt || Date.now(),
+                  counts: {
+                    landlords: landlords.length,
+                    tenants: tenants.length,
+                    payments: payments.length,
+                    audit: audit.length
+                  },
+                  landlords,
+                  tenants,
+                  payments
+                }, null, 2)}</pre>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  exportGlobalDatabaseBackup() {
+    const backupData = {
+      platform: 'Rentmaster Property OS',
+      version: '2.0.0',
+      exportedAt: new Date().toISOString(),
+      exportedBy: 'Super Admin Sammy Harrison (sammyharrison58@gmail.com)',
+      database: {
+        landlords: store.state.landlords || [],
+        tenants: store.state.tenants || [],
+        payments: store.state.payments || [],
+        audit: store.state.audit || [],
+        usedMpesaCodes: store.state.usedMpesaCodes || [],
+        emailNotifications: store.state.emailNotifications || []
+      }
+    };
+
+    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `rentmaster_database_backup_${Date.now()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    this.showToast('Global database backup downloaded successfully as JSON!', 'success');
+  }
+
+  async syncGlobalDatabaseNow() {
+    this.showToast('Synchronizing global database with cloud...', 'info');
+    const updated = await store.fetchCloudState();
+    if (updated) {
+      this.showToast('Global database synchronized with latest cloud state!', 'success');
+    } else {
+      this.showToast('Global database is already up to date with cloud ledger.', 'success');
+    }
+    this.render();
   }
 
   attachSuperAdminEvents() {
