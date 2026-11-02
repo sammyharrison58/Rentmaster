@@ -4964,16 +4964,24 @@ class RentPortalApp {
             </div>
 
             <div class="form-group">
-              <label class="form-label" style="font-weight: 700; display: flex; justify-content: space-between; align-items: center;">
-                <span>M-Pesa SMS Confirmation Message</span>
-                <span style="font-size: 0.75rem; font-weight: normal; color: var(--primary);">✨ Auto-verifies & extracts details</span>
-              </label>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.375rem;">
+                <label class="form-label" style="font-weight: 700; margin-bottom: 0;">
+                  <span>M-Pesa SMS Confirmation Message</span>
+                </label>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <button type="button" id="btn-clear-sms-text" style="display: none; padding: 0.2rem 0.55rem; font-size: 0.75rem; color: #dc2626; border: 1.5px solid #fca5a5; background: #fef2f2; font-weight: 700; border-radius: var(--radius-sm); cursor: pointer; align-items: center; gap: 0.3rem;">
+                    <i data-lucide="trash-2" style="width: 0.8rem; height: 0.8rem;"></i>
+                    Delete Pasted Message
+                  </button>
+                  <span id="sms-lock-status-badge" style="font-size: 0.75rem; color: var(--primary);">✨ Auto-verifies & extracts details</span>
+                </div>
+              </div>
               <textarea 
                 class="form-input" 
                 id="post-sms-text" 
                 rows="3" 
                 placeholder="Paste your Safaricom SMS here, e.g.:&#10;QJD73821K9 Confirmed. Ksh15,000.00 sent to Till ${tillNumber} ${landlord ? landlord.propertyName : 'Omwoyo Apartments'} on ${new Date().toLocaleDateString('en-GB')} at 2:15 PM..."
-                style="font-family: monospace; font-size: 0.8125rem; line-height: 1.4;"
+                style="font-family: monospace; font-size: 0.8125rem; line-height: 1.4; transition: all 0.2s ease;"
               ></textarea>
             </div>
 
@@ -5264,9 +5272,92 @@ class RentPortalApp {
       }
     });
 
+    const lockPastedSms = () => {
+      if (!postSmsText) return;
+      postSmsText.readOnly = true;
+      postSmsText.style.backgroundColor = '#f1f5f9';
+      postSmsText.style.cursor = 'not-allowed';
+      postSmsText.style.borderColor = '#94a3b8';
+      const clearBtn = document.getElementById('btn-clear-sms-text');
+      if (clearBtn) clearBtn.style.display = 'inline-flex';
+      const badge = document.getElementById('sms-lock-status-badge');
+      if (badge) {
+        badge.innerHTML = '<span style="color: #047857; font-weight: 600;"><i data-lucide="lock" style="width: 0.75rem; height: 0.75rem; vertical-align: middle;"></i> Message Locked · Delete or Submit only</span>';
+      }
+      if (window.lucide) window.lucide.createIcons();
+    };
+
+    const deletePastedSms = () => {
+      if (!postSmsText) return;
+      postSmsText.value = '';
+      postSmsText.readOnly = false;
+      postSmsText.style.backgroundColor = '';
+      postSmsText.style.cursor = '';
+      postSmsText.style.borderColor = '';
+      const clearBtn = document.getElementById('btn-clear-sms-text');
+      if (clearBtn) clearBtn.style.display = 'none';
+      const badge = document.getElementById('sms-lock-status-badge');
+      if (badge) {
+        badge.innerHTML = '✨ Auto-verifies & extracts details';
+      }
+      autoParseAndVerify();
+      postSmsText.focus();
+      if (window.lucide) window.lucide.createIcons();
+    };
+
+    document.getElementById('btn-clear-sms-text')?.addEventListener('click', () => {
+      deletePastedSms();
+      this.showToast('Pasted SMS deleted. Paste a fresh message to continue.', 'info');
+    });
+
     if (postSmsText) {
-      postSmsText.addEventListener('input', autoParseAndVerify);
-      postSmsText.addEventListener('paste', () => setTimeout(autoParseAndVerify, 50));
+      postSmsText.addEventListener('paste', (e) => {
+        let text = '';
+        if (e.clipboardData) {
+          text = e.clipboardData.getData('text');
+        }
+        if (text && text.trim()) {
+          e.preventDefault();
+          postSmsText.value = text.trim();
+          lockPastedSms();
+          autoParseAndVerify();
+        } else {
+          setTimeout(() => {
+            if (postSmsText.value.trim()) {
+              lockPastedSms();
+              autoParseAndVerify();
+            }
+          }, 20);
+        }
+      });
+
+      postSmsText.addEventListener('keydown', (e) => {
+        if (postSmsText.readOnly) {
+          if (e.key === 'Backspace' || e.key === 'Delete') {
+            e.preventDefault();
+            deletePastedSms();
+            return;
+          }
+          if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'c' || e.key.toLowerCase() === 'a')) {
+            return;
+          }
+          if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'v') {
+            return;
+          }
+          if (e.key === 'Tab') {
+            return;
+          }
+          e.preventDefault();
+          this.showToast('Pasted message cannot be edited. You can delete it or submit.', 'warning');
+        }
+      });
+
+      postSmsText.addEventListener('input', () => {
+        if (postSmsText.value.trim()) {
+          lockPastedSms();
+        }
+        autoParseAndVerify();
+      });
     }
 
     document.getElementById('btn-device-paste-sms')?.addEventListener('click', async () => {
@@ -5283,6 +5374,7 @@ class RentPortalApp {
         }
         if (postSmsText) {
           postSmsText.value = clipText.trim();
+          lockPastedSms();
           autoParseAndVerify();
           this.showToast('M-Pesa SMS pasted from device! Verifying payment details...', 'info');
         }
