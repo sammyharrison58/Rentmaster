@@ -182,6 +182,7 @@ class RentPortalApp {
   setupGlobalEvents() {
     document.addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        if (!this.isSuperAdmin()) return;
         e.preventDefault();
         this.toggleCommandPalette();
         return;
@@ -223,7 +224,12 @@ class RentPortalApp {
     });
   }
 
+  isSuperAdmin(user = store.state.currentUser) {
+    return Boolean(user && (user.role === 'superadmin' || user.impersonatedBy || user.email === SUPER_ADMIN_EMAIL || user.email === 'admin@rentmaster.co.ke'));
+  }
+
   toggleCommandPalette() {
+    if (!this.isSuperAdmin()) return;
     if (this.isCommandPaletteOpen) {
       this.closeCommandPalette();
     } else {
@@ -232,6 +238,7 @@ class RentPortalApp {
   }
 
   openCommandPalette() {
+    if (!this.isSuperAdmin()) return;
     this.isCommandPaletteOpen = true;
     this.activeCmdIndex = 0;
     const root = document.getElementById('command-palette-root');
@@ -707,12 +714,16 @@ class RentPortalApp {
     const pendingPaymentsCount = store.state.payments.filter((p) => p.status === 'pending').length;
     const totalNotifs = pendingLandlordsCount + pendingTenantsCount + pendingPaymentsCount;
 
+    const isSuperAdmin = this.isSuperAdmin(user);
+
     userDisplay.innerHTML = `
+      ${isSuperAdmin ? `
       <button class="header-search-btn" id="btn-header-search" title="Search anything or jump to... (Ctrl + K)">
         <i data-lucide="search" style="width: 0.9375rem; height: 0.9375rem; color: #10b981;"></i>
         <span class="search-placeholder">Search or jump...</span>
         <kbd class="search-kbd">Ctrl K</kbd>
       </button>
+      ` : ''}
 
       ${user ? `
         <div style="position: relative;">
@@ -920,11 +931,13 @@ class RentPortalApp {
             </div>
           `).join('')}
         </div>
+        ${this.isSuperAdmin(store.state.currentUser) ? `
         <div style="padding: 0.625rem 1rem; background: #f8fafc; border-top: 1px solid #f1f5f9; text-align: center; font-size: 0.75rem;">
           <a href="javascript:void(0)" onclick="window.app.closeNotifications(); window.app.openCommandPalette();" style="color: #0284c7; font-weight: 700; text-decoration: none;">
             Press Ctrl + K to Search or Jump to Anything ➔
           </a>
         </div>
+        ` : ''}
       </div>
     `;
     if (window.lucide) window.lucide.createIcons();
@@ -953,10 +966,6 @@ class RentPortalApp {
         <button class="mobile-nav-item ${this.unauthMode === 'login' && this.authTab === 'tenant_reg' ? 'active' : ''}" onclick="window.app.unauthMode='login'; window.app.authTab='tenant_reg'; window.app.render();">
           <i data-lucide="key" style="width: 1.25rem; height: 1.25rem;"></i>
           <span>Join Tenant</span>
-        </button>
-        <button class="mobile-nav-item" onclick="window.app.openCommandPalette();">
-          <i data-lucide="search" style="width: 1.25rem; height: 1.25rem;"></i>
-          <span>Search</span>
         </button>
       `;
       return;
@@ -1009,10 +1018,6 @@ class RentPortalApp {
           <i data-lucide="settings" style="width: 1.25rem; height: 1.25rem;"></i>
           <span>Till</span>
         </button>
-        <button class="mobile-nav-item" onclick="window.app.openCommandPalette();">
-          <i data-lucide="search" style="width: 1.25rem; height: 1.25rem;"></i>
-          <span>Search</span>
-        </button>
       `;
     } else if (user.role === 'tenant') {
       el.innerHTML = `
@@ -1032,10 +1037,6 @@ class RentPortalApp {
           <i data-lucide="headset" style="width: 1.25rem; height: 1.25rem;"></i>
           <span>Support</span>
         </button>
-        <button class="mobile-nav-item" onclick="window.app.openCommandPalette();">
-          <i data-lucide="search" style="width: 1.25rem; height: 1.25rem;"></i>
-          <span>Search</span>
-        </button>
       `;
     }
   }
@@ -1044,10 +1045,13 @@ class RentPortalApp {
     const el = document.getElementById('floating-quick-dock');
     if (!el) return;
 
+    const isSuperAdmin = this.isSuperAdmin(user);
+
     el.innerHTML = `
+      ${isSuperAdmin ? `
       <button class="dock-btn dock-btn-main" onclick="window.app.openCommandPalette();" title="Spotlight Quick Search (Ctrl + K)">
         <i data-lucide="search" style="width: 1.125rem; height: 1.125rem;"></i>
-      </button>
+      </button>` : ''}
       ${user && (user.role === 'tenant' || user.role === 'owner' || user.role === 'caretaker' || user.role === 'superadmin') ? `
       <button class="dock-btn dock-btn-ai" onclick="window.app.openAIAgent();" title="✨ Ask AI Assistant" style="background: linear-gradient(135deg, #064e3b 0%, #1e3a8a 100%); color: #fff; border-color: rgba(52, 211, 153, 0.35); position: relative; overflow: hidden;">
         <span style="font-size: 1rem; line-height: 1; position: relative; z-index: 1;">✨</span>
