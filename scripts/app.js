@@ -990,6 +990,10 @@ class RentPortalApp {
           <i data-lucide="users" style="width: 1.25rem; height: 1.25rem;"></i>
           <span>Tenants</span>
         </button>
+        <button class="mobile-nav-item ${this.adminTab === 'database' ? 'active' : ''}" onclick="window.app.adminTab='database'; window.app.render();">
+          <i data-lucide="database" style="width: 1.25rem; height: 1.25rem;"></i>
+          <span>Database</span>
+        </button>
         <button class="mobile-nav-item ${this.adminTab === 'all_payments' ? 'active' : ''}" onclick="window.app.adminTab='all_payments'; window.app.render();">
           <i data-lucide="receipt" style="width: 1.25rem; height: 1.25rem;"></i>
           <span>Payments</span>
