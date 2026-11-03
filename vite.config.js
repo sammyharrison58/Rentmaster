@@ -1,6 +1,10 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  esbuild: {
+    legalComments: 'none',
+    drop: ['debugger']
+  },
   server: {
     port: 5173
   },
@@ -12,8 +16,11 @@ export default defineConfig({
     assetsInlineLimit: 4096,
     rollupOptions: {
       output: {
-        manualChunks: {
-          'ai-agent': ['./scripts/ai-agent.js']
+        manualChunks(id) {
+          if (id.includes('ai-agent.js')) return 'ai-agent';
+          if (id.includes('store.js')) return 'store';
+          if (id.includes('pdf.js')) return 'pdf';
+          if (id.includes('excel.js')) return 'excel';
         }
       }
     },

@@ -1,7 +1,26 @@
 
 import { formatKES, formatDate, formatMonth, formatPhone } from './store.js';
 
+let jspdfPromise = null;
+function ensureJsPDF() {
+  if (typeof window.jspdf !== 'undefined') return Promise.resolve(window.jspdf);
+  if (jspdfPromise) return jspdfPromise;
+  jspdfPromise = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    s.async = true;
+    s.onload = () => resolve(window.jspdf);
+    s.onerror = (e) => {
+      jspdfPromise = null;
+      reject(e);
+    };
+    document.head.appendChild(s);
+  });
+  return jspdfPromise;
+}
+
 export async function generateReceiptPDF(payment, propertyName = 'Rent Portal') {
+  try { await ensureJsPDF(); } catch (e) {}
   if (typeof window.jspdf === 'undefined') {
     window.print();
     return;
@@ -83,6 +102,7 @@ export async function generateReceiptPDF(payment, propertyName = 'Rent Portal') 
 }
 
 export async function generateStatementPDF(tenant, statementData, startMonth, endMonth, propertyName = 'Rent Portal') {
+  try { await ensureJsPDF(); } catch (e) {}
   if (typeof window.jspdf === 'undefined') {
     window.print();
     return;

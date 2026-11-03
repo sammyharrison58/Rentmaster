@@ -1,6 +1,25 @@
 import { formatDate, formatMonth } from './store.js';
 
+let xlsxPromise = null;
+function ensureXLSX() {
+  if (typeof window.XLSX !== 'undefined') return Promise.resolve(window.XLSX);
+  if (xlsxPromise) return xlsxPromise;
+  xlsxPromise = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.async = true;
+    s.onload = () => resolve(window.XLSX);
+    s.onerror = (e) => {
+      xlsxPromise = null;
+      reject(e);
+    };
+    document.head.appendChild(s);
+  });
+  return xlsxPromise;
+}
+
 export async function exportYearlyReportXLSX(year, tenants, payments, propertyName = 'Rent Portal') {
+  try { await ensureXLSX(); } catch (e) {}
   if (typeof window.XLSX === 'undefined') {
     alert('Excel exporter library loading. Please try again in a moment.');
     return;
